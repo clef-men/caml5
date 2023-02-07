@@ -3,6 +3,13 @@ Makefile.coq.conf
 _CoqProject
 _opam
 
+# Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+
 # Coq
 .*.aux
 .*.d
