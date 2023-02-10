@@ -134,7 +134,9 @@ Section heapGS.
         NIL =>
           NILV
       | CONS "v", "t" =>
-          CONS ("fn" "v") ("lst_map" "t" "fn")
+          let: "v" := "fn" "v" in
+          let: "t" := "lst_map" "t" "fn" in
+          CONS "v" "t"
       end.
 
   Inductive lst_model' : val → list val → Prop :=
@@ -233,26 +235,26 @@ Section heapGS.
       iIntros "%v' %". iApply "HΦ". done.
   Qed.
 
-  #[local] Lemma lst_foldl_spec_strong ws Φ t vs acc fn :
+  #[local] Lemma lst_foldl_spec_strong vs_done Φ t vs acc fn :
     {{{
       lst_model t vs ∗
-      Φ ws acc ∗
+      Φ vs_done acc ∗
       ∀ acc' v vs' vs'',
-      {{{ ⌜ws ++ vs = vs' ++ v :: vs''⌝ ∗ Φ vs' acc' }}}
+      {{{ ⌜vs_done ++ vs = vs' ++ v :: vs''⌝ ∗ Φ vs' acc' }}}
         fn acc' v
       {{{ acc'', RET acc''; Φ (vs' ++ [v]) acc'' }}}
     }}}
       lst_foldl t acc fn
     {{{ acc',
       RET acc';
-      Φ (ws ++ vs) acc'
+      Φ (vs_done ++ vs) acc'
     }}}.
   Proof.
-    iInduction vs as [| v vs] "IH" forall (ws t acc).
+    iInduction vs as [| v vs] "IH" forall (vs_done t acc).
     all: iIntros "%Ψ (%Ht & HΦ & #Hfn) HΨ".
     - invert Ht.
       wp_rec. wp_pures.
-      iApply "HΨ". list_simplifier. auto.
+      iApply "HΨ". list_simplifier. done.
     - inversion_clear Ht as [| ? t' ? Ht']. simplify_eq/=.
       wp_rec. wp_pures.
       wp_apply ("Hfn" with "[$HΦ //]"). iIntros "%acc' HΦ".
@@ -387,40 +389,55 @@ Section heapGS.
     iIntros "%acc (-> & HΦ)". iApply "HΨ". done.
   Qed.
 
-  (* #[local] Lemma lst_map_spec_strong Φ t vs fn : *)
-  (*   {{{ *)
-  (*     lst_model t vs ∗ *)
-  (*     Φ [] [] ∗ *)
-  (*     ∀ v vs' vs'' ws', *)
-  (*     {{{ ⌜vs = vs' ++ v :: vs''⌝ ∗ Φ vs' ws' }}} *)
-  (*       fn v *)
-  (*     {{{ w, RET w; Φ (vs' ++ [v]) (ws' ++ [w]) }}} *)
-  (*   }}} *)
-  (*     lst_map t fn *)
-  (*   {{{ s ws, *)
-  (*     RET s; *)
-  (*     lst_model s ws ∗ *)
-  (*     Φ vs ws *)
-  (*   }}}. *)
-  (* Proof. *)
-  (* Qed. *)
-  (* Lemma lst_map_spec Φ t vs fn : *)
-  (*   {{{ *)
-  (*     lst_model t vs ∗ *)
-  (*     Φ [] [] ∗ *)
-  (*     ∀ v vs' vs'' ws', *)
-  (*     {{{ ⌜vs = vs' ++ v :: vs''⌝ ∗ Φ vs' ws' }}} *)
-  (*       fn v *)
-  (*     {{{ w, RET w; Φ (vs' ++ [v]) (ws' ++ [w]) }}} *)
-  (*   }}} *)
-  (*     lst_map t fn *)
-  (*   {{{ s ws, *)
-  (*     RET s; *)
-  (*     lst_model s ws ∗ *)
-  (*     Φ vs ws *)
-  (*   }}}. *)
-  (* Proof. *)
-  (* Qed. *)
+  #[local] Lemma lst_map_spec_strong vs_done ws_done Φ t vs fn :
+    {{{
+      lst_model t vs ∗
+      Φ vs_done ws_done ∗
+      ∀ v vs' vs'' ws',
+      {{{ ⌜vs_done ++ vs = vs' ++ v :: vs''⌝ ∗ Φ vs' ws' }}}
+        fn v
+      {{{ w, RET w; Φ (vs' ++ [v]) (ws' ++ [w]) }}}
+    }}}
+      lst_map t fn
+    {{{ s ws,
+      RET s;
+      lst_model s ws ∗
+      Φ (vs_done ++ vs) (ws_done ++ ws)
+    }}}.
+  Proof.
+    iInduction vs as [| v vs] "IH" forall (vs_done ws_done t).
+    all: iIntros "%Ψ (%Ht & HΦ & #Hfn) HΨ".
+    - invert Ht.
+      wp_rec. wp_pures.
+      iApply ("HΨ" $! _ []). list_simplifier. auto.
+    - inversion_clear Ht as [| ? t' ? Ht']. simplify_eq/=.
+      wp_rec. wp_pures.
+      wp_apply ("Hfn" with "[$HΦ //]"). iIntros "%w HΦ".
+      wp_pures.
+      wp_apply ("IH" with "[$HΦ]").
+      { iSplit; first done. list_simplifier. done. }
+      iIntros "%s %ws (%Hs & HΦ)".
+      wp_pures.
+      list_simplifier. iApply ("HΨ" with "[$HΦ]"). naive_solver.
+  Qed.
+  Lemma lst_map_spec Φ t vs fn :
+    {{{
+      lst_model t vs ∗
+      Φ [] [] ∗
+      ∀ v vs' vs'' ws',
+      {{{ ⌜vs = vs' ++ v :: vs''⌝ ∗ Φ vs' ws' }}}
+        fn v
+      {{{ w, RET w; Φ (vs' ++ [v]) (ws' ++ [w]) }}}
+    }}}
+      lst_map t fn
+    {{{ s ws,
+      RET s;
+      lst_model s ws ∗
+      Φ vs ws
+    }}}.
+  Proof.
+    pose proof lst_map_spec_strong [] []. list_simplifier. done.
+  Qed.
 End heapGS.
 
 #[global] Typeclasses Opaque lst_model.
