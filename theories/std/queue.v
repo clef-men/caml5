@@ -40,6 +40,6 @@ Record queue `{!heapGS Σ} := {
       (∃ vs' v, ⌜vs = vs' ++ [v] ∧ w = SOMEV v⌝ ∗ queue_model t vs')
     }}} ;
 }.
-#[global] Arguments queue _ {_}.
-#[global] Arguments Build_queue {_ _ _ _ _ _ _ _} _ _ _ _.
+#[global] Arguments queue _ {_} : assert.
+#[global] Arguments Build_queue {_ _ _ _ _ _ _ _} _ _ _ _ : assert.
 #[global] Existing Instance queue_model_timeless.

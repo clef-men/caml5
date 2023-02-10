@@ -43,8 +43,8 @@ Record stack `{!heapGS Σ} := {
       (∃ v vs', ⌜vs = v :: vs' ∧ w = SOMEV v⌝ ∗ stack_model t vs')
     }}} ;
 }.
-#[global] Arguments stack _ {_}.
-#[global] Arguments Build_stack {_ _ _ _ _ _ _ _} _ _ _ _.
+#[global] Arguments stack _ {_} : assert.
+#[global] Arguments Build_stack {_ _ _ _ _ _ _ _} _ _ _ _ : assert.
 #[global] Existing Instance stack_model_timeless.
 
 Section std_stack.
