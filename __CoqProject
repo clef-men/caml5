@@ -33,11 +33,12 @@ theories/lang/notations.v
 theories/lang/proofmode.v
 
 theories/std/base.v
+theories/std/inf_array.v
+theories/std/raw_array.v
 theories/std/opt.v
 theories/std/lst.v
 theories/std/stack.v
 theories/std/queue.v
-theories/std/inf_array.v
 theories/std/random.v
 theories/std/mutex.v
 theories/std/condition.v
