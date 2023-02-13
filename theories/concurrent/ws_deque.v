@@ -56,10 +56,10 @@ Record ws_deque `{!heapGS Σ} := {
       ws_deque_pop t
       @ ↑ ws_deque_namespace
     <<<
-      ∃∃ w,
-      (⌜vs = [] ∧ w = NONEV⌝ ∗ ws_deque_model t []) ∨
-      (∃ vs' v, ⌜w = SOMEV v ∧ vs = vs' ++ [v]⌝ ∗ ws_deque_model t vs') |
-      RET w; ws_deque_own t
+      ∃∃ o,
+      (⌜vs = [] ∧ o = NONEV⌝ ∗ ws_deque_model t []) ∨
+      (∃ vs' v, ⌜o = SOMEV v ∧ vs = vs' ++ [v]⌝ ∗ ws_deque_model t vs') |
+      RET o; ws_deque_own t
     >>> ;
 
   ws_deque_steal_spec t :
@@ -69,10 +69,10 @@ Record ws_deque `{!heapGS Σ} := {
     >>>
       ws_deque_steal t
       @ ↑ ws_deque_namespace
-    <<< ∃∃ w,
-      (⌜vs = [] ∧ w = NONEV⌝ ∗ ws_deque_model t []) ∨
-      (∃ v vs', ⌜w = SOMEV v ∧ vs = v :: vs'⌝ ∗ ws_deque_model t vs') |
-      RET w; True
+    <<< ∃∃ o,
+      (⌜vs = [] ∧ o = NONEV⌝ ∗ ws_deque_model t []) ∨
+      (∃ v vs', ⌜o = SOMEV v ∧ vs = v :: vs'⌝ ∗ ws_deque_model t vs') |
+      RET o; True
     >>> ;
 }.
 #[global] Arguments ws_deque _ {_} : assert.
