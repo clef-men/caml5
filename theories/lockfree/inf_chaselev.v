@@ -18,8 +18,6 @@ From caml5.lang Require Import
   proofmode.
 From caml5.std Require Import
   inf_array.
-From caml5.concurrent Require Import
-  ws_deque.
 From caml5.lockfree Require Export
   base.
 
@@ -1472,14 +1470,6 @@ Section inf_chaselev_GS.
 
         iApply "HΦ". repeat iExists _. iFrame "∗#". done.
   Qed.
-
-  (* Definition inf_chaselev_ws_deque := *)
-  (*   Build_ws_deque *)
-  (*     inf_chaselev_own_exclusive *)
-  (*     inf_chaselev_make_spec *)
-  (*     inf_chaselev_push_spec *)
-  (*     inf_chaselev_pop_spec *)
-  (*     inf_chaselev_steal_spec. *)
 End inf_chaselev_GS.
 
 #[global] Typeclasses Opaque inf_chaselev_inv.
