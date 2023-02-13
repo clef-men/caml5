@@ -49,3 +49,4 @@ theories/concurrent/queue.v
 theories/concurrent/ws_deque.v
 
 theories/lockfree/base.v
+theories/lockfree/inf_chaselev.v
