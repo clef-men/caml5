@@ -86,7 +86,7 @@ Proof.
   apply auth_both_valid. done.
 Qed.
 
-Lemma auth_nat_max_auth_dfrac_op_valid dq1 dq2 n1 n2 :
+Lemma auth_nat_max_auth_dfrac_op_valid dq1 n1 dq2 n2 :
   ✓ (auth_nat_max_auth dq1 n1 ⋅ auth_nat_max_auth dq2 n2) ↔
   ✓ (dq1 ⋅ dq2) ∧ n1 = n2.
 Proof.
@@ -131,7 +131,7 @@ Proof.
   apply cmra_included_r.
 Qed.
 
-Lemma auth_nat_max_auth_update_persist n dq :
+Lemma auth_nat_max_auth_update_persist dq n :
   auth_nat_max_auth dq n ~~> auth_nat_max_auth DfracDiscarded n.
 Proof.
   intros. rewrite /auth_nat_max_auth /auth_nat_max_frag.

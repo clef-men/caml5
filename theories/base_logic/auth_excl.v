@@ -1,14 +1,10 @@
-From iris.algebra Require Export
-  dfrac.
 From iris.proofmode Require Import
   proofmode.
-From iris.bi.lib Require Import
-  fractional.
-From iris.base_logic.lib Require Export
-  own.
 
 From caml5 Require Import
   prelude.
+From caml5 Require Export
+  base.
 From caml5.algebra Require Import
   auth_excl.
 
@@ -117,21 +113,59 @@ Section auth_excl_G.
     Proof.
       iIntros. iDestruct (own_valid with "[$]") as %?%auth_excl_auth_dfrac_valid. done.
     Qed.
-    Lemma auth_excl_auth_valid_2 γ a1 dq1 a2 dq2 :
+    Lemma auth_excl_auth_combine γ dq1 a1 dq2 a2 :
+      auth_excl_auth γ dq1 a1 -∗
+      auth_excl_auth γ dq2 a2 -∗
+        auth_excl_auth γ (dq1 ⋅ dq2) a1 ∗
+        ⌜a1 ≡ a2⌝.
+    Proof.
+      iIntros "H●1 H●2". iCombine "H●1 H●2" as "H●".
+      iDestruct (own_valid with "H●") as %(? & Heq)%auth_excl_auth_dfrac_op_valid.
+      iEval (rewrite -Heq -auth_excl_auth_dfrac_op) in "H●".
+      naive_solver.
+    Qed.
+    Lemma auth_excl_auth_combine_L `{!LeibnizEquiv A} γ dq1 a1 dq2 a2 :
+      auth_excl_auth γ dq1 a1 -∗
+      auth_excl_auth γ dq2 a2 -∗
+        auth_excl_auth γ (dq1 ⋅ dq2) a1 ∗
+        ⌜a1 = a2⌝.
+    Proof.
+      iIntros "H●1 H●2".
+      iDestruct (auth_excl_auth_combine with "H●1 H●2") as "($ & %)". naive_solver.
+    Qed.
+    Lemma auth_excl_auth_valid_2 γ dq1 a1 dq2 a2 :
       auth_excl_auth γ dq1 a1 -∗
       auth_excl_auth γ dq2 a2 -∗
       ⌜✓ (dq1 ⋅ dq2) ∧ a1 ≡ a2⌝.
     Proof.
       iIntros "H●1 H●2".
-      iDestruct (own_valid_2 with "H●1 H●2") as %?%auth_excl_auth_dfrac_op_valid. done.
+      iDestruct (auth_excl_auth_combine with "H●1 H●2") as "(H● & %)".
+      iDestruct (auth_excl_auth_valid with "H●") as %?.
+      done.
     Qed.
-    Lemma auth_excl_auth_valid_2_L `{!LeibnizEquiv A} γ a1 dq1 a2 dq2 :
+    Lemma auth_excl_auth_valid_2_L `{!LeibnizEquiv A} γ dq1 a1 dq2 a2 :
       auth_excl_auth γ dq1 a1 -∗
       auth_excl_auth γ dq2 a2 -∗
       ⌜✓ (dq1 ⋅ dq2) ∧ a1 = a2⌝.
     Proof.
       iIntros "H●1 H●2".
       iDestruct (auth_excl_auth_valid_2 with "H●1 H●2") as %?. naive_solver.
+    Qed.
+    Lemma auth_excl_auth_agree γ dq1 a1 dq2 a2 :
+      auth_excl_auth γ dq1 a1 -∗
+      auth_excl_auth γ dq2 a2 -∗
+      ⌜a1 ≡ a2⌝.
+    Proof.
+      iIntros "H●1 H●2".
+      iDestruct (auth_excl_auth_valid_2 with "H●1 H●2") as %?. naive_solver.
+    Qed.
+    Lemma auth_excl_auth_agree_L `{!LeibnizEquiv A} γ dq1 a1 dq2 a2 :
+      auth_excl_auth γ dq1 a1 -∗
+      auth_excl_auth γ dq2 a2 -∗
+      ⌜a1 = a2⌝.
+    Proof.
+      iIntros "H●1 H●2".
+      iDestruct (auth_excl_auth_agree with "H●1 H●2") as %?. naive_solver.
     Qed.
     Lemma auth_excl_auth_exclusive γ a1 a2 :
       auth_excl_auth γ (DfracOwn 1) a1 -∗

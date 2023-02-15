@@ -1,14 +1,10 @@
-From iris.algebra Require Export
-  dfrac.
 From iris.proofmode Require Import
   proofmode.
-From iris.bi.lib Require Import
-  fractional.
-From iris.base_logic.lib Require Export
-  own.
 
 From caml5 Require Import
   prelude.
+From caml5 Require Export
+  base.
 From caml5.algebra Require Import
   auth_Z_max.
 
@@ -90,13 +86,33 @@ Section auth_Z_max_G.
   Proof.
     iIntros. iDestruct (own_valid with "[$]") as %?%auth_Z_max_auth_dfrac_valid. done.
   Qed.
-  Lemma auth_Z_max_auth_valid_2 γ dq1 dq2 n1 n2 :
+  Lemma auth_Z_max_auth_combine γ dq1 n1 dq2 n2 :
+    auth_Z_max_auth γ dq1 n1 -∗
+    auth_Z_max_auth γ dq2 n2 -∗
+      auth_Z_max_auth γ (dq1 ⋅ dq2) n1 ∗
+      ⌜n1 = n2⌝.
+  Proof.
+    iIntros "H●1 H●2". iCombine "H●1 H●2" as "H●".
+    iDestruct (own_valid with "H●") as %(? & <-)%auth_Z_max_auth_dfrac_op_valid.
+    rewrite -auth_Z_max_auth_dfrac_op. naive_solver.
+  Qed.
+  Lemma auth_Z_max_auth_valid_2 γ dq1 n1 dq2 n2 :
     auth_Z_max_auth γ dq1 n1 -∗
     auth_Z_max_auth γ dq2 n2 -∗
     ⌜✓ (dq1 ⋅ dq2) ∧ n1 = n2⌝.
   Proof.
     iIntros "H●1 H●2".
-    iDestruct (own_valid_2 with "H●1 H●2") as %?%auth_Z_max_auth_dfrac_op_valid. done.
+    iDestruct (auth_Z_max_auth_combine with "H●1 H●2") as "(H● & %)".
+    iDestruct (auth_Z_max_auth_valid with "H●") as %?.
+    done.
+  Qed.
+  Lemma auth_Z_max_auth_agree γ dq1 n1 dq2 n2 :
+    auth_Z_max_auth γ dq1 n1 -∗
+    auth_Z_max_auth γ dq2 n2 -∗
+    ⌜n1 = n2⌝.
+  Proof.
+    iIntros "H●1 H●2".
+    iDestruct (auth_Z_max_auth_valid_2 with "H●1 H●2") as %?. naive_solver.
   Qed.
   Lemma auth_Z_max_auth_exclusive γ n1 n2 :
     auth_Z_max_auth γ (DfracOwn 1) n1 -∗

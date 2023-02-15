@@ -172,21 +172,21 @@ Section cmra.
     apply _.
   Qed.
 
-  Lemma auth_option_auth_dfrac_op_invN n dq1 a dq2 b :
-    ✓{n} (●O{dq1} a ⋅ ●O{dq2} b) →
-    a ≡{n}≡ b.
+  Lemma auth_option_auth_dfrac_op_invN n dq1 a1 dq2 a2 :
+    ✓{n} (●O{dq1} a1 ⋅ ●O{dq2} a2) →
+    a1 ≡{n}≡ a2.
   Proof.
     intros. eapply (inj Some), auth_auth_dfrac_op_invN. done.
   Qed.
-  Lemma auth_option_auth_dfrac_op_inv dq1 a dq2 b :
-    ✓ (●O{dq1} a ⋅ ●O{dq2} b) →
-    a ≡ b.
+  Lemma auth_option_auth_dfrac_op_inv dq1 a1 dq2 a2 :
+    ✓ (●O{dq1} a1 ⋅ ●O{dq2} a2) →
+    a1 ≡ a2.
   Proof.
     intros. eapply (inj Some), auth_auth_dfrac_op_inv. done.
   Qed.
-  Lemma auth_option_auth_dfrac_op_inv_L `{!LeibnizEquiv A} dq1 a dq2 b :
-    ✓ (●O{dq1} a ⋅ ●O{dq2} b) →
-    a = b.
+  Lemma auth_option_auth_dfrac_op_inv_L `{!LeibnizEquiv A} dq1 a1 dq2 a2 :
+    ✓ (●O{dq1} a1 ⋅ ●O{dq2} a2) →
+    a1 = a2.
   Proof.
     intros. eapply (inj Some), auth_auth_dfrac_op_inv_L. done.
   Qed.
@@ -216,7 +216,7 @@ Section cmra.
     rewrite auth_auth_valid //.
   Qed.
 
-  Lemma auth_option_auth_dfrac_op_validN n dq1 dq2 a1 a2 :
+  Lemma auth_option_auth_dfrac_op_validN n dq1 a1 dq2 a2 :
     ✓{n} (●O{dq1} a1 ⋅ ●O{dq2} a2) ↔
     ✓ (dq1 ⋅ dq2) ∧ a1 ≡{n}≡ a2 ∧ ✓{n} a1.
   Proof.
@@ -224,7 +224,7 @@ Section cmra.
     - naive_solver eauto using (inj Some).
     - naive_solver solve_proper.
   Qed.
-  Lemma auth_option_auth_dfrac_op_valid dq1 dq2 a1 a2 :
+  Lemma auth_option_auth_dfrac_op_valid dq1 a1 dq2 a2 :
     ✓ (●O{dq1} a1 ⋅ ●O{dq2} a2) ↔
     ✓ (dq1 ⋅ dq2) ∧ a1 ≡ a2 ∧ ✓ a1.
   Proof.
@@ -357,7 +357,7 @@ Section cmra.
     rewrite auth_both_valid_discrete Some_included. naive_solver.
   Qed.
 
-  Lemma auth_option_auth_dfrac_includedN n dq1 dq2 a1 a2 b :
+  Lemma auth_option_auth_dfrac_includedN n dq1 a1 dq2 a2 b :
     ●O{dq1} a1 ≼{n} ●O{dq2} a2 ⋅ ◯O b ↔
     (dq1 ≼ dq2 ∨ dq1 = dq2) ∧ a1 ≡{n}≡ a2.
   Proof.
@@ -365,7 +365,7 @@ Section cmra.
     - naive_solver eauto using (inj Some).
     - naive_solver solve_proper.
   Qed.
-  Lemma auth_option_auth_dfrac_included dq1 dq2 a1 a2 b :
+  Lemma auth_option_auth_dfrac_included dq1 a1 dq2 a2 b :
     ●O{dq1} a1 ≼ ●O{dq2} a2 ⋅ ◯O b ↔
     (dq1 ≼ dq2 ∨ dq1 = dq2) ∧ a1 ≡ a2.
   Proof.
@@ -399,7 +399,7 @@ Section cmra.
     rewrite auth_frag_included Some_included //.
   Qed.
 
-  Lemma auth_option_both_dfrac_includedN n dq1 dq2 a1 a2 b1 b2 :
+  Lemma auth_option_both_dfrac_includedN n dq1 a1 dq2 a2 b1 b2 :
     ●O{dq1} a1 ⋅ ◯O b1 ≼{n} ●O{dq2} a2 ⋅ ◯O b2 ↔
     (dq1 ≼ dq2 ∨ dq1 = dq2) ∧ a1 ≡{n}≡ a2 ∧ (b1 ≡{n}≡ b2 ∨ b1 ≼{n} b2).
   Proof.
@@ -407,7 +407,7 @@ Section cmra.
     - naive_solver eauto using (inj Some).
     - naive_solver solve_proper.
   Qed.
-  Lemma auth_option_both_dfrac_included dq1 dq2 a1 a2 b1 b2 :
+  Lemma auth_option_both_dfrac_included dq1 a1 dq2 a2 b1 b2 :
     ●O{dq1} a1 ⋅ ◯O b1 ≼ ●O{dq2} a2 ⋅ ◯O b2 ↔
     (dq1 ≼ dq2 ∨ dq1 = dq2) ∧ a1 ≡ a2 ∧ (b1 ≡ b2 ∨ b1 ≼ b2).
   Proof.

@@ -85,7 +85,7 @@ Proof.
   apply auth_option_both_valid. naive_solver.
 Qed.
 
-Lemma auth_Z_min_auth_dfrac_op_valid dq1 dq2 n1 n2 :
+Lemma auth_Z_min_auth_dfrac_op_valid dq1 n1 dq2 n2 :
   ✓ (auth_Z_min_auth dq1 n1 ⋅ auth_Z_min_auth dq2 n2) ↔
   ✓ (dq1 ⋅ dq2) ∧ n1 = n2.
 Proof.
@@ -130,7 +130,7 @@ Proof.
   apply cmra_included_r.
 Qed.
 
-Lemma auth_Z_min_auth_update_persist n dq :
+Lemma auth_Z_min_auth_update_persist dq n :
   auth_Z_min_auth dq n ~~> auth_Z_min_auth DfracDiscarded n.
 Proof.
   intros. rewrite /auth_Z_min_auth /auth_Z_min_frag.

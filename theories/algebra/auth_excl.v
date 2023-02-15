@@ -23,11 +23,11 @@ Definition auth_excl_frag {A : ofe} (a : A) : auth_excl_UR A :=
   ◯O (Excl a).
 Notation "●E{ dq } a" := (auth_excl_auth dq a)
 ( at level 20,
-  format "●E{ dq } a"
+  format "●E{ dq }  a"
 ).
 Notation "●E{# q } a" := (●E{DfracOwn q} a)
 ( at level 20,
-  format "●E{# q } a"
+  format "●E{# q }  a"
 ).
 Notation "●E a" := (●E{#1} a)
 ( at level 20
@@ -139,7 +139,7 @@ Section ofe.
     rewrite auth_option_auth_valid //.
   Qed.
 
-  Lemma auth_excl_auth_dfrac_op_validN n dq1 dq2 a1 a2 :
+  Lemma auth_excl_auth_dfrac_op_validN n dq1 a1 dq2 a2 :
     ✓{n} (●E{dq1} a1 ⋅ ●E{dq2} a2) ↔
     ✓ (dq1 ⋅ dq2) ∧ a1 ≡{n}≡ a2.
   Proof.
@@ -147,7 +147,7 @@ Section ofe.
     - naive_solver eauto using (inj Excl).
     - naive_solver solve_proper.
   Qed.
-  Lemma auth_excl_auth_dfrac_op_valid dq1 dq2 a1 a2 :
+  Lemma auth_excl_auth_dfrac_op_valid dq1 a1 dq2 a2 :
     ✓ (●E{dq1} a1 ⋅ ●E{dq2} a2) ↔
     ✓ (dq1 ⋅ dq2) ∧ a1 ≡ a2.
   Proof.
