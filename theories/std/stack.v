@@ -54,7 +54,7 @@ Section std_stack.
 
   Definition std_stack_make : val :=
     λ: <>,
-      ref (lst_nil #()).
+      ref lst_nil.
 
   Definition std_stack_is_empty : val :=
     λ: "t",
@@ -89,10 +89,8 @@ Section std_stack.
     {{{ t, RET t; std_stack_model t [] }}}.
   Proof.
     iIntros "%Φ _ HΦ".
-    wp_rec.
-    wp_apply (lst_nil_spec with "[//]"). iIntros "%lst #Hlst".
-    wp_alloc l as "Hl".
-    iApply "HΦ". iExists l, lst. naive_solver.
+    wp_rec. wp_alloc l as "Hl".
+    iApply "HΦ". iExists l, lst_nil. iFrame. iSplitL; first done. iApply lst_nil_spec.
   Qed.
 
   Lemma std_stack_is_empty_spec t vs :

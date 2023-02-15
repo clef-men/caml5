@@ -13,10 +13,7 @@ Section heapGS.
   Implicit Types v t s acc fn : val.
   Implicit Types vs ws : list val.
 
-  Notation NIL := NONE
-  ( only parsing
-  ).
-  Notation NILV := NONEV
+  Notation NIL := NONEV
   ( only parsing
   ).
   Notation CONS v t := (SOME (v, t))
@@ -25,6 +22,27 @@ Section heapGS.
   Notation CONSV v t := (SOMEV (v, t))
   ( only parsing
   ).
+
+  (* Definition lst_match : val := *)
+  (*   λ: "t" "fn_nil" "fn_cons", *)
+  (*     match: "t" with *)
+  (*       NONE => *)
+  (*         "fn_nil" #() *)
+  (*     | SOME "p" => *)
+  (*         "fn_cons" (Fst "p") (Snd "p") *)
+  (*     end. *)
+  (* Notation "'match:' e0 'with' 'NIL' => e1 | 'CONS' v , t => e2 'end'" := ( *)
+  (*   lst_match e0 (λ: <>, e1 #()) (λ: v t, e2) *)
+  (* )%E *)
+  (* ( e0, e1, v, t, e2 at level 200, *)
+  (*   format "'[hv' 'match:'  e0  'with'  '/  ' '[' 'NIL'  =>  '/  ' e1 ']'  '/' '[' |  'CONS'  v ,  t  =>  '/    ' e2 ']'  '/' 'end' ']'" *)
+  (* ) : expr_scope. *)
+  (* Notation "'match:' e0 'with' 'CONS' v t => e1 | 'NIL' => e2 'end'" := ( *)
+  (*   lst_match e0 (λ: <>, e2 #()) (λ: v t, e1) *)
+  (* )%E *)
+  (* ( e0, e1, v, t, e2 at level 200, *)
+  (*   only parsing *)
+  (* ) : expr_scope. *)
 
   Notation "'match:' e0 'with' 'NIL' => e1 | 'CONS' v , t => e2 'end'" := (
     match: e0 with
@@ -54,14 +72,13 @@ Section heapGS.
   ) : expr_scope.
 
   Definition lst_nil : val :=
-    λ: <>,
-      NILV.
+    NIL.
   Definition lst_cons : val :=
     λ: "v" "t",
       CONS "v" "t".
   Definition lst_singleton : val :=
     λ: "v",
-      CONS "v" NILV.
+      CONS "v" NIL.
 
   Definition lst_head : val :=
     λ: "t",
@@ -115,7 +132,7 @@ Section heapGS.
 
   Definition lst_rev : val :=
     λ: "t",
-      lst_foldl "t" NILV (λ: "acc" "v", CONS "v" "acc").
+      lst_foldl "t" NIL (λ: "acc" "v", CONS "v" "acc").
 
   Definition lst_app : val :=
     λ: "t1" "t2",
@@ -132,7 +149,7 @@ Section heapGS.
     rec: "lst_map" "t" "fn" :=
       match: "t" with
         NIL =>
-          NILV
+          NIL
       | CONS "v", "t" =>
           let: "v" := "fn" "v" in
           let: "t" := "lst_map" "t" "fn" in
@@ -141,7 +158,7 @@ Section heapGS.
 
   Inductive lst_model' : val → list val → Prop :=
     | lst_model'_nil :
-        lst_model' NILV []
+        lst_model' NIL []
     | lst_model'_cons v t vs :
         lst_model' t vs →
         lst_model' (CONSV v t) (v :: vs).
@@ -161,13 +178,45 @@ Section heapGS.
     apply _.
   Qed.
 
+  (* Lemma wp_lst_match t vs (fn_nil fn_cons : val) Φ : *)
+  (*   (vs = [] → ⊢ WP fn_nil #() {{ Φ }}) → *)
+  (*   (∀ v t' vs', vs = v :: vs' → lst_model t' vs' -∗ WP fn_cons v t' {{ Φ }}) → *)
+  (*   lst_model t vs -∗ WP lst_match t fn_nil fn_cons {{ Φ }}. *)
+  (* Proof. *)
+  (*   iIntros "%Hnil %Hcons %Ht". *)
+  (*   wp_rec. wp_pures. destruct vs; invert Ht; wp_pures. *)
+  (*   - wp_apply Hnil; first done. *)
+  (*   - wp_apply Hcons; done. *)
+  (* Qed. *)
+  (* Tactic Notation *)
+  (*   "wp_lst_match" "as" *)
+  (*       simple_intropattern(Hnil) *)
+  (*   "|" simple_intropattern(v) *)
+  (*       simple_intropattern(t') *)
+  (*       simple_intropattern(vs') *)
+  (*       simple_intropattern(Hcons) *)
+  (* := *)
+  (*   iApply wp_lst_match; *)
+  (*   [ intros Hnil; wp_finish *)
+  (*   | intros v t' vs' Hcons *)
+  (*   | try done *)
+  (*   ]. *)
+  (* Lemma lst_head_spec t vs v vs' : *)
+  (*   vs = v :: vs' → *)
+  (*   {{{ lst_model t vs }}} *)
+  (*     lst_head t *)
+  (*   {{{ RET v; True }}}. *)
+  (* Proof. *)
+  (*   iIntros (->) "%Φ %Ht HΦ". *)
+  (*   wp_rec. wp_pures. wp_lst_match as ? | ? ? ? ?; first done. *)
+  (*   iIntros "Ht'". *)
+  (*   wp_pures. iApply "HΦ". done. *)
+  (* Qed. *)
+
   Lemma lst_nil_spec :
-    {{{ True }}}
-      lst_nil #()
-    {{{ t, RET t; lst_model t [] }}}.
+    ⊢ lst_model lst_nil [].
   Proof.
-    iIntros "%Φ _ HΦ".
-    wp_rec. iApply "HΦ". done.
+    auto.
   Qed.
   Lemma lst_cons_spec v t vs :
     {{{ lst_model t vs }}}
