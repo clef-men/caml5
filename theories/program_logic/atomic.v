@@ -2,8 +2,6 @@ From iris.bi Require Import
   telescopes.
 From iris.bi.lib Require Export
   atomic.
-From iris.base_logic Require Import
-  invariants.
 From iris.program_logic Require Export
   weakestpre.
 From iris.proofmode Require Import
@@ -11,6 +9,8 @@ From iris.proofmode Require Import
 
 From caml5 Require Import
   prelude.
+From caml5 Require Export
+  base.
 
 Definition atomic_wp `{!irisGS Λ Σ} {TA TB : tele}
   (e : expr Λ)

@@ -1,6 +1,3 @@
-From iris.bi Require Export
-  fractional.
-
 From caml5 Require Import
   prelude.
 From caml5.lang Require Import
