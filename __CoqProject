@@ -42,6 +42,7 @@ theories/std/queue.v
 theories/std/random.v
 theories/std/mutex.v
 theories/std/condition.v
+theories/std/counter.v
 
 theories/concurrent/base.v
 theories/concurrent/stack.v
