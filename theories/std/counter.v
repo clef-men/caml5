@@ -1,7 +1,5 @@
 From iris.algebra Require Import
   gset.
-From iris.bi Require Export
-  fractional.
 
 From caml5 Require Import
   prelude.
@@ -200,22 +198,6 @@ Section counter_GS.
     set_solver.
   Qed.
 
-  Lemma counter_model_valid t dq n :
-    counter_model t dq n -∗
-    ⌜✓ dq⌝.
-  Proof.
-    iIntros "(%l & %γ_mono & %γ_token & %γ_model & -> & #Hmeta_mono & #Hmeta_token & #Hmeta_model & Hmono_auth & Htoken_auth & Hmodel₂)".
-    iApply (auth_excl_auth_valid with "Hmodel₂").
-  Qed.
-  Lemma counter_model_valid_2 t dq1 n1 dq2 n2 :
-    counter_model t dq1 n1 -∗
-    counter_model t dq2 n2 -∗
-    ⌜✓ (dq1 ⋅ dq2) ∧ n1 = n2⌝.
-  Proof.
-    iIntros "(%_l & %_γ_mono & %_γ_token & %_γ_model & % & #Hmeta_mono & #Hmeta_token & #Hmeta_model & Hmono_auth1 & Htoken_auth1 & Hmodel₂1) (%l & %γ_mono & %γ_token & %γ_model & % & #_Hmeta_mono & #_Hmeta_token & #_Hmeta_model & Hmono_auth2 & Htoken_auth2 & Hmodel₂2)". simplify.
-    iDestruct (meta_agree with "Hmeta_model _Hmeta_model") as %->. iClear "_Hmeta_model".
-    iApply (auth_excl_auth_valid_2 with "Hmodel₂1 Hmodel₂2").
-  Qed.
   Lemma counter_model_persist t dq n :
     counter_model t dq n ==∗
     counter_model t DfracDiscarded n.
@@ -226,14 +208,45 @@ Section counter_GS.
     iMod (auth_excl_auth_persist with "Hmodel₂") as "Hmodel₂".
     repeat iExists _. iFrame "∗#". done.
   Qed.
+  Lemma counter_model_valid t dq n :
+    counter_model t dq n -∗
+    ⌜✓ dq⌝.
+  Proof.
+    iIntros "(%l & %γ_mono & %γ_token & %γ_model & -> & #Hmeta_mono & #Hmeta_token & #Hmeta_model & Hmono_auth & Htoken_auth & Hmodel₂)".
+    iApply (auth_excl_auth_valid with "Hmodel₂").
+  Qed.
+  Lemma counter_model_combine t dq1 n1 dq2 n2 :
+    counter_model t dq1 n1 -∗
+    counter_model t dq2 n2 -∗
+      counter_model t (dq1 ⋅ dq2) n1 ∗
+      ⌜n1 = n2⌝.
+  Proof.
+    iIntros "(%_l & %_γ_mono & %_γ_token & %_γ_model & % & #Hmeta_mono & #Hmeta_token & #Hmeta_model & Hmono_auth1 & Htoken_auth1 & Hmodel₂1) (%l & %γ_mono & %γ_token & %γ_model & % & #_Hmeta_mono & #_Hmeta_token & #_Hmeta_model & Hmono_auth2 & Htoken_auth2 & Hmodel₂2)". simplify.
+    iDestruct (meta_agree with "Hmeta_mono _Hmeta_mono") as %->. iClear "_Hmeta_mono".
+    iDestruct (meta_agree with "Hmeta_token _Hmeta_token") as %->. iClear "_Hmeta_token".
+    iDestruct (meta_agree with "Hmeta_model _Hmeta_model") as %->. iClear "_Hmeta_model".
+    iDestruct (auth_nat_max_auth_combine with "Hmono_auth1 Hmono_auth2") as "(Hmono_auth & <-)".
+    iCombine "Htoken_auth1 Htoken_auth2" as "Htoken_auth".
+    iDestruct (auth_excl_auth_combine_L with "Hmodel₂1 Hmodel₂2") as "(Hmodel₂ & _)".
+    iSplitL; last done. repeat iExists _. iFrame "∗#". done.
+  Qed.
+  Lemma counter_model_valid_2 t dq1 n1 dq2 n2 :
+    counter_model t dq1 n1 -∗
+    counter_model t dq2 n2 -∗
+    ⌜✓ (dq1 ⋅ dq2) ∧ n1 = n2⌝.
+  Proof.
+    iIntros "Hmodel1 Hmodel2".
+    iDestruct (counter_model_combine with "Hmodel1 Hmodel2") as "(Hmodel & %)".
+    iDestruct (counter_model_valid with "Hmodel") as %?.
+    done.
+  Qed.
   Lemma counter_model_exclusive t n1 n2 :
     counter_model t (DfracOwn 1) n1 -∗
     counter_model t (DfracOwn 1) n2 -∗
     False.
   Proof.
-    iIntros "(%_l & %_γ_mono & %_γ_token & %_γ_model & % & #Hmeta_mono & #Hmeta_token & #Hmeta_model & Hmono_auth1 & Htoken_auth1 & Hmodel₂1) (%l & %γ_mono & %γ_token & %γ_model & % & #_Hmeta_mono & #_Hmeta_token & #_Hmeta_model & Hmono_auth2 & Htoken_auth2 & Hmodel₂2)". simplify.
-    iDestruct (meta_agree with "Hmeta_model _Hmeta_model") as %->. iClear "_Hmeta_model".
-    iApply (auth_excl_auth_exclusive with "Hmodel₂1 Hmodel₂2").
+    iIntros "Hmodel1 Hmodel2".
+    iDestruct (counter_model_valid_2 with "Hmodel1 Hmodel2") as %(? & _). done.
   Qed.
 
   Lemma counter_make_spec :
