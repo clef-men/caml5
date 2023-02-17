@@ -677,7 +677,6 @@ Section raw_array_G.
     (0 ≤ i < sz)%Z →
     <<< raw_array_inv t sz | ∀∀ v, raw_array_mapsto t (Z.to_nat i) dq v >>>
       raw_array_get t #i
-      @ ∅
     <<< raw_array_mapsto t (Z.to_nat i) dq v | RET v; True >>>.
   Proof.
     iIntros "% !> %Φ (%l & %γ & -> & #Hmeta & % & #H●) HΦ".
@@ -694,7 +693,6 @@ Section raw_array_G.
     (0 ≤ i < sz)%Z →
     <<< raw_array_inv t sz | ∀∀ w, raw_array_mapsto t (Z.to_nat i) (DfracOwn 1) w >>>
       raw_array_set t #i v
-      @ ∅
     <<< raw_array_mapsto t (Z.to_nat i) (DfracOwn 1) v | RET #(); True >>>.
   Proof.
     iIntros "% !> %Φ (%l & %γ & -> & #Hmeta & % & #H●) HΦ".

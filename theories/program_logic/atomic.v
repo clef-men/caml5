@@ -124,6 +124,74 @@ Notation "'AWP' '<<' α '>>' e @ E '<<' β | 'RET' v ; Q '>>'" := (
   α, e, E, β, v, Q at level 200,
   format "'[hv' '[' 'AWP'  '<<'  '/  ' '[' α ']'  '/' '>>' ']'  '/  ' e  '/  ' @  E  '/' '[' '<<'  '/  ' '[' β  |  '/' RET v ;  Q ']'  '/' '>>' ']' ']'"
 ) : bi_scope.
+Notation "'AWP' '<<' ∀∀ x1 .. xn , α '>>' e '<<' ∃∃ y1 .. yn , β | 'RET' v ; Q '>>'" := (
+  atomic_wp
+    (TA := TeleS (λ x1, .. (TeleS (λ xn, TeleO)) .. ))
+    (TB := TeleS (λ y1, .. (TeleS (λ yn, TeleO)) .. ))
+    e
+    ∅
+    (tele_app $ λ x1, .. (λ xn, α%I) ..)
+    (tele_app $ λ x1, .. (λ xn, tele_app (λ y1, .. (λ yn, β%I) .. )) .. )
+    (tele_app $ λ x1, .. (λ xn, tele_app (λ y1, .. (λ yn, Q%I) .. )) .. )
+    (tele_app $ λ x1, .. (λ xn, tele_app (λ y1, .. (λ yn, v%V) .. )) .. )
+)
+( at level 20,
+  α, e, β, v, Q at level 200,
+  x1 binder,
+  xn binder,
+  y1 binder,
+  yn binder,
+  format "'[hv' '[' 'AWP'  '<<'  ∀∀  x1 .. xn ,   '/  ' '[' α ']'   '/' '>>' ']'   '/  ' e  '/' '[' '<<'  ∃∃ y1 .. yn ,   '/  ' '[' β  |   '/' RET v ;  Q ']'   '/' '>>' ']' ']'"
+) : bi_scope.
+Notation "'AWP' '<<' α '>>' e '<<' ∃∃ y1 .. yn , β | 'RET' v ; Q '>>'" := (
+  atomic_wp
+    (TA := TeleO)
+    (TB := TeleS (λ y1, .. (TeleS (λ yn, TeleO)) .. ))
+    e
+    ∅
+    (tele_app α%I)
+    (tele_app $ tele_app (λ y1, .. (λ yn, β%I) .. ))
+    (tele_app $ tele_app (λ y1, .. (λ yn, Q%I) .. ))
+    (tele_app $ tele_app (λ y1, .. (λ yn, v%V) .. ))
+)
+( at level 20,
+  α, e, β, v, Q at level 200,
+  y1 binder,
+  yn binder,
+  format "'[hv' '[' 'AWP'  '<<'   '/  ' '[' α ']'   '/' '>>' ']'   '/  ' e  '/' '[' '<<'  ∃∃ y1 .. yn ,   '/  ' '[' β  |   '/' RET v ;  Q ']'   '/' '>>' ']' ']'"
+) : bi_scope.
+Notation "'AWP' '<<' ∀∀ x1 .. xn , α '>>' e '<<' β | 'RET' v ; Q '>>'" := (
+  atomic_wp
+    (TA := TeleS (λ x1, .. (TeleS (λ xn, TeleO)) .. ))
+    (TB := TeleO)
+    e
+    ∅
+    (tele_app $ λ x1, .. (λ xn, α%I) ..)
+    (tele_app $ λ x1, .. (λ xn, tele_app β%I) .. )
+    (tele_app $ λ x1, .. (λ xn, tele_app Q%I) .. )
+    (tele_app $ λ x1, .. (λ xn, tele_app v%V) .. )
+)
+( at level 20,
+  α, e, β, v, Q at level 200,
+  x1 binder,
+  xn binder,
+  format "'[hv' '[' 'AWP'  '<<'  ∀∀  x1 .. xn ,  '/  ' '[' α ']'  '/' '>>' ']'  '/  ' e  '/' '[' '<<'  '/  ' '[' β  |  '/' RET v ;  Q ']'  '/' '>>' ']' ']'"
+) : bi_scope.
+Notation "'AWP' '<<' α '>>' e '<<' β | 'RET' v ; Q '>>'" := (
+  atomic_wp
+    (TA := TeleO)
+    (TB := TeleO)
+    e
+    ∅
+    (tele_app α%I)
+    (tele_app $ tele_app β%I)
+    (tele_app $ tele_app Q%I)
+    (tele_app $ tele_app v%V)
+)
+( at level 20,
+  α, e, β, v, Q at level 200,
+  format "'[hv' '[' 'AWP'  '<<'  '/  ' '[' α ']'  '/' '>>' ']'  '/  ' e  '/' '[' '<<'  '/  ' '[' β  |  '/' RET v ;  Q ']'  '/' '>>' ']' ']'"
+) : bi_scope.
 
 Definition atomic_triple `{!irisGS Λ Σ} {TA TB : tele}
   (e : expr Λ)
@@ -291,6 +359,131 @@ Notation "'<<<' P | α '>>>' e @ E '<<<' β | 'RET' v ; Q '>>>'" := (
     (TB := TeleO)
     e
     E
+    P
+    (tele_app α%I)
+    (tele_app $ tele_app β%I)
+    (tele_app $ tele_app Q%I)
+    (tele_app $ tele_app v%V)
+)
+: stdpp_scope.
+Notation "'<<<' P | ∀∀ x1 .. xn , α '>>>' e '<<<' ∃∃ y1 .. yn , β | 'RET' v ; Q '>>>'" := (
+  atomic_triple
+    (TA := TeleS (λ x1, .. (TeleS (λ xn, TeleO)) .. ))
+    (TB := TeleS (λ y1, .. (TeleS (λ yn, TeleO)) .. ))
+    e
+    ∅
+    P
+    (tele_app $ λ x1, .. (λ xn, α%I) ..)
+    (tele_app $ λ x1, .. (λ xn, tele_app (λ y1, .. (λ yn, β%I) .. )) .. )
+    (tele_app $ λ x1, .. (λ xn, tele_app (λ y1, .. (λ yn, Q%I) .. )) .. )
+    (tele_app $ λ x1, .. (λ xn, tele_app (λ y1, .. (λ yn, v%V) .. )) .. )
+)
+( at level 20,
+  P, α, e, β, v, Q at level 200,
+  x1 binder,
+  xn binder,
+  y1 binder,
+  yn binder,
+  format "'[hv' '[' '<<<'  '/  ' '[' P  |  '/' ∀∀  x1 .. xn ,  α ']'  '/' '>>>' ']'  '/  ' e  '/' '[' '<<<'  ∃∃  y1 .. yn ,  '/  ' '[' β  |  '/' 'RET'  v ;  Q ']'  '/' '>>>' ']' ']'"
+) : bi_scope.
+Notation "'<<<' P | α '>>>' e '<<<' ∃∃ y1 .. yn , β | 'RET' v ; Q '>>>'" := (
+  atomic_triple
+    (TA := TeleO)
+    (TB := TeleS (λ y1, .. (TeleS (λ yn, TeleO)) .. ))
+    e
+    ∅
+    P
+    (tele_app α%I)
+    (tele_app $ tele_app (λ y1, .. (λ yn, β%I) .. ))
+    (tele_app $ tele_app (λ y1, .. (λ yn, Q%I) .. ))
+    (tele_app $ tele_app (λ y1, .. (λ yn, v%V) .. ))
+)
+( at level 20,
+  P, α, e, β, v, Q at level 200,
+  y1 binder,
+  yn binder,
+  format "'[hv' '[' '<<<'  '/  ' '[' P  |  '/' α ']'  '/' '>>>' ']'  '/  ' e  '/' '[' '<<<'  ∃∃  y1 .. yn ,  '/  ' '[' β  |  '/' 'RET'  v ;  Q ']'  '/' '>>>' ']' ']'"
+) : bi_scope.
+Notation "'<<<' P | ∀∀ x1 .. xn , α '>>>' e '<<<' β | 'RET' v ; Q '>>>'" := (
+  atomic_triple
+    (TA := TeleS (λ x1, .. (TeleS (λ xn, TeleO)) .. ))
+    (TB := TeleO)
+    e
+    ∅
+    P
+    (tele_app $ λ x1, .. (λ xn, α%I) ..)
+    (tele_app $ λ x1, .. (λ xn, tele_app β%I) .. )
+    (tele_app $ λ x1, .. (λ xn, tele_app Q%I) .. )
+    (tele_app $ λ x1, .. (λ xn, tele_app v%V) .. )
+)
+( at level 20,
+  P, α, e, β, v, Q at level 200,
+  x1 binder,
+  xn binder,
+  format "'[hv' '[' '<<<'  '/  ' '[' P  |  '/' ∀∀  x1 .. xn ,  α ']'  '/' '>>>' ']'  '/  ' e  '/' '[' '<<<'  '/  ' '[' β  |  '/' 'RET'  v ;  Q ']'  '/' '>>>' ']' ']'"
+) : bi_scope.
+Notation "'<<<' P | α '>>>' e '<<<' β | 'RET' v ; Q '>>>'" := (
+  atomic_triple
+    (TA := TeleO)
+    (TB := TeleO)
+    e
+    ∅
+    P
+    (tele_app α%I)
+    (tele_app $ tele_app β%I)
+    (tele_app $ tele_app Q%I)
+    (tele_app $ tele_app v%V)
+)
+( at level 20,
+  P, α, e, β, v, Q at level 200,
+  format "'[hv' '[' '<<<'  '/  ' '[' P  |  '/' α ']'  '/' '>>>' ']'  '/  ' e  '/' '[' '<<<'  '/  ' '[' β  |  '/' 'RET'  v ;  Q ']'  '/' '>>>' ']' ']'"
+) : bi_scope.
+
+Notation "'<<<' P | ∀∀ x1 .. xn , α '>>>' e '<<<' ∃∃ y1 .. yn , β | 'RET' v ; Q '>>>'" := (
+  ⊢ atomic_triple
+    (TA := TeleS (λ x1, .. (TeleS (λ xn, TeleO)) .. ))
+    (TB := TeleS (λ y1, .. (TeleS (λ yn, TeleO)) .. ))
+    e
+    ∅
+    P
+    (tele_app $ λ x1, .. (λ xn, α%I) ..)
+    (tele_app $ λ x1, .. (λ xn, tele_app (λ y1, .. (λ yn, β%I) .. )) .. )
+    (tele_app $ λ x1, .. (λ xn, tele_app (λ y1, .. (λ yn, Q%I) .. )) .. )
+    (tele_app $ λ x1, .. (λ xn, tele_app (λ y1, .. (λ yn, v%V) .. )) .. )
+)
+: stdpp_scope.
+Notation "'<<<' P | α '>>>' e '<<<' ∃∃ y1 .. yn , β | 'RET' v ; Q '>>>'" := (
+  ⊢ atomic_triple
+    (TA := TeleO)
+    (TB := TeleS (λ y1, .. (TeleS (λ yn, TeleO)) .. ))
+    e
+    ∅
+    P
+    (tele_app α%I)
+    (tele_app $ tele_app (λ y1, .. (λ yn, β%I) .. ))
+    (tele_app $ tele_app (λ y1, .. (λ yn, Q%I) .. ))
+    (tele_app $ tele_app (λ y1, .. (λ yn, v%V) .. ))
+)
+: stdpp_scope.
+Notation "'<<<' P | ∀∀ x1 .. xn , α '>>>' e '<<<' β | 'RET' v ; Q '>>>'" := (
+  ⊢ atomic_triple
+    (TA := TeleS (λ x1, .. (TeleS (λ xn, TeleO)) .. ))
+    (TB := TeleO)
+    e
+    ∅
+    P
+    (tele_app $ λ x1, .. (λ xn, α%I) ..)
+    (tele_app $ λ x1, .. (λ xn, tele_app β%I) .. )
+    (tele_app $ λ x1, .. (λ xn, tele_app Q%I) .. )
+    (tele_app $ λ x1, .. (λ xn, tele_app v%V) .. )
+)
+: stdpp_scope.
+Notation "'<<<' P | α '>>>' e '<<<' β | 'RET' v ; Q '>>>'" := (
+  ⊢ atomic_triple
+    (TA := TeleO)
+    (TB := TeleO)
+    e
+    ∅
     P
     (tele_app α%I)
     (tele_app $ tele_app β%I)

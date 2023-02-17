@@ -29,14 +29,12 @@ Record inf_array `{!heapGS Σ} := {
     (0 ≤ i)%Z →
     <<< True | ∀∀ vs, inf_array_model t vs >>>
       inf_array_get t #i
-      @ ∅
     <<< inf_array_model t vs | RET vs (Z.to_nat i); True >>> ;
 
   inf_array_set_spec t i v :
     (0 ≤ i)%Z →
     <<< True | ∀∀ vs, inf_array_model t vs >>>
       inf_array_set t #i v
-      @ ∅
     <<< inf_array_model t (<[Z.to_nat i := v]> vs) | RET #(); True >>> ;
 }.
 #[global] Arguments inf_array _ {_} : assert.
