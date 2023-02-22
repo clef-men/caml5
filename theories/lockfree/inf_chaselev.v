@@ -269,7 +269,7 @@ Section inf_chaselev_GS.
     ⌜back1 = back2 ∧ priv1 = priv2⌝.
   Proof.
     iIntros "Hctl₁ Hctl₂".
-    iDestruct (auth_excl_both_valid with "Hctl₁ Hctl₂") as %(? & ?%functional_extensionality).
+    iDestruct (auth_excl_both_agree with "Hctl₁ Hctl₂") as %(? & ?%functional_extensionality).
     done.
   Qed.
   #[local] Lemma inf_chaselev_ctl_update {γ_ctl back1 priv1 back2 priv2} back priv :
@@ -334,7 +334,7 @@ Section inf_chaselev_GS.
     ⌜pub1 = pub2⌝.
   Proof.
     iIntros "Hpub₁ Hpub₂".
-    iDestruct (auth_excl_both_valid_L with "Hpub₂ Hpub₁") as %->. done.
+    iDestruct (auth_excl_both_agree_L with "Hpub₂ Hpub₁") as %->. done.
   Qed.
   #[local] Lemma inf_chaselev_pub_update {γ_pub pub1 pub2} pub :
     inf_chaselev_pub₁ γ_pub pub1 -∗
