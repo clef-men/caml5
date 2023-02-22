@@ -408,7 +408,7 @@ Section raw_array_G.
       iDestruct (mapsto_combine with "H↦1 H↦2") as "($ & _)".
     Qed.
 
-    Lemma raw_array_view_append t i dq n1 vs1 vs2 :
+    Lemma raw_array_view_app t i dq n1 vs1 vs2 :
       n1 = length vs1 →
       raw_array_view t i dq vs1 -∗
       raw_array_view t (i + n1) dq vs2 -∗
