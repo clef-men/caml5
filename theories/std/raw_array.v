@@ -623,7 +623,7 @@ Section raw_array_G.
       raw_array_span t i dq (n1 + n2).
     Proof.
       iIntros "(%vs1 & % & Hview1) (%vs2 & % & Hview2)".
-      iDestruct (raw_array_view_append with "Hview1 Hview2") as "Hview"; first done.
+      iDestruct (raw_array_view_app with "Hview1 Hview2") as "Hview"; first done.
       iExists (vs1 ++ vs2). iSplit; first solve_length. done.
     Qed.
 
