@@ -283,7 +283,7 @@ Section counter_GS.
     wp_faa.
     iMod "HΦ" as "(%_n & (%_l & %γ_mono & %γ_token & %_γ_model & %Heq & #Hmeta_mono & #Hmeta_token & #_Hmeta_model & Hmono_auth & Htoken_auth & Hmodel₂) & _ & HΦ)". injection Heq as <-.
     iDestruct (meta_agree with "Hmeta_model _Hmeta_model") as %<-. iClear "_Hmeta_model".
-    iDestruct (auth_excl_both_valid_L with "Hmodel₂ Hmodel₁") as %->.
+    iDestruct (auth_excl_both_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iMod (auth_nat_max_update (S n) with "Hmono_auth") as "Hmono_auth"; first lia.
     iMod (own_update _ _ (● GSet (set_seq 0 (S n)) ⋅ ◯ GSet {[n]}) with "Htoken_auth") as "(Htoken_auth & Htoken_frag)".
     { apply auth_update_alloc.
@@ -312,7 +312,7 @@ Section counter_GS.
     wp_load.
     iMod "HΦ" as "(%dq & %_n & (%_l & %γ_mono & %γ_token & %_γ_model & %Heq & #Hmeta_mono & #Hmeta_token & #_Hmeta_model & Hmono_auth & Htoken_auth & Hmodel₂) & _ & HΦ)". injection Heq as <-.
     iDestruct (meta_agree with "Hmeta_model _Hmeta_model") as %<-. iClear "_Hmeta_model".
-    iDestruct (auth_excl_both_valid_L with "Hmodel₂ Hmodel₁") as %->.
+    iDestruct (auth_excl_both_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAssert (counter_model #l dq n) with "[Hmono_auth Htoken_auth Hmodel₂]" as "Hmodel".
     { iExists l, γ_mono, γ_token, γ_model. iFrame "∗#". done. }
     iMod ("HΦ" with "Hmodel [//]") as "$".
