@@ -37,6 +37,10 @@ theories/std/inf_array.v
 theories/std/raw_array.v
 theories/std/opt.v
 theories/std/lst.v
+theories/std/chain.v
+theories/std/mlst.v
+theories/std/fun_stack.v
+theories/std/fun_queue.v
 theories/std/stack.v
 theories/std/queue.v
 theories/std/random.v
@@ -50,4 +54,5 @@ theories/concurrent/queue.v
 theories/concurrent/ws_deque.v
 
 theories/lockfree/base.v
+theories/lockfree/treiber.v
 theories/lockfree/inf_chaselev.v
