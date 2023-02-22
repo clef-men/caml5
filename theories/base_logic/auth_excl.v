@@ -176,7 +176,7 @@ Section auth_excl_G.
       iDestruct (auth_excl_auth_valid_2 with "H●1 H●2") as %(? & _). done.
     Qed.
 
-    Lemma auth_excl_both_valid γ dq a b :
+    Lemma auth_excl_both_agree γ dq a b :
       auth_excl_auth γ dq a -∗
       auth_excl_frag γ b -∗
       ⌜a ≡ b⌝.
@@ -185,13 +185,13 @@ Section auth_excl_G.
       iDestruct (own_valid_2 with "H● H◯") as %?%auth_excl_both_dfrac_valid.
       naive_solver.
     Qed.
-    Lemma auth_excl_both_valid_L `{!LeibnizEquiv A} γ dq a b :
+    Lemma auth_excl_both_agree_L `{!LeibnizEquiv A} γ dq a b :
       auth_excl_auth γ dq a -∗
       auth_excl_frag γ b -∗
       ⌜a = b⌝.
     Proof.
       iIntros "H● H◯".
-      iDestruct (auth_excl_both_valid with "H● H◯") as %?. naive_solver.
+      iDestruct (auth_excl_both_agree with "H● H◯") as %?. naive_solver.
     Qed.
   End cmra_discrete.
 End auth_excl_G.
