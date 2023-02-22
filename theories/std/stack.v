@@ -68,7 +68,7 @@ Section std_stack.
     λ: "t",
       let: "lst" := !"t" in
       if: lst_is_empty "lst" then (
-        NONEV
+        NONE
       ) else (
         "t" <- lst_tail "lst" ;;
         SOME (lst_head "lst")
