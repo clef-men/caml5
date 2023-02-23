@@ -706,6 +706,10 @@ Section raw_array_G.
   Qed.
 End raw_array_G.
 
+#[global] Opaque raw_array_make.
+#[global] Opaque raw_array_get.
+#[global] Opaque raw_array_set.
+
 #[global] Typeclasses Opaque raw_array_inv.
 #[global] Typeclasses Opaque raw_array_mapsto.
 #[global] Typeclasses Opaque raw_array_view.

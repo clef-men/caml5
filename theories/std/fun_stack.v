@@ -145,4 +145,9 @@ Section std_fun_stack.
       std_fun_stack_pop_spec.
 End std_fun_stack.
 
+#[global] Opaque std_fun_stack_make.
+#[global] Opaque std_fun_stack_is_empty.
+#[global] Opaque std_fun_stack_push.
+#[global] Opaque std_fun_stack_pop.
+
 #[global] Typeclasses Opaque std_fun_stack_model.

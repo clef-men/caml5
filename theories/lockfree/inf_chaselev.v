@@ -1472,6 +1472,11 @@ Section inf_chaselev_GS.
   Qed.
 End inf_chaselev_GS.
 
+#[global] Opaque inf_chaselev_make.
+#[global] Opaque inf_chaselev_push.
+#[global] Opaque inf_chaselev_steal.
+#[global] Opaque inf_chaselev_pop.
+
 #[global] Typeclasses Opaque inf_chaselev_inv.
 #[global] Typeclasses Opaque inf_chaselev_model.
 #[global] Typeclasses Opaque inf_chaselev_own.

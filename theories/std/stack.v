@@ -147,4 +147,9 @@ Section std_stack.
       std_stack_pop_spec.
 End std_stack.
 
+#[global] Opaque std_stack_make.
+#[global] Opaque std_stack_is_empty.
+#[global] Opaque std_stack_push.
+#[global] Opaque std_stack_pop.
+
 #[global] Typeclasses Opaque std_stack_model.

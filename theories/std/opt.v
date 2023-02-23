@@ -177,4 +177,14 @@ Section heapGS.
   Qed.
 End heapGS.
 
+#[global] Opaque opt_some.
+#[global] Opaque opt_none.
+#[global] Opaque opt_is_some.
+#[global] Opaque opt_is_none.
+#[global] Opaque opt_value.
+#[global] Opaque opt_get.
+#[global] Opaque opt_bind.
+#[global] Opaque opt_map.
+#[global] Opaque opt_iter.
+
 #[global] Typeclasses Opaque opt_model.

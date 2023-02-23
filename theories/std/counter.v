@@ -320,6 +320,10 @@ Section counter_GS.
   Qed.
 End counter_GS.
 
+#[global] Opaque counter_make.
+#[global] Opaque counter_incr.
+#[global] Opaque counter_get.
+
 #[global] Typeclasses Opaque counter_lb.
 #[global] Typeclasses Opaque counter_token.
 #[global] Typeclasses Opaque counter_model.

@@ -44,7 +44,7 @@ Record condition `{!heapGS Σ} {mutex : mutex Σ} := {
 Section condition.
   Context `{!heapGS Σ} {mutex : mutex Σ} (condition : condition Σ mutex).
 
-  Definition condition_wait_until_aux (cond : val) : val :=
+  #[local] Definition condition_wait_until_aux (cond : val) : val :=
     rec: "condition_wait_until_aux" "t" "mtx" :=
       if: cond #() then #() else (
         condition.(condition_wait) "t" "mtx" ;;
@@ -105,3 +105,6 @@ Section condition.
     destruct b; wp_pures; iApply "HΨ"; iFrame; done.
   Qed.
 End condition.
+
+#[global] Opaque condition_wait_until.
+#[global] Opaque condition_wait_while.

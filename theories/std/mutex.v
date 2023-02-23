@@ -79,3 +79,5 @@ Section mutex.
     iApply "HΨ". done.
   Qed.
 End mutex.
+
+#[global] Opaque mutex_protect.

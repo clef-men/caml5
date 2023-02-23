@@ -74,7 +74,7 @@ Section heapGS.
     λ: "t" "v",
       mlst_app "t" (mlst_singleton "v").
 
-  Definition lst_iter : val :=
+  Definition mlst_iter : val :=
     λ: "t" "fn",
       mlst_foldl "t" #() (λ: <> "v", "fn" "v").
 
@@ -358,7 +358,7 @@ Section heapGS.
   (*   λ: "t" "v", *)
   (*     mlst_app "t" (mlst_singleton "v"). *)
 
-  (* Definition lst_iter : val := *)
+  (* Definition mlst_iter : val := *)
   (*   λ: "t" "fn", *)
   (*     mlst_foldl "t" #() (λ: <> "v", "fn" "v"). *)
 
@@ -372,5 +372,26 @@ Section heapGS.
   (*       mlst_cons "v" "t" *)
   (*     ). *)
 End heapGS.
+
+#[global] Opaque mlst_nil.
+#[global] Opaque mlst_cons.
+#[global] Opaque mlst_singleton.
+#[global] Opaque mlst_head.
+#[global] Opaque mlst_tail.
+#[global] Opaque mlst_set_head.
+#[global] Opaque mlst_set_tail.
+#[global] Opaque mlst_is_empty.
+#[global] Opaque mlst_advance.
+#[global] Opaque mlst_get.
+#[global] Opaque mlst_set.
+#[global] Opaque mlst_foldl.
+#[global] Opaque mlst_foldr.
+#[global] Opaque mlst_size.
+#[global] Opaque mlst_rev.
+#[global] Opaque mlst_copy.
+#[global] Opaque mlst_app.
+#[global] Opaque mlst_snoc.
+#[global] Opaque mlst_iter.
+#[global] Opaque mlst_map.
 
 #[global] Typeclasses Opaque mlst_model.

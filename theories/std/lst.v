@@ -489,4 +489,20 @@ Section heapGS.
   Qed.
 End heapGS.
 
+#[global] Opaque lst_nil.
+#[global] Opaque lst_cons.
+#[global] Opaque lst_singleton.
+#[global] Opaque lst_head.
+#[global] Opaque lst_tail.
+#[global] Opaque lst_is_empty.
+#[global] Opaque lst_get.
+#[global] Opaque lst_foldl.
+#[global] Opaque lst_foldr.
+#[global] Opaque lst_size.
+#[global] Opaque lst_rev.
+#[global] Opaque lst_app.
+#[global] Opaque lst_snoc.
+#[global] Opaque lst_iter.
+#[global] Opaque lst_map.
+
 #[global] Typeclasses Opaque lst_model.

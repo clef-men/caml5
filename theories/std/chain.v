@@ -8,7 +8,7 @@ From caml5.std Require Export
 
 Section heapGS.
   Context `{!heapGS Σ}.
-  Implicit Types l l_end : loc.
+  Implicit Types l : loc.
   Implicit Types v w v_end hd tl t : val.
 
   Notation chain_offset_head := 0%Z.
@@ -514,5 +514,14 @@ Section heapGS.
     iApply (chain_model_app_1 with "Hmodel Hmodel'").
   Qed.
 End heapGS.
+
+#[global] Opaque chain_cons.
+#[global] Opaque chain_head.
+#[global] Opaque chain_tail.
+#[global] Opaque chain_set_head.
+#[global] Opaque chain_set_tail.
+#[global] Opaque chain_advance.
+#[global] Opaque chain_get.
+#[global] Opaque chain_set.
 
 #[global] Typeclasses Opaque chain_model.

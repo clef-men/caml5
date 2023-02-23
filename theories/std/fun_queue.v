@@ -188,4 +188,9 @@ Section std_fun_queue.
       std_fun_queue_pop_spec.
 End std_fun_queue.
 
+#[global] Opaque std_fun_queue_make.
+#[global] Opaque std_fun_queue_is_empty.
+#[global] Opaque std_fun_queue_push.
+#[global] Opaque std_fun_queue_pop.
+
 #[global] Typeclasses Opaque std_fun_queue_model.

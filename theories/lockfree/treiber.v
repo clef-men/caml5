@@ -247,5 +247,9 @@ Section treiber_GS.
       treiber_pop_spec.
 End treiber_GS.
 
+#[global] Opaque treiber_make.
+#[global] Opaque treiber_push.
+#[global] Opaque treiber_pop.
+
 #[global] Typeclasses Opaque treiber_inv.
 #[global] Typeclasses Opaque treiber_model.

@@ -83,3 +83,7 @@ Section random.
     iApply "HΦ". done.
   Qed.
 End random.
+
+#[global] Opaque random_gen_Z.
+#[global] Opaque random_gen_nat.
+#[global] Opaque random_gen_bool.
