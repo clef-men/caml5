@@ -5,33 +5,23 @@ From caml5.lang Require Import
   proofmode.
 From caml5.std Require Export
   base.
+From caml5.std Require Import
+  record_two.
 
 Section heapGS.
   Context `{!heapGS Σ}.
   Implicit Types l : loc.
   Implicit Types v w v_end hd tl t : val.
 
-  Notation chain_offset_head := 0%Z.
-  Notation chain_offset_tail := 1%Z.
-
-  Notation "t '.(head)'" := (t +ₗ chain_offset_head)%stdpp
-  ( at level 5
-  ) : stdpp_scope.
-  Notation "t '.(tail)'" := (t +ₗ chain_offset_tail)%stdpp
-  ( at level 5
-  ) : stdpp_scope.
-  Notation "t '.(head)'" := (t +ₗ #chain_offset_head)%E
+  Notation "t '.(head)'" := (t.0)%E
   ( at level 5
   ) : expr_scope.
-  Notation "t '.(tail)'" := (t +ₗ #chain_offset_tail)%E
+  Notation "t '.(tail)'" := (t.1)%E
   ( at level 5
   ) : expr_scope.
 
   Definition chain_cons : val :=
-    λ: "v" "t",
-      let: "t'" := AllocN #2 "v" in
-      "t'".(tail) <- "t" ;;
-      "t'".
+    record_two_make.
 
   Definition chain_head : val :=
     λ: "t",
@@ -62,90 +52,8 @@ Section heapGS.
     λ: "t" "i" "v",
       chain_set_head (chain_advance "t" "i") "v".
 
-  #[local] Definition chain_cell l dq hd tl : iProp Σ :=
-    l.(head) ↦{dq} hd ∗ l.(tail) ↦{dq} tl.
-
-  #[local] Instance chain_cell_fractional l hd tl :
-    Fractional (λ q, chain_cell l (DfracOwn q) hd tl).
-  Proof.
-    apply _.
-  Qed.
-  #[local] Instance chain_cell_as_fractional l q hd tl :
-    AsFractional (chain_cell l (DfracOwn q) hd tl) (λ q, chain_cell l (DfracOwn q) hd tl) q.
-  Proof.
-    split; done || apply _.
-  Qed.
-
-  #[local] Lemma chain_cell_persist l dq hd tl :
-    chain_cell l dq hd tl ==∗
-    chain_cell l DfracDiscarded hd tl.
-  Proof.
-    iIntros "(Hhd & Htl)".
-    iMod (mapsto_persist with "Hhd") as "$".
-    iMod (mapsto_persist with "Htl") as "$".
-    done.
-  Qed.
-
-  #[local] Lemma chain_cell_valid l dq hd tl :
-    chain_cell l dq hd tl -∗
-    ⌜✓ dq⌝.
-  Proof.
-    iIntros "(Hhd & Htl)". iApply (mapsto_valid with "Hhd").
-  Qed.
-  #[local] Lemma chain_cell_combine l dq1 hd1 tl1 dq2 hd2 tl2 :
-    chain_cell l dq1 hd1 tl1 -∗
-    chain_cell l dq2 hd2 tl2 -∗
-      chain_cell l (dq1 ⋅ dq2) hd1 tl1 ∗
-      ⌜hd1 = hd2 ∧ tl1 = tl2⌝.
-  Proof.
-    iIntros "(Hhd1 & Htl1) (Hhd2 & Htl2)".
-    iDestruct (mapsto_combine with "Hhd1 Hhd2") as "(Hhd & <-)".
-    iDestruct (mapsto_combine with "Htl1 Htl2") as "(Htl & <-)".
-    iSplit; last done. iFrame.
-  Qed.
-  #[local] Lemma chain_cell_valid_2 l dq1 hd1 tl1 dq2 hd2 tl2 :
-    chain_cell l dq1 hd1 tl1 -∗
-    chain_cell l dq2 hd2 tl2 -∗
-    ⌜✓ (dq1 ⋅ dq2) ∧ hd1 = hd2 ∧ tl1 = tl2⌝.
-  Proof.
-    iIntros "Hcell1 Hcell2".
-    iDestruct (chain_cell_combine with "Hcell1 Hcell2") as "(Hcell & %)".
-    iDestruct (chain_cell_valid with "Hcell") as %?.
-    done.
-  Qed.
-  #[local] Lemma chain_cell_agree l dq1 hd1 tl1 dq2 hd2 tl2 :
-    chain_cell l dq1 hd1 tl1 -∗
-    chain_cell l dq2 hd2 tl2 -∗
-    ⌜hd1 = hd2 ∧ tl1 = tl2⌝.
-  Proof.
-    iIntros "Hcell1 Hcell2".
-    iDestruct (chain_cell_valid_2 with "Hcell1 Hcell2") as %?. naive_solver.
-  Qed.
-  #[local] Lemma chain_cell_dfrac_ne l1 dq1 hd1 tl1 l2 dq2 hd2 tl2 :
-    ¬ ✓ (dq1 ⋅ dq2) →
-    chain_cell l1 dq1 hd1 tl1 -∗
-    chain_cell l2 dq2 hd2 tl2 -∗
-    ⌜l1 ≠ l2⌝.
-  Proof.
-    iIntros "% Hcell1 Hcell2" (->).
-    iDestruct (chain_cell_valid_2 with "Hcell1 Hcell2") as %?. naive_solver.
-  Qed.
-  #[local] Lemma chain_cell_ne l1 hd1 tl1 l2 dq2 hd2 tl2 :
-    chain_cell l1 (DfracOwn 1) hd1 tl1 -∗
-    chain_cell l2 dq2 hd2 tl2 -∗
-    ⌜l1 ≠ l2⌝.
-  Proof.
-    iApply chain_cell_dfrac_ne. intros []%exclusive_l. apply _.
-  Qed.
-  #[local] Lemma chain_cell_exclusive l hd1 tl1 hd2 tl2 :
-    chain_cell l (DfracOwn 1) hd1 tl1 -∗
-    chain_cell l (DfracOwn 1) hd2 tl2 -∗
-    False.
-  Proof.
-    iIntros "Hcell1 Hcell2".
-    iDestruct (chain_cell_ne with "Hcell1 Hcell2") as %?. naive_solver.
-  Qed.
-
+  #[local] Definition chain_cell l dq hd tl :=
+    record_two_model l dq hd tl.
   Fixpoint chain_model t dq vs v_end : iProp Σ :=
     match vs with
     | [] =>
@@ -189,7 +97,7 @@ Section heapGS.
       iSplitL "Hcell1 Hmodel'1"; repeat iExists _; auto with iFrame.
     - iInduction vs as [| v vs] "IH" forall (t); first iIntros "(-> & _) //".
       iIntros "((%l & %t' & -> & Hcell1 & Hmodel'1) & (%_l & %_t' & %Heq & Hcell2 & Hmodel'2))". injection Heq as <-.
-      iDestruct (chain_cell_agree with "Hcell1 Hcell2") as %(_ & <-).
+      iDestruct (record_two_model_agree with "Hcell1 Hcell2") as %(_ & <-).
       iDestruct (fractional_merge with "Hcell1 Hcell2") as "Hcell".
       iDestruct ("IH" with "[$Hmodel'1 $Hmodel'2]") as "Hmodel'".
       repeat iExists _. auto with iFrame.
@@ -260,7 +168,7 @@ Section heapGS.
   Proof.
     iInduction vs as [| v vs] "IH" forall (t); first done.
     iIntros "(%l & %t' & -> & Hcell & Hmodel')".
-    iMod (chain_cell_persist with "Hcell") as "Hcell".
+    iMod (record_two_model_persist with "Hcell") as "Hcell".
     iMod ("IH" with "Hmodel'") as "Hmodel'".
     repeat iExists _. naive_solver.
   Qed.
@@ -272,7 +180,7 @@ Section heapGS.
   Proof.
     intros. destruct vs as [| v vs]; first naive_solver lia.
     iIntros "(%l & %t' & -> & Hcell & Hmodel')".
-    iApply (chain_cell_valid with "Hcell").
+    iApply (record_two_model_valid with "Hcell").
   Qed.
   Lemma chain_model_combine t dq1 vs1 v_end1 dq2 vs2 v_end2 :
     length vs1 ≤ length vs2 →
@@ -290,7 +198,7 @@ Section heapGS.
     - iIntros "%Hlength". simpl in Hlength. lia.
     - iIntros "%Hlength (%l & %t' & -> & Hcell1 & Hmodel'1) (%_l & %_t' & %Heq & Hcell2 & Hmodel'2)". injection Heq as <-.
       simpl in Hlength. eapply le_S_n in Hlength.
-      iDestruct (chain_cell_combine with "Hcell1 Hcell2") as "(Hcell & <- & <-)".
+      iDestruct (record_two_model_combine with "Hcell1 Hcell2") as "(Hcell & <- & <-)".
       iDestruct ("IH" with "[] Hmodel'1 Hmodel'2") as "(Hmodel' & Hmodel'2 & ->)"; first done.
       iFrame. iSplit; last rewrite /= take_length min_l //.
       iExists l, t'. auto with iFrame.
@@ -390,13 +298,12 @@ Section heapGS.
     {{{ t', RET t'; chain_model t' dq (v :: vs) v_end }}}.
   Proof.
     iIntros "% %Φ Hmodel HΦ".
-    wp_rec. wp_pures. wp_alloc l' as "Hl'"; first done. wp_pures.
-    iDestruct (array_cons with "Hl'") as "(Hhd' & Htl')".
-    iEval (setoid_rewrite <- loc_add_0) in "Hhd'".
-    iDestruct (array_singleton with "Htl'") as "Htl'".
-    wp_store.
-    iMod (mapsto_dfrac_relax dq with "Hhd'") as "Hhd'"; first done.
-    iMod (mapsto_dfrac_relax dq with "Htl'") as "Htl'"; first done.
+    iApply wp_fupd. wp_apply (record_two_make_spec with "[//]"). iIntros "%l' Hcell'".
+    rewrite /record_two_model. iDestruct "Hcell'" as "(Hhd' & Htl')".
+    iMod (mapsto_dfrac_relax with "Hhd'") as "Hhd'"; first done.
+    iMod (mapsto_dfrac_relax with "Htl'") as "Htl'"; first done.
+    iAssert (record_two_model l' dq v t) with "[Hhd' Htl']" as "Hcell'".
+    { rewrite /record_two_model. iFrame. }
     iApply "HΦ". iExists l', t. auto with iFrame.
   Qed.
 
@@ -405,8 +312,9 @@ Section heapGS.
       chain_head t
     {{{ RET v; chain_model t dq (v :: vs) v_end }}}.
   Proof.
-    iIntros "%Φ (%l & %t' & -> & (Hhd & Htl) & Hmodel') HΦ".
-    wp_rec. wp_load.
+    iIntros "%Φ (%l & %t' & -> & Hcell & Hmodel') HΦ".
+    wp_rec. wp_pures.
+    wp_apply (record_two_get0_spec with "Hcell"). iIntros "Hcell".
     iApply "HΦ". iExists l, t'. auto with iFrame.
   Qed.
   Lemma chain_tail_spec t dq v vs v_end :
@@ -414,8 +322,9 @@ Section heapGS.
       chain_tail t
     {{{ t', RET t'; chain_model t dq [v] t' ∗ chain_model t' dq vs v_end }}}.
   Proof.
-    iIntros "%Φ (%l & %t' & -> & (Hhd & Htl) & Hmodel') HΦ".
-    wp_rec. wp_load.
+    iIntros "%Φ (%l & %t' & -> & Hcell & Hmodel') HΦ".
+    wp_rec. wp_pures.
+    wp_apply (record_two_get1_spec with "Hcell"). iIntros "Hcell".
     iApply "HΦ". iFrame. iExists l, t'. auto with iFrame.
   Qed.
 
@@ -424,8 +333,9 @@ Section heapGS.
       chain_set_head t w
     {{{ RET #(); chain_model t (DfracOwn 1) (w :: vs) v_end }}}.
   Proof.
-    iIntros "%Φ (%l & %t' & -> & (Hhd & Htl) & Hmodel') HΦ".
-    wp_rec. wp_pures. wp_store.
+    iIntros "%Φ (%l & %t' & -> & Hcell & Hmodel') HΦ".
+    wp_rec. wp_pures.
+    wp_apply (record_two_set0_spec with "Hcell"). iIntros "Hcell".
     iApply "HΦ". iExists l, t'. auto with iFrame.
   Qed.
   Lemma chain_set_tail_spec t v vs v_end w :
@@ -437,8 +347,9 @@ Section heapGS.
       chain_model t' (DfracOwn 1) vs v_end
     }}}.
   Proof.
-    iIntros "%Φ (%l & %t' & -> & (Hhd & Htl) & Hmodel') HΦ".
-    wp_rec. wp_pures. wp_store.
+    iIntros "%Φ (%l & %t' & -> & Hcell & Hmodel') HΦ".
+    wp_rec. wp_pures.
+    wp_apply (record_two_set1_spec with "Hcell"). iIntros "Hcell".
     iApply "HΦ". iFrame. iExists l, w. auto with iFrame.
   Qed.
 
