@@ -19,12 +19,12 @@ theories/algebra/auth_nat_min.v
 theories/algebra/auth_Z_max.v
 theories/algebra/auth_Z_min.v
 
-theories/base_logic/auth_excl.v
-theories/base_logic/auth_nat_max.v
-theories/base_logic/auth_nat_min.v
-theories/base_logic/auth_Z_max.v
-theories/base_logic/auth_Z_min.v
-theories/base_logic/mono_list.v
+theories/base_logic/lib/auth_excl.v
+theories/base_logic/lib/auth_nat_max.v
+theories/base_logic/lib/auth_nat_min.v
+theories/base_logic/lib/auth_Z_max.v
+theories/base_logic/lib/auth_Z_min.v
+theories/base_logic/lib/mono_list.v
 
 theories/program_logic/atomic.v
 

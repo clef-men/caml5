@@ -4,7 +4,7 @@ From iris.algebra Require Import
 From caml5 Require Import
   prelude.
 From caml5.base_logic Require Import
-  auth_excl.
+  lib.auth_excl.
 From caml5.lang Require Import
   notations
   proofmode.

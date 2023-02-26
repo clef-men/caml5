@@ -6,8 +6,8 @@ From caml5 Require Import
 From caml5.common Require Import
   tactics.
 From caml5.base_logic Require Import
-  auth_excl
-  auth_nat_max.
+  lib.auth_excl
+  lib.auth_nat_max.
 From caml5.lang Require Import
   notations
   proofmode.

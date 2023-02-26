@@ -2,7 +2,7 @@ From caml5 Require Import
   prelude
   tactics.
 From caml5.base_logic Require Import
-  auth_nat_max.
+  lib.auth_nat_max.
 From caml5.lang Require Import
   notations
   proofmode.
