@@ -20,6 +20,17 @@ Section heapGS.
   Definition record_three_model l dq v₀ v₁ v₂ : iProp Σ :=
     (l +ₗ 0%Z) ↦{dq} v₀ ∗ (l +ₗ 1%Z) ↦{dq} v₁ ∗ (l +ₗ 2%Z) ↦{dq} v₂.
 
+  #[global] Instance record_three_model_timeless l dq v₀ v₁ v₂ :
+    Timeless (record_three_model l dq v₀ v₁ v₂).
+  Proof.
+    apply _.
+  Qed.
+  #[global] Instance record_three_model_persistent l v₀ v₁ v₂ :
+    Persistent (record_three_model l DfracDiscarded v₀ v₁ v₂).
+  Proof.
+    apply _.
+  Qed.
+
   #[global] Instance record_three_model_fractional l v₀ v₁ v₂ :
     Fractional (λ q, record_three_model l (DfracOwn q) v₀ v₁ v₂).
   Proof.
