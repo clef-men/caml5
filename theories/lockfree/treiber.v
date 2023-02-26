@@ -11,7 +11,7 @@ From caml5.lang Require Import
 From caml5.std Require Import
   mlst.
 From caml5.concurrent Require Import
-  stack.
+  mpmc_stack.
 From caml5.lockfree Require Export
   base.
 
@@ -240,8 +240,8 @@ Section treiber_GS.
         wp_apply ("HLöb" with "HΦ").
   Qed.
 
-  Definition treiber_stack :=
-    Build_stack
+  Definition treiber_mpmc_stack :=
+    Build_mpmc_stack
       treiber_make_spec
       treiber_push_spec
       treiber_pop_spec.
