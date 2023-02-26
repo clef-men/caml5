@@ -1,11 +1,16 @@
 import sys
 import re
 import glob
+import io
+
+out = io.StringIO()
+def output(str) :
+    print(str, file = out)
 
 def print_usage() :
-    print('usage: python3 setup.py [coq_pre_project_file]')
+    print('usage: python3 setup.py [coq_pre_project_file]', file = sys.stderr)
 def error(msg) :
-    print(f'error: {msg}')
+    print(f'error: {msg}', file = sys.stderr)
     print_usage()
     exit(1)
 
@@ -14,11 +19,11 @@ def parse(line):
         return
     match = re.match(r'(?P<src>\S+)\s+->\s+(?P<dst>\S+)', line)
     if match :
-        print('-Q {} {}'.format(match['src'], match['dst']))
+        output('-Q {} {}'.format(match['src'], match['dst']))
         return
     match = re.match(r'-(?P<opt>\S+)', line)
     if match :
-        print('-arg {}'.format(match['opt']))
+        output('-arg {}'.format(match['opt']))
         return
     match = re.match(r'(?P<filename>\S+.v)', line)
     if match :
@@ -27,7 +32,7 @@ def parse(line):
         if len(files) == 0 :
             error(f'no file matching: {filename}')
         for file in files :
-            print(file)
+            output(file)
         return
     error(f'cannot parse line: "{line}"')
 
@@ -39,5 +44,7 @@ try :
     with open(filename) as file :
         for line in file.readlines() :
             parse(line.strip())
+        print(out.getvalue(), end = '')
 except OSError :
     error(f'cannot open file: {filename}')
+out.close()

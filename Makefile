@@ -15,7 +15,7 @@ Makefile.coq : _CoqProject
 	@ coq_makefile -f $< -o $@
 
 _CoqProject : __CoqProject
-	@ python3 tools/setup.py $< > $@
+	@ python3 tools/setup.py $< > $@ || (rm -f $@ ; exit 1)
 
 ifeq (,$(filter $(prebuild),$(MAKECMDGOALS)))
 -include Makefile.coq
