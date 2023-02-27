@@ -133,12 +133,12 @@ Section heapGS.
   Proof.
     iInduction vs1 as [| v1 vs1] "IH" forall (t1).
     - iIntros "->". naive_solver.
-    - iIntros "(%l & %t1' & -> & Hcell1 & Hmodel1') Hmodel2".
+    - iIntros "(%l1 & %t1' & -> & Hcell1 & Hmodel1') Hmodel2".
       rewrite -app_comm_cons.
-      iExists l, t1'. iFrame. iSplit; first done.
+      iExists l1, t1'. iFrame. iSplit; first done.
       iApply ("IH" with "Hmodel1' Hmodel2").
   Qed.
-  Lemma chain_model_app_2 vs1 vs2 t vs dq v_end :
+  Lemma chain_model_app_2 vs1 vs2 t dq vs v_end :
     vs = vs1 ++ vs2 →
     chain_model t dq vs v_end -∗
       ∃ t',
