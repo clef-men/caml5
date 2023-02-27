@@ -40,7 +40,7 @@ Qed.
 
 Section counter_GS.
   Context `{CounterGS Σ}.
-  Implicit Types n m : nat.
+  Implicit Types n m lb : nat.
   Implicit Types l : loc.
   Implicit Types t : val.
 
@@ -62,11 +62,11 @@ Section counter_GS.
     auth_nat_max_auth γ_mono dq n.
   #[local] Definition counter_mono_frag γ_mono n :=
     auth_nat_max_frag γ_mono n.
-  Definition counter_lb t n : iProp Σ :=
+  Definition counter_lb t lb : iProp Σ :=
     ∃ l γ_mono,
     ⌜t = #l⌝ ∗
     meta l counter_meta_mono γ_mono ∗
-    counter_mono_frag γ_mono n.
+    counter_mono_frag γ_mono lb.
 
   #[local] Definition counter_token_auth γ_token dq n :=
     own γ_token (●{dq} GSet (set_seq 0 n)).
@@ -102,8 +102,8 @@ Section counter_GS.
     meta l counter_meta_model γ_model ∗
     inv counter_namespace (counter_inv_inner l γ_model).
 
-  #[global] Instance counter_lb_persistent t n :
-    Persistent (counter_lb t n).
+  #[global] Instance counter_lb_persistent t lb :
+    Persistent (counter_lb t lb).
   Proof.
     apply _.
   Qed.
@@ -149,19 +149,19 @@ Section counter_GS.
     split; [done | apply _].
   Qed.
 
-  Lemma counter_lb_valid t dq n m :
+  Lemma counter_lb_valid t dq n lb :
     counter_model t dq n -∗
-    counter_lb t m -∗
-    ⌜m ≤ n⌝.
+    counter_lb t lb -∗
+    ⌜lb ≤ n⌝.
   Proof.
     iIntros "(%_l & %_γ_mono & %γ_token & %γ_model & % & #Hmeta_mono & #Hmeta_token & #Hmeta_model & Hmono_auth & Htoken_auth & Hmodel₂) (%l & %γ_mono & % & #_Hmeta_mono & Hmono_frag)". simplify.
     iDestruct (meta_agree with "Hmeta_mono _Hmeta_mono") as %->. iClear "_Hmeta_mono".
     iApply (auth_nat_max_both_valid with "Hmono_auth Hmono_frag").
   Qed.
-  Lemma counter_lb_le t n1 n2 :
-    n2 ≤ n1 →
-    counter_lb t n1 -∗
-    counter_lb t n2.
+  Lemma counter_lb_le t lb1 lb2 :
+    lb2 ≤ lb1 →
+    counter_lb t lb1 -∗
+    counter_lb t lb2.
   Proof.
     iIntros "% (%l & %γ_mono & -> & #Hmeta_mono & Hmono_frag)".
     iDestruct (auth_nat_max_frag_le with "Hmono_frag") as "Hmono_frag"; first done.
@@ -240,13 +240,37 @@ Section counter_GS.
     iDestruct (counter_model_valid with "Hmodel") as %?.
     done.
   Qed.
+  Lemma counter_model_agree t dq1 n1 dq2 n2 :
+    counter_model t dq1 n1 -∗
+    counter_model t dq2 n2 -∗
+    ⌜n1 = n2⌝.
+  Proof.
+    iIntros "Hmodel1 Hmodel2".
+    iDestruct (counter_model_combine with "Hmodel1 Hmodel2") as "(_ & <-)"; done.
+  Qed.
+  Lemma counter_model_dfrac_ne t1 dq1 n1 t2 dq2 n2 :
+    ¬ ✓ (dq1 ⋅ dq2) →
+    counter_model t1 dq1 n1 -∗
+    counter_model t2 dq2 n2 -∗
+    ⌜t1 ≠ t2⌝.
+  Proof.
+    iIntros "% Hmodel1 Hmodel2" (->).
+    iDestruct (counter_model_valid_2 with "Hmodel1 Hmodel2") as %?; naive_solver.
+  Qed.
+  Lemma counter_model_ne t1 n1 t2 dq2 n2 :
+    counter_model t1 (DfracOwn 1) n1 -∗
+    counter_model t2 dq2 n2 -∗
+    ⌜t1 ≠ t2⌝.
+  Proof.
+    intros. iApply counter_model_dfrac_ne. intros []%exclusive_l. apply _.
+  Qed.
   Lemma counter_model_exclusive t n1 n2 :
     counter_model t (DfracOwn 1) n1 -∗
     counter_model t (DfracOwn 1) n2 -∗
     False.
   Proof.
     iIntros "Hmodel1 Hmodel2".
-    iDestruct (counter_model_valid_2 with "Hmodel1 Hmodel2") as %(? & _). done.
+    iDestruct (counter_model_ne with "Hmodel1 Hmodel2") as %?; naive_solver.
   Qed.
 
   Lemma counter_make_spec :
@@ -300,7 +324,7 @@ Section counter_GS.
     assert (n + 1 = S n)%Z as -> by lia. done.
   Qed.
 
-  Lemma counter_get_spec_strong t :
+  Lemma counter_get_spec t :
     <<< counter_inv t | ∀∀ dq n, counter_model t dq n >>>
       counter_get t
       @ ↑ counter_namespace
