@@ -51,8 +51,8 @@ theories/std/condition.v
 theories/std/counter.v
 
 theories/concurrent/base.v
-theories/concurrent/stack.v
-theories/concurrent/queue.v
+theories/concurrent/mpmc_stack.v
+theories/concurrent/mpmc_queue.v
 theories/concurrent/ws_deque.v
 
 theories/lockfree/base.v
