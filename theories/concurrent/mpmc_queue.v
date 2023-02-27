@@ -37,10 +37,10 @@ Record mpmc_queue `{!heapGS Σ} := {
     <<< mpmc_queue_inv t | ∀∀ vs, mpmc_queue_model t vs >>>
       mpmc_queue_pop t
       @ ↑ mpmc_queue_namespace
-    <<< ∃∃ w,
-      (⌜vs = [] ∧ w = NONEV⌝ ∗ mpmc_queue_model t []) ∨
-      (∃ vs' v, ⌜w = SOMEV v ∧ vs = vs' ++ [v]⌝ ∗ mpmc_queue_model t vs') |
-      RET w; True
+    <<< ∃∃ o,
+      (⌜vs = [] ∧ o = NONEV⌝ ∗ mpmc_queue_model t []) ∨
+      (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ mpmc_queue_model t vs') |
+      RET o; True
     >>> ;
 }.
 #[global] Arguments mpmc_queue _ {_} : assert.

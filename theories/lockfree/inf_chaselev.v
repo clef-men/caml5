@@ -24,7 +24,7 @@ From caml5.lockfree Require Export
 Definition inf_chaselev_namespace :=
   lockfree_namespace .@ "inf_chaselev".
 
-Class InfChaselevDequeGS Σ `{!heapGS Σ} (array : inf_array Σ) := {
+Class InfChaselevGS Σ `{!heapGS Σ} (array : inf_array Σ) := {
   inf_chaselev_GS_ctl : AuthExclG Σ (prodO ZO (nat -d> valO)) ;
   inf_chaselev_GS_front : AuthNatMaxG Σ ;
   inf_chaselev_GS_hist : mono_listG val Σ ;
@@ -46,13 +46,13 @@ Definition inf_chaselev_Σ := #[
 ].
 Lemma subG_inf_chaselev_Σ Σ `{!heapGS Σ} array :
   subG inf_chaselev_Σ Σ →
-  InfChaselevDequeGS Σ array.
+  InfChaselevGS Σ array.
 Proof.
   solve_inG.
 Qed.
 
 Section inf_chaselev_GS.
-  Context `{!heapGS Σ} {array} `{!InfChaselevDequeGS Σ array}.
+  Context `{!heapGS Σ} {array} `{!InfChaselevGS Σ array}.
   Implicit Types front : nat.
   Implicit Types back : Z.
   Implicit Types l : loc.
@@ -566,7 +566,7 @@ Section inf_chaselev_GS.
     <<<
       ∃∃ o,
       (⌜length pub ≤ 1 ∧ o = NONEV⌝ ∗ inf_chaselev_model t pub) ∨
-      (∃ pub' v, ⌜o = SOMEV v ∧ pub = v :: pub'⌝ ∗ inf_chaselev_model t pub') |
+      (∃ pub' v, ⌜pub = v :: pub' ∧ o = SOMEV v⌝ ∗ inf_chaselev_model t pub') |
       RET o; True
     >>>.
   Proof.
@@ -858,7 +858,7 @@ Section inf_chaselev_GS.
     <<<
       ∃∃ o,
       (⌜pub = [] ∧ o = NONEV⌝ ∗ inf_chaselev_model t []) ∨
-      (∃ pub' v, ⌜o = SOMEV v ∧ pub = pub' ++ [v]⌝ ∗ inf_chaselev_model t pub') |
+      (∃ pub' v, ⌜pub = pub' ++ [v] ∧ o = SOMEV v⌝ ∗ inf_chaselev_model t pub') |
       RET o; inf_chaselev_own t
     >>>.
   Proof.

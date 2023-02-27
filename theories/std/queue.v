@@ -37,10 +37,10 @@ Record queue `{!heapGS Σ} := {
   queue_pop_spec t vs :
     {{{ queue_model t vs }}}
       queue_pop t
-    {{{ w,
-      RET w;
-      (⌜vs = [] ∧ w = NONEV⌝ ∗ queue_model t []) ∨
-      (∃ vs' v, ⌜vs = vs' ++ [v] ∧ w = SOMEV v⌝ ∗ queue_model t vs')
+    {{{ o,
+      RET o;
+      (⌜vs = [] ∧ o = NONEV⌝ ∗ queue_model t []) ∨
+      (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ queue_model t vs')
     }}} ;
 }.
 #[global] Arguments queue _ {_} : assert.
@@ -161,10 +161,10 @@ Section std_queue.
   Lemma std_queue_pop_spec t vs :
     {{{ std_queue_model t vs }}}
       std_queue_pop t
-    {{{ w,
-      RET w;
-      (⌜vs = [] ∧ w = NONEV⌝ ∗ std_queue_model t []) ∨
-      (∃ vs' v, ⌜vs = vs' ++ [v] ∧ w = SOMEV v⌝ ∗ std_queue_model t vs')
+    {{{ o,
+      RET o;
+      (⌜vs = [] ∧ o = NONEV⌝ ∗ std_queue_model t []) ∨
+      (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ std_queue_model t vs')
     }}}.
   Proof.
     iIntros "%Φ Hmodel HΦ".

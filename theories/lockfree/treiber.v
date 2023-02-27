@@ -165,10 +165,10 @@ Section treiber_GS.
     <<< treiber_inv t | ∀∀ vs, treiber_model t vs >>>
       treiber_pop t
       @ ↑ treiber_namespace
-    <<< ∃∃ w,
-      (⌜vs = [] ∧ w = NONEV⌝ ∗ treiber_model t []) ∨
-      (∃ v vs', ⌜w = SOMEV v ∧ vs = v :: vs'⌝ ∗ treiber_model t vs') |
-      RET w; True
+    <<< ∃∃ o,
+      (⌜vs = [] ∧ o = NONEV⌝ ∗ treiber_model t []) ∨
+      (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ treiber_model t vs') |
+      RET o; True
     >>>.
   Proof.
     iIntros "!> %Φ (%l & %γ & -> & #Hmeta & #Hinv) HΦ".

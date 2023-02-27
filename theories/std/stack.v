@@ -37,10 +37,10 @@ Record stack `{!heapGS Σ} := {
   stack_pop_spec t vs :
     {{{ stack_model t vs }}}
       stack_pop t
-    {{{ w,
-      RET w;
-      (⌜vs = [] ∧ w = NONEV⌝ ∗ stack_model t []) ∨
-      (∃ v vs', ⌜vs = v :: vs' ∧ w = SOMEV v⌝ ∗ stack_model t vs')
+    {{{ o,
+      RET o;
+      (⌜vs = [] ∧ o = NONEV⌝ ∗ stack_model t []) ∨
+      (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ stack_model t vs')
     }}} ;
 }.
 #[global] Arguments stack _ {_} : assert.
@@ -119,10 +119,10 @@ Section std_stack.
   Lemma std_stack_pop_spec t vs :
     {{{ std_stack_model t vs }}}
       std_stack_pop t
-    {{{ w,
-      RET w;
-      (⌜vs = [] ∧ w = NONEV⌝ ∗ std_stack_model t []) ∨
-      (∃ v vs', ⌜vs = v :: vs' ∧ w = SOMEV v⌝ ∗ std_stack_model t vs')
+    {{{ o,
+      RET o;
+      (⌜vs = [] ∧ o = NONEV⌝ ∗ std_stack_model t []) ∨
+      (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ std_stack_model t vs')
     }}}.
   Proof.
     iIntros "%Φ (%l & %lst & -> & Hl & #Hlst) HΦ".

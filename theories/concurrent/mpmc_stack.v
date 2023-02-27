@@ -37,10 +37,10 @@ Record mpmc_stack `{!heapGS Σ} := {
     <<< mpmc_stack_inv t | ∀∀ vs, mpmc_stack_model t vs >>>
       mpmc_stack_pop t
       @ ↑ mpmc_stack_namespace
-    <<< ∃∃ w,
-      (⌜vs = [] ∧ w = NONEV⌝ ∗ mpmc_stack_model t []) ∨
-      (∃ v vs', ⌜w = SOMEV v ∧ vs = v :: vs'⌝ ∗ mpmc_stack_model t vs') |
-      RET w; True
+    <<< ∃∃ o,
+      (⌜vs = [] ∧ o = NONEV⌝ ∗ mpmc_stack_model t []) ∨
+      (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ mpmc_stack_model t vs') |
+      RET o; True
     >>> ;
 }.
 #[global] Arguments mpmc_stack _ {_} : assert.
