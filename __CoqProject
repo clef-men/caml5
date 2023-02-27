@@ -35,6 +35,7 @@ theories/lang/proofmode.v
 theories/std/base.v
 theories/std/record_two.v
 theories/std/record_three.v
+theories/std/record_four.v
 theories/std/inf_array.v
 theories/std/raw_array.v
 theories/std/opt.v
