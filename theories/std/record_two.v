@@ -17,7 +17,8 @@ Section heapGS.
       "l".
 
   Definition record_two_model l dq v₀ v₁ : iProp Σ :=
-    (l +ₗ 0%Z) ↦{dq} v₀ ∗ (l +ₗ 1%Z) ↦{dq} v₁.
+    (l +ₗ 0%Z) ↦{dq} v₀ ∗
+    (l +ₗ 1%Z) ↦{dq} v₁.
 
   #[global] Instance record_two_model_timeless l dq v₀ v₁ :
     Timeless (record_two_model l dq v₀ v₁).
@@ -118,9 +119,9 @@ Section heapGS.
   Proof.
     iIntros "%Φ _ HΦ".
     wp_rec. wp_pures. wp_alloc l as "Hl"; first done. wp_pures.
-    iDestruct (array_cons with "Hl") as "(Hv₀ & Hv₁)".
+    iDestruct (array_cons with "Hl") as "(Hv₀ & Hl)".
     iEval (setoid_rewrite <- loc_add_0) in "Hv₀".
-    iDestruct (array_singleton with "Hv₁") as "Hv₁".
+    iDestruct (array_singleton with "Hl") as "Hv₁".
     wp_store.
     iApply ("HΦ" with "[$Hv₀ $Hv₁]").
   Qed.

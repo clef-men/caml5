@@ -18,7 +18,9 @@ Section heapGS.
       "l".
 
   Definition record_three_model l dq v₀ v₁ v₂ : iProp Σ :=
-    (l +ₗ 0%Z) ↦{dq} v₀ ∗ (l +ₗ 1%Z) ↦{dq} v₁ ∗ (l +ₗ 2%Z) ↦{dq} v₂.
+    (l +ₗ 0%Z) ↦{dq} v₀ ∗
+    (l +ₗ 1%Z) ↦{dq} v₁ ∗
+    (l +ₗ 2%Z) ↦{dq} v₂.
 
   #[global] Instance record_three_model_timeless l dq v₀ v₁ v₂ :
     Timeless (record_three_model l dq v₀ v₁ v₂).
@@ -123,8 +125,8 @@ Section heapGS.
     wp_rec. wp_pures. wp_alloc l as "Hl"; first done. wp_pures.
     iDestruct (array_cons with "Hl") as "(Hv₀ & Hl)".
     iEval (setoid_rewrite <- loc_add_0) in "Hv₀".
-    iDestruct (array_cons with "Hl") as "(Hv₁ & Hv₂)".
-    iDestruct (array_singleton with "Hv₂") as "Hv₂".
+    iDestruct (array_cons with "Hl") as "(Hv₁ & Hl)".
+    iDestruct (array_singleton with "Hl") as "Hv₂".
     rewrite loc_add_assoc Z.add_1_r -Z.two_succ.
     wp_store. wp_store.
     iApply ("HΦ" with "[$Hv₀ $Hv₁ $Hv₂]").
