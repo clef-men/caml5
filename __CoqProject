@@ -19,6 +19,7 @@ theories/algebra/auth_nat_min.v
 theories/algebra/auth_Z_max.v
 theories/algebra/auth_Z_min.v
 
+theories/base_logic/lib/excl.v
 theories/base_logic/lib/auth_excl.v
 theories/base_logic/lib/auth_nat_max.v
 theories/base_logic/lib/auth_nat_min.v
