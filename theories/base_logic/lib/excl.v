@@ -59,4 +59,4 @@ Section excl_G.
   Qed.
 End excl_G.
 
-#[global] Typeclasses Opaque excl.
+#[global] Opaque excl.

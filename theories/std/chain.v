@@ -299,11 +299,7 @@ Section heapGS.
   Proof.
     iIntros "% %Φ Hmodel HΦ".
     iApply wp_fupd. wp_apply (record_two_make_spec with "[//]"). iIntros "%l' Hcell'".
-    rewrite /record_two_model. iDestruct "Hcell'" as "(Hhd' & Htl')".
-    iMod (mapsto_dfrac_relax with "Hhd'") as "Hhd'"; first done.
-    iMod (mapsto_dfrac_relax with "Htl'") as "Htl'"; first done.
-    iAssert (record_two_model l' dq v t) with "[Hhd' Htl']" as "Hcell'".
-    { rewrite /record_two_model. iFrame. }
+    iMod (record_two_dfrac_relax with "Hcell'") as "Hcell'"; first done.
     iApply "HΦ". iExists l', t. auto with iFrame.
   Qed.
 
@@ -435,4 +431,4 @@ End heapGS.
 #[global] Opaque chain_get.
 #[global] Opaque chain_set.
 
-#[global] Typeclasses Opaque chain_model.
+#[global] Opaque chain_model.

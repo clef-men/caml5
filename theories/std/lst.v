@@ -505,4 +505,4 @@ End heapGS.
 #[global] Opaque lst_iter.
 #[global] Opaque lst_map.
 
-#[global] Typeclasses Opaque lst_model.
+#[global] Opaque lst_model.

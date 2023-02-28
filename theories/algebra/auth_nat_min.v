@@ -147,5 +147,5 @@ Proof.
   apply auth_option_both_update, nat_min_local_update. done.
 Qed.
 
-#[global] Typeclasses Opaque auth_nat_min_auth.
-#[global] Typeclasses Opaque auth_nat_min_frag.
+#[global] Opaque auth_nat_min_auth.
+#[global] Opaque auth_nat_min_frag.

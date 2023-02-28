@@ -157,5 +157,5 @@ Section auth_Z_min_G.
   Qed.
 End auth_Z_min_G.
 
-#[global] Typeclasses Opaque auth_Z_min_auth.
-#[global] Typeclasses Opaque auth_Z_min_frag.
+#[global] Opaque auth_Z_min_auth.
+#[global] Opaque auth_Z_min_frag.

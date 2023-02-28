@@ -150,4 +150,4 @@ End std_fun_stack.
 #[global] Opaque std_fun_stack_push.
 #[global] Opaque std_fun_stack_pop.
 
-#[global] Typeclasses Opaque std_fun_stack_model.
+#[global] Opaque std_fun_stack_model.

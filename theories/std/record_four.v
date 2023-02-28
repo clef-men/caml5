@@ -120,6 +120,19 @@ Section heapGS.
     iDestruct (record_four_model_ne with "Hl1 Hl2") as %?. naive_solver.
   Qed.
 
+  Lemma record_four_dfrac_relax dq l v₀ v₁ v₂ v₃ :
+    ✓ dq →
+    record_four_model l (DfracOwn 1) v₀ v₁ v₂ v₃ ==∗
+    record_four_model l dq v₀ v₁ v₂ v₃.
+  Proof.
+    iIntros "% (Hv₀ & Hv₁ & Hv₂ & Hv₃)".
+    iMod (mapsto_dfrac_relax with "Hv₀") as "Hv₀"; first done.
+    iMod (mapsto_dfrac_relax with "Hv₁") as "Hv₁"; first done.
+    iMod (mapsto_dfrac_relax with "Hv₂") as "Hv₂"; first done.
+    iMod (mapsto_dfrac_relax with "Hv₃") as "Hv₃"; first done.
+    iFrame. done.
+  Qed.
+
   Lemma record_four_make_spec v₀ v₁ v₂ v₃ :
     {{{ True }}}
       record_four_make v₀ v₁ v₂ v₃
@@ -206,4 +219,4 @@ End heapGS.
 
 #[global] Opaque record_four_make.
 
-#[global] Typeclasses Opaque record_four_model.
+#[global] Opaque record_four_model.

@@ -145,5 +145,5 @@ Proof.
   apply auth_option_both_update, Z_min_local_update. done.
 Qed.
 
-#[global] Typeclasses Opaque auth_Z_min_auth.
-#[global] Typeclasses Opaque auth_Z_min_frag.
+#[global] Opaque auth_Z_min_auth.
+#[global] Opaque auth_Z_min_frag.

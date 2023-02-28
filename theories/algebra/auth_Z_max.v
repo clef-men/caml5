@@ -145,5 +145,5 @@ Proof.
   apply auth_option_both_update, Z_max_local_update. done.
 Qed.
 
-#[global] Typeclasses Opaque auth_Z_max_auth.
-#[global] Typeclasses Opaque auth_Z_max_frag.
+#[global] Opaque auth_Z_max_auth.
+#[global] Opaque auth_Z_max_frag.

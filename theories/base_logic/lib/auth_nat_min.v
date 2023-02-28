@@ -157,5 +157,5 @@ Section auth_nat_min_G.
   Qed.
 End auth_nat_min_G.
 
-#[global] Typeclasses Opaque auth_nat_min_auth.
-#[global] Typeclasses Opaque auth_nat_min_frag.
+#[global] Opaque auth_nat_min_auth.
+#[global] Opaque auth_nat_min_frag.

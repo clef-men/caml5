@@ -88,6 +88,8 @@ Section heapGS.
         mlst_cons "v" "t"
       ).
 
+  (* mlst_rev_inplace *)
+
   Definition mlst_model t dq vs :=
     chain_model t dq vs #().
 
@@ -164,7 +166,7 @@ Section heapGS.
     - iDestruct (chain_model_combine with "Hmodel1 Hmodel2") as "(_ & Hmodel2 & _)"; first lia.
       assert (0 < length (drop (length vs1) vs2)) by (rewrite drop_length; lia).
       destruct (drop (length vs1) vs2); list_simplifier; first lia.
-      iDestruct "Hmodel2" as "(%l2 & %_ & % & _)". done.
+      Transparent chain_model. iDestruct "Hmodel2" as "(%l2 & %_ & % & _)". done.
     - iDestruct (chain_model_combine' with "Hmodel1 Hmodel2") as "($ & $ & _)"; first lia.
     - iDestruct (chain_model_combine with "Hmodel2 Hmodel1") as "(_ & Hmodel1 & _)"; first lia.
       assert (0 < length (drop (length vs2) vs1)) by (rewrite drop_length; lia).
@@ -394,4 +396,4 @@ End heapGS.
 #[global] Opaque mlst_iter.
 #[global] Opaque mlst_map.
 
-#[global] Typeclasses Opaque mlst_model.
+#[global] Opaque mlst_model.

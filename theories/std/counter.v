@@ -348,7 +348,7 @@ End counter_GS.
 #[global] Opaque counter_incr.
 #[global] Opaque counter_get.
 
-#[global] Typeclasses Opaque counter_lb.
-#[global] Typeclasses Opaque counter_token.
-#[global] Typeclasses Opaque counter_model.
-#[global] Typeclasses Opaque counter_inv.
+#[global] Opaque counter_lb.
+#[global] Opaque counter_token.
+#[global] Opaque counter_model.
+#[global] Opaque counter_inv.

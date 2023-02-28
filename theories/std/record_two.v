@@ -112,6 +112,17 @@ Section heapGS.
     iDestruct (record_two_model_ne with "Hl1 Hl2") as %?. naive_solver.
   Qed.
 
+  Lemma record_two_dfrac_relax dq l v₀ v₁ :
+    ✓ dq →
+    record_two_model l (DfracOwn 1) v₀ v₁ ==∗
+    record_two_model l dq v₀ v₁.
+  Proof.
+    iIntros "% (Hv₀ & Hv₁)".
+    iMod (mapsto_dfrac_relax with "Hv₀") as "Hv₀"; first done.
+    iMod (mapsto_dfrac_relax with "Hv₁") as "Hv₁"; first done.
+    iFrame. done.
+  Qed.
+
   Lemma record_two_make_spec v₀ v₁ :
     {{{ True }}}
       record_two_make v₀ v₁
@@ -167,4 +178,4 @@ End heapGS.
 
 #[global] Opaque record_two_make.
 
-#[global] Typeclasses Opaque record_two_model.
+#[global] Opaque record_two_model.

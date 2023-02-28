@@ -187,4 +187,4 @@ End heapGS.
 #[global] Opaque opt_map.
 #[global] Opaque opt_iter.
 
-#[global] Typeclasses Opaque opt_model.
+#[global] Opaque opt_model.

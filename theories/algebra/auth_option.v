@@ -469,5 +469,5 @@ Section cmra.
   Qed.
 End cmra.
 
-#[global] Typeclasses Opaque auth_option_auth.
-#[global] Typeclasses Opaque auth_option_frag.
+#[global] Opaque auth_option_auth.
+#[global] Opaque auth_option_frag.

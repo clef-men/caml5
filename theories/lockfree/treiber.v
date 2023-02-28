@@ -251,5 +251,5 @@ End treiber_GS.
 #[global] Opaque treiber_push.
 #[global] Opaque treiber_pop.
 
-#[global] Typeclasses Opaque treiber_inv.
-#[global] Typeclasses Opaque treiber_model.
+#[global] Opaque treiber_inv.
+#[global] Opaque treiber_model.

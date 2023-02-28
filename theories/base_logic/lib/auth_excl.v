@@ -196,5 +196,5 @@ Section auth_excl_G.
   End cmra_discrete.
 End auth_excl_G.
 
-#[global] Typeclasses Opaque auth_excl_auth.
-#[global] Typeclasses Opaque auth_excl_frag.
+#[global] Opaque auth_excl_auth.
+#[global] Opaque auth_excl_frag.

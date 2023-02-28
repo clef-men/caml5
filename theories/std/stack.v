@@ -152,4 +152,4 @@ End std_stack.
 #[global] Opaque std_stack_push.
 #[global] Opaque std_stack_pop.
 
-#[global] Typeclasses Opaque std_stack_model.
+#[global] Opaque std_stack_model.

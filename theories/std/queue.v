@@ -197,4 +197,4 @@ End std_queue.
 #[global] Opaque std_queue_push.
 #[global] Opaque std_queue_pop.
 
-#[global] Typeclasses Opaque std_queue_model.
+#[global] Opaque std_queue_model.

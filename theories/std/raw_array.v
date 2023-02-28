@@ -710,8 +710,8 @@ End raw_array_G.
 #[global] Opaque raw_array_get.
 #[global] Opaque raw_array_set.
 
-#[global] Typeclasses Opaque raw_array_inv.
-#[global] Typeclasses Opaque raw_array_mapsto.
-#[global] Typeclasses Opaque raw_array_view.
-#[global] Typeclasses Opaque raw_array_model.
-#[global] Typeclasses Opaque raw_array_span.
+#[global] Opaque raw_array_inv.
+#[global] Opaque raw_array_mapsto.
+#[global] Opaque raw_array_view.
+#[global] Opaque raw_array_model.
+#[global] Opaque raw_array_span.

@@ -237,5 +237,5 @@ Section ofe.
   Qed.
 End ofe.
 
-#[global] Typeclasses Opaque auth_excl_auth.
-#[global] Typeclasses Opaque auth_excl_frag.
+#[global] Opaque auth_excl_auth.
+#[global] Opaque auth_excl_frag.

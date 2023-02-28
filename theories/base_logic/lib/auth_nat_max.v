@@ -162,5 +162,5 @@ Section auth_nat_max_G.
   Qed.
 End auth_nat_max_G.
 
-#[global] Typeclasses Opaque auth_nat_max_auth.
-#[global] Typeclasses Opaque auth_nat_max_frag.
+#[global] Opaque auth_nat_max_auth.
+#[global] Opaque auth_nat_max_frag.

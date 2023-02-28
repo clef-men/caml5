@@ -116,6 +116,18 @@ Section heapGS.
     iDestruct (record_three_model_ne with "Hl1 Hl2") as %?. naive_solver.
   Qed.
 
+  Lemma record_three_dfrac_relax dq l v₀ v₁ v₂ :
+    ✓ dq →
+    record_three_model l (DfracOwn 1) v₀ v₁ v₂ ==∗
+    record_three_model l dq v₀ v₁ v₂.
+  Proof.
+    iIntros "% (Hv₀ & Hv₁ & Hv₂)".
+    iMod (mapsto_dfrac_relax with "Hv₀") as "Hv₀"; first done.
+    iMod (mapsto_dfrac_relax with "Hv₁") as "Hv₁"; first done.
+    iMod (mapsto_dfrac_relax with "Hv₂") as "Hv₂"; first done.
+    iFrame. done.
+  Qed.
+
   Lemma record_three_make_spec v₀ v₁ v₂ :
     {{{ True }}}
       record_three_make v₀ v₁ v₂
@@ -191,4 +203,4 @@ End heapGS.
 
 #[global] Opaque record_three_make.
 
-#[global] Typeclasses Opaque record_three_model.
+#[global] Opaque record_three_model.

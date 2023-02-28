@@ -1476,6 +1476,6 @@ End inf_chaselev_GS.
 #[global] Opaque inf_chaselev_steal.
 #[global] Opaque inf_chaselev_pop.
 
-#[global] Typeclasses Opaque inf_chaselev_inv.
-#[global] Typeclasses Opaque inf_chaselev_model.
-#[global] Typeclasses Opaque inf_chaselev_own.
+#[global] Opaque inf_chaselev_inv.
+#[global] Opaque inf_chaselev_model.
+#[global] Opaque inf_chaselev_own.
