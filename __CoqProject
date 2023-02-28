@@ -47,6 +47,8 @@ theories/std/fun_stack.v
 theories/std/fun_queue.v
 theories/std/stack.v
 theories/std/queue.v
+theories/std/dlchain.v
+theories/std/deque.v
 theories/std/random.v
 theories/std/mutex.v
 theories/std/condition.v
