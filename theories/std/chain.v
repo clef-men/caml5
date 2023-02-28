@@ -11,7 +11,7 @@ From caml5.std Require Import
 Section heapGS.
   Context `{!heapGS Σ}.
   Implicit Types l : loc.
-  Implicit Types v w v_end hd tl t : val.
+  Implicit Types v w next hd tl t : val.
 
   Notation "t '.(head)'" := (t.0)%E
   ( at level 5
@@ -54,30 +54,30 @@ Section heapGS.
 
   #[local] Definition chain_cell l dq hd tl :=
     record_two_model l dq hd tl.
-  Fixpoint chain_model t dq vs v_end : iProp Σ :=
+  Fixpoint chain_model t dq vs next : iProp Σ :=
     match vs with
     | [] =>
-        ⌜t = v_end⌝
+        ⌜t = next⌝
     | v :: vs =>
         ∃ l t',
         ⌜t = #l⌝ ∗
-        chain_cell l dq v t' ∗ chain_model t' dq vs v_end
+        chain_cell l dq v t' ∗ chain_model t' dq vs next
     end.
 
-  Lemma chain_model_unboxed t dq v vs v_end :
-    chain_model t dq (v :: vs) v_end -∗
+  Lemma chain_model_unboxed t dq v vs next :
+    chain_model t dq (v :: vs) next -∗
     ⌜val_is_unboxed t⌝.
   Proof.
     iIntros "(%l & %_ & -> & _) //".
   Qed.
 
-  #[global] Instance chain_model_timeless t dq vs v_end :
-    Timeless (chain_model t dq vs v_end).
+  #[global] Instance chain_model_timeless t dq vs next :
+    Timeless (chain_model t dq vs next).
   Proof.
     revert t. induction vs; apply _.
   Qed.
-  #[global] Instance chain_model_persistent t vs v_end :
-    Persistent (chain_model t DfracDiscarded vs v_end).
+  #[global] Instance chain_model_persistent t vs next :
+    Persistent (chain_model t DfracDiscarded vs next).
   Proof.
     rewrite /Persistent.
     iInduction vs as [| v vs] "IH" forall (t); first naive_solver.
@@ -86,8 +86,8 @@ Section heapGS.
     iModIntro. naive_solver.
   Qed.
 
-  #[global] Instance chain_model_fractional t vs v_end :
-    Fractional (λ q, chain_model t (DfracOwn q) vs v_end).
+  #[global] Instance chain_model_fractional t vs next :
+    Fractional (λ q, chain_model t (DfracOwn q) vs next).
   Proof.
     intros q1 q2. iSplit.
     - iInduction vs as [| v vs] "IH" forall (t); first done.
@@ -102,15 +102,15 @@ Section heapGS.
       iDestruct ("IH" with "[$Hmodel'1 $Hmodel'2]") as "Hmodel'".
       repeat iExists _. auto with iFrame.
   Qed.
-  #[global] Instance chain_model_as_fractional t q vs v_end :
-    AsFractional (chain_model t (DfracOwn q) vs v_end) (λ q, chain_model t (DfracOwn q) vs v_end) q.
+  #[global] Instance chain_model_as_fractional t q vs next :
+    AsFractional (chain_model t (DfracOwn q) vs next) (λ q, chain_model t (DfracOwn q) vs next) q.
   Proof.
     split; [done | apply _].
   Qed.
 
-  Lemma chain_model_nil t dq v_end :
-    ⌜t = v_end⌝ ⊣⊢
-    chain_model t dq [] v_end.
+  Lemma chain_model_nil t dq next :
+    ⌜t = next⌝ ⊣⊢
+    chain_model t dq [] next.
   Proof.
     auto.
   Qed.
@@ -119,17 +119,17 @@ Section heapGS.
   Proof.
     auto.
   Qed.
-  Lemma chain_model_nil_2 t dq v_end :
-    chain_model t dq [] v_end -∗
-    ⌜t = v_end⌝.
+  Lemma chain_model_nil_2 t dq next :
+    chain_model t dq [] next -∗
+    ⌜t = next⌝.
   Proof.
     auto.
   Qed.
 
-  Lemma chain_model_app_1 dq t1 vs1 t2 vs2 v_end :
+  Lemma chain_model_app_1 dq t1 vs1 t2 vs2 next :
     chain_model t1 dq vs1 t2 -∗
-    chain_model t2 dq vs2 v_end -∗
-    chain_model t1 dq (vs1 ++ vs2) v_end.
+    chain_model t2 dq vs2 next -∗
+    chain_model t1 dq (vs1 ++ vs2) next.
   Proof.
     iInduction vs1 as [| v1 vs1] "IH" forall (t1).
     - iIntros "->". naive_solver.
@@ -138,12 +138,12 @@ Section heapGS.
       iExists l1, t1'. iFrame. iSplit; first done.
       iApply ("IH" with "Hmodel1' Hmodel2").
   Qed.
-  Lemma chain_model_app_2 vs1 vs2 t dq vs v_end :
+  Lemma chain_model_app_2 vs1 vs2 t dq vs next :
     vs = vs1 ++ vs2 →
-    chain_model t dq vs v_end -∗
+    chain_model t dq vs next -∗
       ∃ t',
       chain_model t dq vs1 t' ∗
-      chain_model t' dq vs2 v_end.
+      chain_model t' dq vs2 next.
   Proof.
     iInduction vs1 as [| v1 vs1] "IH" forall (t vs); iIntros (->).
     - naive_solver.
@@ -152,9 +152,9 @@ Section heapGS.
       iDestruct ("IH" with "[//] Hmodel'") as "(%t'' & Hmodel' & Hmodel'')".
       iExists t''. iFrame. iExists l, t'. auto with iFrame.
   Qed.
-  Lemma chain_model_app t dq vs1 vs2 v_end :
-    (∃ t', chain_model t dq vs1 t' ∗ chain_model t' dq vs2 v_end) ⊣⊢
-    chain_model t dq (vs1 ++ vs2) v_end.
+  Lemma chain_model_app t dq vs1 vs2 next :
+    (∃ t', chain_model t dq vs1 t' ∗ chain_model t' dq vs2 next) ⊣⊢
+    chain_model t dq (vs1 ++ vs2) next.
   Proof.
     iSplit.
     - iIntros "(%t' & Hmodel & Hmodel')".
@@ -162,9 +162,9 @@ Section heapGS.
     - iApply chain_model_app_2; first done.
   Qed.
 
-  Lemma chain_model_persist t dq vs v_end :
-    chain_model t dq vs v_end ==∗
-    chain_model t DfracDiscarded vs v_end.
+  Lemma chain_model_persist t dq vs next :
+    chain_model t dq vs next ==∗
+    chain_model t DfracDiscarded vs next.
   Proof.
     iInduction vs as [| v vs] "IH" forall (t); first done.
     iIntros "(%l & %t' & -> & Hcell & Hmodel')".
@@ -173,21 +173,21 @@ Section heapGS.
     repeat iExists _. naive_solver.
   Qed.
 
-  Lemma chain_model_valid t dq vs v_end :
+  Lemma chain_model_valid t dq vs next :
     0 < length vs →
-    chain_model t dq vs v_end -∗
+    chain_model t dq vs next -∗
     ⌜✓ dq⌝.
   Proof.
     intros. destruct vs as [| v vs]; first naive_solver lia.
     iIntros "(%l & %t' & -> & Hcell & Hmodel')".
     iApply (record_two_model_valid with "Hcell").
   Qed.
-  Lemma chain_model_combine t dq1 vs1 v_end1 dq2 vs2 v_end2 :
+  Lemma chain_model_combine t dq1 vs1 next1 dq2 vs2 next2 :
     length vs1 ≤ length vs2 →
-    chain_model t dq1 vs1 v_end1 -∗
-    chain_model t dq2 vs2 v_end2 -∗
-      chain_model t (dq1 ⋅ dq2) vs1 v_end1 ∗
-      chain_model v_end1 dq2 (drop (length vs1) vs2) v_end2 ∗
+    chain_model t dq1 vs1 next1 -∗
+    chain_model t dq2 vs2 next2 -∗
+      chain_model t (dq1 ⋅ dq2) vs1 next1 ∗
+      chain_model next1 dq2 (drop (length vs1) vs2) next2 ∗
       ⌜vs1 = take (length vs1) vs2⌝.
   Proof.
     iInduction vs1 as [| v1 vs1] "IH" forall (t vs2);
@@ -203,12 +203,12 @@ Section heapGS.
       iFrame. iSplit; last rewrite /= take_length min_l //.
       iExists l, t'. auto with iFrame.
   Qed.
-  Lemma chain_model_combine' t dq1 vs1 v_end1 dq2 vs2 v_end2 :
+  Lemma chain_model_combine' t dq1 vs1 next1 dq2 vs2 next2 :
     length vs1 = length vs2 →
-    chain_model t dq1 vs1 v_end1 -∗
-    chain_model t dq2 vs2 v_end2 -∗
-      chain_model t (dq1 ⋅ dq2) vs1 v_end1 ∗
-      ⌜vs1 = vs2 ∧ v_end1 = v_end2⌝.
+    chain_model t dq1 vs1 next1 -∗
+    chain_model t dq2 vs2 next2 -∗
+      chain_model t (dq1 ⋅ dq2) vs1 next1 ∗
+      ⌜vs1 = vs2 ∧ next1 = next2⌝.
   Proof.
     iIntros "%Hlength Hmodel1 Hmodel2".
     iDestruct (chain_model_combine with "Hmodel1 Hmodel2") as "($ & Hmodel2 & ->)"; first lia.
@@ -216,10 +216,10 @@ Section heapGS.
     rewrite drop_all. iDestruct "Hmodel2" as %->.
     rewrite take_ge //.
   Qed.
-  Lemma chain_model_valid_2 t dq1 vs1 v_end1 dq2 vs2 v_end2 :
+  Lemma chain_model_valid_2 t dq1 vs1 next1 dq2 vs2 next2 :
     0 < length vs1 ≤ length vs2 →
-    chain_model t dq1 vs1 v_end1 -∗
-    chain_model t dq2 vs2 v_end2 -∗
+    chain_model t dq1 vs1 next1 -∗
+    chain_model t dq2 vs2 next2 -∗
     ⌜✓ (dq1 ⋅ dq2) ∧ vs1 = take (length vs1) vs2⌝.
   Proof.
     iIntros "% Hmodel1 Hmodel2".
@@ -227,48 +227,48 @@ Section heapGS.
     iDestruct (chain_model_valid with "Hmodel") as %?; first lia.
     done.
   Qed.
-  Lemma chain_model_valid_2' t dq1 vs1 v_end1 dq2 vs2 v_end2 :
+  Lemma chain_model_valid_2' t dq1 vs1 next1 dq2 vs2 next2 :
     0 < length vs1 →
     length vs1 = length vs2 →
-    chain_model t dq1 vs1 v_end1 -∗
-    chain_model t dq2 vs2 v_end2 -∗
-    ⌜✓ (dq1 ⋅ dq2) ∧ vs1 = vs2 ∧ v_end1 = v_end2⌝.
+    chain_model t dq1 vs1 next1 -∗
+    chain_model t dq2 vs2 next2 -∗
+    ⌜✓ (dq1 ⋅ dq2) ∧ vs1 = vs2 ∧ next1 = next2⌝.
   Proof.
     iIntros "% % Hmodel1 Hmodel2".
     iDestruct (chain_model_combine' with "Hmodel1 Hmodel2") as "(Hmodel & <- & <-)"; first done.
     iDestruct (chain_model_valid with "Hmodel") as %?; done.
   Qed.
-  Lemma chain_model_agree t dq1 vs1 v_end1 dq2 vs2 v_end2 :
+  Lemma chain_model_agree t dq1 vs1 next1 dq2 vs2 next2 :
     length vs1 = length vs2 →
-    chain_model t dq1 vs1 v_end1 -∗
-    chain_model t dq2 vs2 v_end2 -∗
-    ⌜vs1 = vs2 ∧ v_end1 = v_end2⌝.
+    chain_model t dq1 vs1 next1 -∗
+    chain_model t dq2 vs2 next2 -∗
+    ⌜vs1 = vs2 ∧ next1 = next2⌝.
   Proof.
     iIntros "% Hmodel1 Hmodel2".
     iDestruct (chain_model_combine' with "Hmodel1 Hmodel2") as "(_ & <- & <-)"; done.
   Qed.
-  Lemma chain_model_dfrac_ne t1 dq1 vs1 v_end1 t2 dq2 vs2 v_end2 :
+  Lemma chain_model_dfrac_ne t1 dq1 vs1 next1 t2 dq2 vs2 next2 :
     0 < length vs1 ≤ length vs2 →
     ¬ ✓ (dq1 ⋅ dq2) →
-    chain_model t1 dq1 vs1 v_end1 -∗
-    chain_model t2 dq2 vs2 v_end2 -∗
+    chain_model t1 dq1 vs1 next1 -∗
+    chain_model t2 dq2 vs2 next2 -∗
     ⌜t1 ≠ t2⌝.
   Proof.
     iIntros "% % Hmodel1 Hmodel2" (->).
     iDestruct (chain_model_valid_2 with "Hmodel1 Hmodel2") as %?; naive_solver.
   Qed.
-  Lemma chain_model_ne t1 vs1 v_end1 t2 dq2 vs2 v_end2 :
+  Lemma chain_model_ne t1 vs1 next1 t2 dq2 vs2 next2 :
     0 < length vs1 ≤ length vs2 →
-    chain_model t1 (DfracOwn 1) vs1 v_end1 -∗
-    chain_model t2 dq2 vs2 v_end2 -∗
+    chain_model t1 (DfracOwn 1) vs1 next1 -∗
+    chain_model t2 dq2 vs2 next2 -∗
     ⌜t1 ≠ t2⌝.
   Proof.
     intros. iApply chain_model_dfrac_ne; [done | intros []%exclusive_l; apply _].
   Qed.
-  Lemma chain_model_exclusive t vs1 v_end1 vs2 v_end2 :
+  Lemma chain_model_exclusive t vs1 next1 vs2 next2 :
     0 < length vs1 ≤ length vs2 →
-    chain_model t (DfracOwn 1) vs1 v_end1 -∗
-    chain_model t (DfracOwn 1) vs2 v_end2 -∗
+    chain_model t (DfracOwn 1) vs1 next1 -∗
+    chain_model t (DfracOwn 1) vs2 next2 -∗
     False.
   Proof.
     iIntros "% Hmodel1 Hmodel2".
@@ -291,11 +291,11 @@ Section heapGS.
       iMod (mapsto_persist with "H↦2") as "H↦2".
       iDestruct (mapsto_combine with "H↦1 H↦2") as "($ & _)". done.
   Qed.
-  Lemma chain_cons_spec t dq vs v_end v :
+  Lemma chain_cons_spec t dq vs next v :
     ✓ dq →
-    {{{ chain_model t dq vs v_end }}}
+    {{{ chain_model t dq vs next }}}
       chain_cons v t
-    {{{ t', RET t'; chain_model t' dq (v :: vs) v_end }}}.
+    {{{ t', RET t'; chain_model t' dq (v :: vs) next }}}.
   Proof.
     iIntros "% %Φ Hmodel HΦ".
     iApply wp_fupd. wp_apply (record_two_make_spec with "[//]"). iIntros "%l' Hcell'".
@@ -307,20 +307,20 @@ Section heapGS.
     iApply "HΦ". iExists l', t. auto with iFrame.
   Qed.
 
-  Lemma chain_head_spec t dq v vs v_end :
-    {{{ chain_model t dq (v :: vs) v_end }}}
+  Lemma chain_head_spec t dq v vs next :
+    {{{ chain_model t dq (v :: vs) next }}}
       chain_head t
-    {{{ RET v; chain_model t dq (v :: vs) v_end }}}.
+    {{{ RET v; chain_model t dq (v :: vs) next }}}.
   Proof.
     iIntros "%Φ (%l & %t' & -> & Hcell & Hmodel') HΦ".
     wp_rec. wp_pures.
     wp_apply (record_two_get0_spec with "Hcell"). iIntros "Hcell".
     iApply "HΦ". iExists l, t'. auto with iFrame.
   Qed.
-  Lemma chain_tail_spec t dq v vs v_end :
-    {{{ chain_model t dq (v :: vs) v_end }}}
+  Lemma chain_tail_spec t dq v vs next :
+    {{{ chain_model t dq (v :: vs) next }}}
       chain_tail t
-    {{{ t', RET t'; chain_model t dq [v] t' ∗ chain_model t' dq vs v_end }}}.
+    {{{ t', RET t'; chain_model t dq [v] t' ∗ chain_model t' dq vs next }}}.
   Proof.
     iIntros "%Φ (%l & %t' & -> & Hcell & Hmodel') HΦ".
     wp_rec. wp_pures.
@@ -328,23 +328,23 @@ Section heapGS.
     iApply "HΦ". iFrame. iExists l, t'. auto with iFrame.
   Qed.
 
-  Lemma chain_set_head_spec t v vs v_end w :
-    {{{ chain_model t (DfracOwn 1) (v :: vs) v_end }}}
+  Lemma chain_set_head_spec t v vs next w :
+    {{{ chain_model t (DfracOwn 1) (v :: vs) next }}}
       chain_set_head t w
-    {{{ RET #(); chain_model t (DfracOwn 1) (w :: vs) v_end }}}.
+    {{{ RET #(); chain_model t (DfracOwn 1) (w :: vs) next }}}.
   Proof.
     iIntros "%Φ (%l & %t' & -> & Hcell & Hmodel') HΦ".
     wp_rec. wp_pures.
     wp_apply (record_two_set0_spec with "Hcell"). iIntros "Hcell".
     iApply "HΦ". iExists l, t'. auto with iFrame.
   Qed.
-  Lemma chain_set_tail_spec t v vs v_end w :
-    {{{ chain_model t (DfracOwn 1) (v :: vs) v_end }}}
+  Lemma chain_set_tail_spec t v vs next w :
+    {{{ chain_model t (DfracOwn 1) (v :: vs) next }}}
       chain_set_tail t w
     {{{ t',
       RET #();
       chain_model t (DfracOwn 1) [v] w ∗
-      chain_model t' (DfracOwn 1) vs v_end
+      chain_model t' (DfracOwn 1) vs next
     }}}.
   Proof.
     iIntros "%Φ (%l & %t' & -> & Hcell & Hmodel') HΦ".
@@ -353,14 +353,14 @@ Section heapGS.
     iApply "HΦ". iFrame. iExists l, w. auto with iFrame.
   Qed.
 
-  Lemma chain_advance_spec t dq vs v_end (i : Z) :
+  Lemma chain_advance_spec t dq vs next (i : Z) :
     (0 ≤ i ≤ length vs)%Z →
-    {{{ chain_model t dq vs v_end }}}
+    {{{ chain_model t dq vs next }}}
       chain_advance t #i
     {{{ t',
       RET t';
       chain_model t dq (take (Z.to_nat i) vs) t' ∗
-      chain_model t' dq (drop (Z.to_nat i) vs) v_end
+      chain_model t' dq (drop (Z.to_nat i) vs) next
     }}}.
   Proof.
     intros (Hi1 & Hi2). revert Hi2.
@@ -376,12 +376,12 @@ Section heapGS.
       iApply (chain_model_app_1 with "Hmodel Hmodel'").
   Qed.
 
-  Lemma chain_get_spec t dq vs v_end (i : Z) v :
+  Lemma chain_get_spec t dq vs next (i : Z) v :
     (0 ≤ i)%Z →
     vs !! Z.to_nat i = Some v →
-    {{{ chain_model t dq vs v_end }}}
+    {{{ chain_model t dq vs next }}}
       chain_get t #i
-    {{{ RET v; chain_model t dq vs v_end }}}.
+    {{{ RET v; chain_model t dq vs next }}}.
   Proof.
     intros Hi. rename i into _i. edestruct Z_of_nat_complete as (i & ->); first done. clear.
     iIntros "%Hlookup %Φ Hmodel HΦ".
@@ -398,12 +398,12 @@ Section heapGS.
     iApply "HΦ".
     iEval (rewrite -(take_drop i vs) Heq). iApply (chain_model_app_1 with "Hmodel Hmodel'").
   Qed.
-  Lemma chain_set_spec t vs v_end (i : Z) v w :
+  Lemma chain_set_spec t vs next (i : Z) v w :
     (0 ≤ i)%Z →
     vs !! Z.to_nat i = Some v →
-    {{{ chain_model t (DfracOwn 1) vs v_end }}}
+    {{{ chain_model t (DfracOwn 1) vs next }}}
       chain_set t #i w
-    {{{ RET #(); chain_model t (DfracOwn 1) (<[Z.to_nat i := w]> vs) v_end }}}.
+    {{{ RET #(); chain_model t (DfracOwn 1) (<[Z.to_nat i := w]> vs) next }}}.
   Proof.
     intros Hi. rename i into _i. edestruct Z_of_nat_complete as (i & ->); first done. clear.
     iIntros "%Hlookup %Φ Hmodel HΦ".
