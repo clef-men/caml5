@@ -2,7 +2,6 @@ From Coq.Logic Require Import
   FunctionalExtensionality.
 
 From iris.algebra Require Import
-  excl
   list.
 
 From caml5 Require Import
@@ -10,6 +9,7 @@ From caml5 Require Import
 From caml5.common Require Import
   tactics.
 From caml5.base_logic Require Import
+  lib.excl
   lib.auth_excl
   lib.auth_nat_max
   lib.mono_list.
@@ -25,24 +25,24 @@ Definition inf_chaselev_namespace :=
   lockfree_namespace .@ "inf_chaselev".
 
 Class InfChaselevGS Σ `{!heapGS Σ} (array : inf_array Σ) := {
-  inf_chaselev_GS_ctl : AuthExclG Σ (prodO ZO (nat -d> valO)) ;
-  inf_chaselev_GS_front : AuthNatMaxG Σ ;
-  inf_chaselev_GS_hist : mono_listG val Σ ;
-  inf_chaselev_GS_pub : AuthExclG Σ (listO valO) ;
-  inf_chaselev_GS_lock : inG Σ (exclR unitO) ;
+  inf_chaselev_GS_ctl_G : AuthExclG Σ (prodO ZO (nat -d> valO)) ;
+  inf_chaselev_GS_front_G : AuthNatMaxG Σ ;
+  inf_chaselev_GS_hist_G : mono_listG val Σ ;
+  inf_chaselev_GS_pub_G : AuthExclG Σ (listO valO) ;
+  inf_chaselev_GS_lock_G : ExclG Σ unitO ;
 }.
-#[local] Existing Instance inf_chaselev_GS_ctl.
-#[local] Existing Instance inf_chaselev_GS_front.
-#[local] Existing Instance inf_chaselev_GS_hist.
-#[local] Existing Instance inf_chaselev_GS_pub.
-#[local] Existing Instance inf_chaselev_GS_lock.
+#[local] Existing Instance inf_chaselev_GS_ctl_G.
+#[local] Existing Instance inf_chaselev_GS_front_G.
+#[local] Existing Instance inf_chaselev_GS_hist_G.
+#[local] Existing Instance inf_chaselev_GS_pub_G.
+#[local] Existing Instance inf_chaselev_GS_lock_G.
 
 Definition inf_chaselev_Σ := #[
   auth_excl_Σ (prodO ZO (nat -d> valO)) ;
   auth_nat_max_Σ ;
   mono_listΣ val ;
   auth_excl_Σ (listO valO) ;
-  GFunctor (exclR unitO)
+  excl_Σ unitO
 ].
 Lemma subG_inf_chaselev_Σ Σ `{!heapGS Σ} array :
   subG inf_chaselev_Σ Σ →
@@ -143,9 +143,9 @@ Section inf_chaselev_GS.
   Notation inf_chaselev_meta_lock := (nroot .@ "lock").
 
   #[local] Definition inf_chaselev_ctl₁ γ_ctl back priv :=
-    @auth_excl_auth _ _ inf_chaselev_GS_ctl γ_ctl (DfracOwn 1) (back, priv).
+    @auth_excl_auth _ _ inf_chaselev_GS_ctl_G γ_ctl (DfracOwn 1) (back, priv).
   #[local] Definition inf_chaselev_ctl₂ γ_ctl back priv :=
-    @auth_excl_frag _ _ inf_chaselev_GS_ctl γ_ctl (back, priv).
+    @auth_excl_frag _ _ inf_chaselev_GS_ctl_G γ_ctl (back, priv).
 
   #[local] Definition inf_chaselev_front_auth γ_front front :=
     auth_nat_max_auth γ_front (DfracOwn 1) front.
@@ -162,12 +162,12 @@ Section inf_chaselev_GS.
     mono_list_idx_own γ_hist i v.
 
   #[local] Definition inf_chaselev_pub₁ γ_pub pub :=
-    @auth_excl_frag _ _ inf_chaselev_GS_pub γ_pub pub.
+    @auth_excl_frag _ _ inf_chaselev_GS_pub_G γ_pub pub.
   #[local] Definition inf_chaselev_pub₂ γ_pub pub :=
-    @auth_excl_auth _ _ inf_chaselev_GS_pub γ_pub (DfracOwn 1) pub.
+    @auth_excl_auth _ _ inf_chaselev_GS_pub_G γ_pub (DfracOwn 1) pub.
 
   #[local] Definition inf_chaselev_lock γ_lock :=
-    own γ_lock (Excl ()).
+    excl γ_lock ().
 
   #[local] Definition inf_chaselev_state₁ front back pub : iProp Σ :=
     ⌜(front ≤ back)%Z ∧ length pub = Z.to_nat (back - front)⌝.
@@ -351,15 +351,14 @@ Section inf_chaselev_GS.
     ⊢ |==> ∃ γ_lock,
       inf_chaselev_lock γ_lock.
   Proof.
-    iApply own_alloc. done.
+    apply excl_alloc.
   Qed.
   #[local] Lemma inf_chaselev_lock_exclusive γ_lock :
     inf_chaselev_lock γ_lock -∗
     inf_chaselev_lock γ_lock -∗
     False.
   Proof.
-    iIntros "Hlock1 Hlock2".
-    iDestruct (own_valid_2 with "Hlock1 Hlock2") as %?. edestruct @exclusive_l; done.
+    apply excl_exclusive.
   Qed.
   #[local] Lemma inf_chaselev_lock_state γ_lock front back pub :
     inf_chaselev_lock γ_lock -∗
