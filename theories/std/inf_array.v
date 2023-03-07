@@ -15,10 +15,10 @@ Record inf_array `{!heapGS Σ} := {
 
   inf_array_model : val → (nat → val) → iProp Σ ;
 
-  inf_array_model_timeless t vs :
-    Timeless (inf_array_model t vs) ;
   inf_array_model_proper t :
     Proper ((≡) ==> (≡)) (inf_array_model t : (nat -d> valO) → iProp Σ) ;
+  inf_array_model_timeless t vs :
+    Timeless (inf_array_model t vs) ;
 
   inf_array_make_spec v :
     {{{ True }}}
@@ -39,5 +39,5 @@ Record inf_array `{!heapGS Σ} := {
 }.
 #[global] Arguments inf_array _ {_} : assert.
 #[global] Arguments Build_inf_array {_ _ _ _ _ _ _ _} _ _ _ : assert.
-#[global] Existing Instance inf_array_model_timeless.
 #[global] Existing Instance inf_array_model_proper.
+#[global] Existing Instance inf_array_model_timeless.

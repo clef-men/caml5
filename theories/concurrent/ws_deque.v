@@ -55,8 +55,7 @@ Record ws_deque `{!heapGS Σ} := {
     >>>
       ws_deque_pop t
       @ ↑ ws_deque_namespace
-    <<<
-      ∃∃ o,
+    <<< ∃∃ o,
       (⌜vs = [] ∧ o = NONEV⌝ ∗ ws_deque_model t []) ∨
       (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ ws_deque_model t vs') |
       RET o; ws_deque_own t
