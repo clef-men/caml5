@@ -15,44 +15,44 @@ From caml5.concurrent Require Import
 From caml5.concurrent Require Export
   base.
 
-Definition treiber_namespace :=
-  concurrent_namespace .@ "treiber".
+Definition treiber_stack_namespace :=
+  concurrent_namespace .@ "treiber_stack".
 
 Class TreiberG Σ `{!heapGS Σ} := {
-  treiber_G_model_G : AuthExclG Σ (listO valO) ;
+  treiber_stack_G_model_G : AuthExclG Σ (listO valO) ;
 }.
-#[local] Existing Instance treiber_G_model_G.
+#[local] Existing Instance treiber_stack_G_model_G.
 
-Definition treiber_Σ := #[
+Definition treiber_stack_Σ := #[
   auth_excl_Σ (listO valO)
 ].
-#[global] Instance subG_treiber_Σ Σ `{!heapGS Σ} :
-  subG treiber_Σ Σ →
+#[global] Instance subG_treiber_stack_Σ Σ `{!heapGS Σ} :
+  subG treiber_stack_Σ Σ →
   TreiberG Σ.
 Proof.
   solve_inG.
 Qed.
 
-Section treiber_GS.
+Section treiber_stack_GS.
   Context `{TreiberG Σ}.
   Implicit Types l : loc.
   Implicit Types v t lst : val.
 
-  Definition treiber_make : val :=
+  Definition treiber_stack_make : val :=
     λ: <>,
       ref mlst_nil.
 
-  Definition treiber_push : val :=
-    rec: "treiber_push" "t" "v" :=
+  Definition treiber_stack_push : val :=
+    rec: "treiber_stack_push" "t" "v" :=
       let: "old_contents" := !"t" in
       if: CAS "t" "old_contents" (mlst_cons "v" "old_contents") then (
         #()
       ) else (
-        "treiber_push" "t" "v"
+        "treiber_stack_push" "t" "v"
       ).
 
-  Definition treiber_pop : val :=
-    rec: "treiber_pop" "t" :=
+  Definition treiber_stack_pop : val :=
+    rec: "treiber_stack_pop" "t" :=
       let: "old_contents" := !"t" in
       if: mlst_is_empty "old_contents" then (
         NONE
@@ -62,64 +62,64 @@ Section treiber_GS.
         if: CAS "t" "old_contents" "contents" then (
           SOME "v"
         ) else (
-          "treiber_pop" "t"
+          "treiber_stack_pop" "t"
         )
       ).
 
-  Notation treiber_meta_model := (nroot .@ "model").
+  Notation treiber_stack_meta_model := (nroot .@ "model").
 
-  #[local] Definition treiber_model₁ γ vs : iProp Σ :=
+  #[local] Definition treiber_stack_model₁ γ vs : iProp Σ :=
     auth_excl_frag γ vs.
-  #[local] Definition treiber_model₂ γ vs : iProp Σ :=
+  #[local] Definition treiber_stack_model₂ γ vs : iProp Σ :=
     auth_excl_auth γ (DfracOwn 1) vs.
 
-  Definition treiber_inv_inner t l γ : iProp Σ :=
+  Definition treiber_stack_inv_inner t l γ : iProp Σ :=
     ∃ lst vs,
-    l ↦ lst ∗ mlst_model lst DfracDiscarded vs ∗ treiber_model₁ γ vs.
-  Definition treiber_inv t : iProp Σ :=
+    l ↦ lst ∗ mlst_model lst DfracDiscarded vs ∗ treiber_stack_model₁ γ vs.
+  Definition treiber_stack_inv t : iProp Σ :=
     ∃ l γ,
     ⌜t = #l⌝ ∗
-    meta l treiber_meta_model γ ∗
-    inv treiber_namespace (treiber_inv_inner t l γ).
+    meta l treiber_stack_meta_model γ ∗
+    inv treiber_stack_namespace (treiber_stack_inv_inner t l γ).
 
-  Definition treiber_model t vs : iProp Σ :=
+  Definition treiber_stack_model t vs : iProp Σ :=
     ∃ l γ,
     ⌜t = #l⌝ ∗
-    meta l treiber_meta_model γ ∗
-    treiber_model₂ γ vs.
+    meta l treiber_stack_meta_model γ ∗
+    treiber_stack_model₂ γ vs.
 
-  #[global] Instance treiber_inv_persistent t :
-    Persistent (treiber_inv t).
+  #[global] Instance treiber_stack_inv_persistent t :
+    Persistent (treiber_stack_inv t).
   Proof.
     apply _.
   Qed.
-  #[global] Instance treiber_model_timeless t vs :
-    Timeless (treiber_model t vs).
+  #[global] Instance treiber_stack_model_timeless t vs :
+    Timeless (treiber_stack_model t vs).
   Proof.
     apply _.
   Qed.
 
-  Lemma treiber_make_spec :
+  Lemma treiber_stack_make_spec :
     {{{ True }}}
-      treiber_make #()
-    {{{ t, RET t; treiber_inv t ∗ treiber_model t [] }}}.
+      treiber_stack_make #()
+    {{{ t, RET t; treiber_stack_inv t ∗ treiber_stack_model t [] }}}.
   Proof.
     iIntros "%Φ _ HΦ".
     wp_rec.
     iApply wp_fupd. wp_apply (wp_alloc with "[//]"). iIntros "%l (Hl & Hmeta)".
     iApply "HΦ".
     iMod (auth_excl_alloc' []) as "(%γ & Hmodel₂ & Hmodel₁)".
-    iMod (meta_set _ _ γ treiber_meta_model with "Hmeta") as "#Hmeta"; first done.
+    iMod (meta_set _ _ γ treiber_stack_meta_model with "Hmeta") as "#Hmeta"; first done.
     iSplitR "Hmodel₂"; iExists l, γ; iFrame "∗#"; last done.
     iSplitR; first done. iApply inv_alloc. iNext. iExists mlst_nil, []. iFrame "∗#".
     iApply mlst_nil_spec.
   Qed.
 
-  Lemma treiber_push_spec t v :
-    <<< treiber_inv t | ∀∀ vs, treiber_model t vs >>>
-      treiber_push t v
-      @ ↑ treiber_namespace
-    <<< treiber_model t (v :: vs) | RET #(); True >>>.
+  Lemma treiber_stack_push_spec t v :
+    <<< treiber_stack_inv t | ∀∀ vs, treiber_stack_model t vs >>>
+      treiber_stack_push t v
+      @ ↑ treiber_stack_namespace
+    <<< treiber_stack_model t (v :: vs) | RET #(); True >>>.
   Proof.
     iIntros "!> %Φ (%l & %γ & -> & #Hmeta & #Hinv) HΦ".
     iLöb as "HLöb".
@@ -161,13 +161,13 @@ Section treiber_GS.
       wp_apply ("HLöb" with "HΦ").
   Qed.
 
-  Lemma treiber_pop_spec t :
-    <<< treiber_inv t | ∀∀ vs, treiber_model t vs >>>
-      treiber_pop t
-      @ ↑ treiber_namespace
+  Lemma treiber_stack_pop_spec t :
+    <<< treiber_stack_inv t | ∀∀ vs, treiber_stack_model t vs >>>
+      treiber_stack_pop t
+      @ ↑ treiber_stack_namespace
     <<< ∃∃ o,
-      (⌜vs = [] ∧ o = NONEV⌝ ∗ treiber_model t []) ∨
-      (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ treiber_model t vs') |
+      (⌜vs = [] ∧ o = NONEV⌝ ∗ treiber_stack_model t []) ∨
+      (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ treiber_stack_model t vs') |
       RET o; True
     >>>.
   Proof.
@@ -242,14 +242,14 @@ Section treiber_GS.
 
   Definition treiber_mpmc_stack :=
     Build_mpmc_stack
-      treiber_make_spec
-      treiber_push_spec
-      treiber_pop_spec.
-End treiber_GS.
+      treiber_stack_make_spec
+      treiber_stack_push_spec
+      treiber_stack_pop_spec.
+End treiber_stack_GS.
 
-#[global] Opaque treiber_make.
-#[global] Opaque treiber_push.
-#[global] Opaque treiber_pop.
+#[global] Opaque treiber_stack_make.
+#[global] Opaque treiber_stack_push.
+#[global] Opaque treiber_stack_pop.
 
-#[global] Opaque treiber_inv.
-#[global] Opaque treiber_model.
+#[global] Opaque treiber_stack_inv.
+#[global] Opaque treiber_stack_model.
