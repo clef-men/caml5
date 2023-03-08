@@ -6,7 +6,7 @@ From caml5.lang Require Import
 From caml5.std Require Export
   base.
 From caml5.std Require Import
-  record_three.
+  record3.
 
 Section heapGS.
   Context `{!heapGS Σ}.
@@ -45,7 +45,7 @@ Section heapGS.
 
   Definition dlchain_singleton : val :=
     λ: "prev" "v" "next",
-      record_three_make "prev" "v" "next".
+      record3_make "prev" "v" "next".
 
   Definition dlchain_advance_backward : val :=
     rec: "dlchain_advance_backward" "t" "i" :=
@@ -77,7 +77,7 @@ Section heapGS.
       dlchain_set_data (dlchain_advance "t" "i") "v".
 
   #[local] Definition dlchain_node l dq prev v next :=
-    record_three_model l dq prev v next.
+    record3_model l dq prev v next.
   Fixpoint dlchain_model t dq prev vs last next : iProp Σ :=
     match vs with
     | [] =>
@@ -121,7 +121,7 @@ Section heapGS.
       iSplitL "Hnode1 Hmodel'1"; repeat iExists _; auto with iFrame.
     - iInduction vs as [| v vs] "IH" forall (t prev); first iIntros "(% & _) //".
       iIntros "((%l & %t' & -> & Hnode1 & Hmodel'1) & (%_l & %_t' & %Heq & Hnode2 & Hmodel'2))". injection Heq as <-.
-      iDestruct (record_three_model_agree with "Hnode1 Hnode2") as %(_ & _ & <-).
+      iDestruct (record3_model_agree with "Hnode1 Hnode2") as %(_ & _ & <-).
       iDestruct (fractional_merge with "Hnode1 Hnode2") as "Hnode".
       iDestruct ("IH" with "[$Hmodel'1 $Hmodel'2]") as "Hmodel'".
       repeat iExists _. auto with iFrame.
@@ -195,7 +195,7 @@ Section heapGS.
   Proof.
     iInduction vs as [| v vs] "IH" forall (t prev); first done.
     iIntros "(%l & %t' & -> & Hnode & Hmodel')".
-    iMod (record_three_model_persist with "Hnode") as "Hnode".
+    iMod (record3_model_persist with "Hnode") as "Hnode".
     iMod ("IH" with "Hmodel'") as "Hmodel'".
     repeat iExists _. naive_solver.
   Qed.
@@ -207,7 +207,7 @@ Section heapGS.
   Proof.
     intros. destruct vs as [| v vs]; first naive_solver lia.
     iIntros "(%l & %t' & -> & Hnode & Hmodel')".
-    iApply (record_three_model_valid with "Hnode").
+    iApply (record3_model_valid with "Hnode").
   Qed.
   Lemma dlchain_model_combine t prev dq1 vs1 last1 next1 dq2 vs2 last2 next2 :
     length vs1 ≤ length vs2 →
@@ -225,7 +225,7 @@ Section heapGS.
     - iIntros "%Hlength". simpl in Hlength. lia.
     - iIntros "%Hlength (%l & %t' & -> & Hnode1 & Hmodel'1) (%_l & %_t' & %Heq & Hnode2 & Hmodel'2)". injection Heq as <-.
       simpl in Hlength. eapply le_S_n in Hlength.
-      iDestruct (record_three_model_combine with "Hnode1 Hnode2") as "(Hnode & _ & <- & <-)".
+      iDestruct (record3_model_combine with "Hnode1 Hnode2") as "(Hnode & _ & <- & <-)".
       iDestruct ("IH" with "[] Hmodel'1 Hmodel'2") as "(Hmodel' & Hmodel'2 & ->)"; first done.
       iFrame. iSplit; last rewrite /= take_length min_l //.
       iExists l, t'. auto with iFrame.
@@ -311,7 +311,7 @@ Section heapGS.
     destruct vs as [| v vs]; [naive_solver lia | intros _].
     iIntros "%Φ (%l & %t' & -> & Hnode & Hmodel') HΦ".
     wp_rec. wp_pures.
-    wp_apply (record_three_get0_spec with "Hnode"). iIntros "Hnode".
+    wp_apply (record3_get0_spec with "Hnode"). iIntros "Hnode".
     iApply "HΦ". iExists l, t'. auto with iFrame.
   Qed.
   Lemma dlchain_data_spec t dq prev v vs last next :
@@ -321,7 +321,7 @@ Section heapGS.
   Proof.
     iIntros "%Φ (%l & %t' & -> & Hnode & Hmodel') HΦ".
     wp_rec. wp_pures.
-    wp_apply (record_three_get1_spec with "Hnode"). iIntros "Hnode".
+    wp_apply (record3_get1_spec with "Hnode"). iIntros "Hnode".
     iApply "HΦ". iFrame. iExists l, t'. auto with iFrame.
   Qed.
   Lemma dlchain_next_spec t dq prev v vs last next :
@@ -335,7 +335,7 @@ Section heapGS.
   Proof.
     iIntros "%Φ (%l & %t' & -> & Hnode & Hmodel') HΦ".
     wp_rec. wp_pures.
-    wp_apply (record_three_get2_spec with "Hnode"). iIntros "Hnode".
+    wp_apply (record3_get2_spec with "Hnode"). iIntros "Hnode".
     iApply "HΦ". iFrame. iExists l, t'. auto with iFrame.
   Qed.
 
@@ -348,7 +348,7 @@ Section heapGS.
     destruct vs as [| v vs]; [naive_solver lia | intros _].
     iIntros "%Φ (%l & %t' & -> & Hnode & Hmodel') HΦ".
     wp_rec. wp_pures.
-    wp_apply (record_three_set0_spec with "Hnode"). iIntros "Hnode".
+    wp_apply (record3_set0_spec with "Hnode"). iIntros "Hnode".
     iApply "HΦ". iExists l, t'. auto with iFrame.
   Qed.
   Lemma dlchain_set_data_spec t prev v vs last next w :
@@ -358,7 +358,7 @@ Section heapGS.
   Proof.
     iIntros "%Φ (%l & %t' & -> & Hnode & Hmodel') HΦ".
     wp_rec. wp_pures.
-    wp_apply (record_three_set1_spec with "Hnode"). iIntros "Hnode".
+    wp_apply (record3_set1_spec with "Hnode"). iIntros "Hnode".
     iApply "HΦ". iExists l, t'. auto with iFrame.
   Qed.
   Lemma dlchain_set_next_spec t prev v vs last next w :
@@ -372,7 +372,7 @@ Section heapGS.
   Proof.
     iIntros "%Φ (%l & %t' & -> & Hnode & Hmodel') HΦ".
     wp_rec. wp_pures.
-    wp_apply (record_three_set2_spec with "Hnode"). iIntros "Hnode".
+    wp_apply (record3_set2_spec with "Hnode"). iIntros "Hnode".
     iApply "HΦ". iFrame. iExists l, w. auto with iFrame.
   Qed.
 
@@ -383,7 +383,7 @@ Section heapGS.
   Proof.
     iIntros "%Φ _ HΦ".
     wp_rec. wp_pures.
-    wp_apply (record_three_make_spec with "[//]"). iIntros "%l Hl".
+    wp_apply (record3_make_spec with "[//]"). iIntros "%l Hl".
     iApply "HΦ". iExists l, next. auto with iFrame.
   Qed.
 End heapGS.
