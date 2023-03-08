@@ -16,10 +16,8 @@ Record mutex `{!heapGS Σ} := {
   mutex_inv : val → iProp Σ → iProp Σ ;
   mutex_locked : val → iProp Σ ;
 
-  mutex_inv_ne t :
-    NonExpansive (mutex_inv t) ;
-  mutex_inv_proper t :
-    Proper ((≡) ==> (≡)) (mutex_inv t) ;
+  mutex_inv_contractive t :
+    Contractive (mutex_inv t) ;
 
   mutex_inv_persistent t P :
     Persistent (mutex_inv t P) ;
@@ -47,14 +45,24 @@ Record mutex `{!heapGS Σ} := {
     {{{ RET #(); True }}} ;
 }.
 #[global] Arguments mutex _ {_} : assert.
-#[global] Arguments Build_mutex {_ _ _ _ _ _ _ _ _ _ _ _} _ _ _ : assert.
-#[global] Existing Instance mutex_inv_ne.
-#[global] Existing Instance mutex_inv_proper.
+#[global] Arguments Build_mutex {_ _ _ _ _ _ _ _ _ _ _} _ _ _ : assert.
+#[global] Existing Instance mutex_inv_contractive.
 #[global] Existing Instance mutex_inv_persistent.
 #[global] Existing Instance mutex_locked_timeless.
 
 Section mutex.
   Context `{!heapGS Σ} (mutex : mutex Σ).
+
+  #[global] Instance mutex_inv_ne t :
+    NonExpansive (mutex.(mutex_inv) t).
+  Proof.
+    apply _.
+  Qed.
+  #[global] Instance mutex_inv_proper t :
+    Proper ((≡) ==> (≡)) (mutex.(mutex_inv) t).
+  Proof.
+    apply _.
+  Qed.
 
   Definition mutex_protect : val :=
     λ: "t" "fn",
