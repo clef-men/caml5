@@ -58,7 +58,5 @@ theories/concurrent/base.v
 theories/concurrent/mpmc_stack.v
 theories/concurrent/mpmc_queue.v
 theories/concurrent/ws_deque.v
-
-theories/lockfree/base.v
-theories/lockfree/treiber.v
-theories/lockfree/inf_chaselev.v
+theories/concurrent/treiber.v
+theories/concurrent/inf_chaselev.v

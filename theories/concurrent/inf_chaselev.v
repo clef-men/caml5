@@ -18,11 +18,11 @@ From caml5.lang Require Import
   proofmode.
 From caml5.std Require Import
   inf_array.
-From caml5.lockfree Require Export
+From caml5.concurrent Require Export
   base.
 
 Definition inf_chaselev_namespace :=
-  lockfree_namespace .@ "inf_chaselev".
+  concurrent_namespace .@ "inf_chaselev".
 
 Class InfChaselevGS Σ `{!heapGS Σ} (array : inf_array Σ) := {
   inf_chaselev_GS_ctl_G : AuthExclG Σ (prodO ZO (nat -d> valO)) ;

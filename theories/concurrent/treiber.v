@@ -12,11 +12,11 @@ From caml5.std Require Import
   mlst.
 From caml5.concurrent Require Import
   mpmc_stack.
-From caml5.lockfree Require Export
+From caml5.concurrent Require Export
   base.
 
 Definition treiber_namespace :=
-  lockfree_namespace .@ "treiber".
+  concurrent_namespace .@ "treiber".
 
 Class TreiberG Σ `{!heapGS Σ} := {
   treiber_G_model_G : AuthExclG Σ (listO valO) ;
