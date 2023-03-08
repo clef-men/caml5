@@ -21,9 +21,6 @@ From caml5.std Require Import
 From caml5.concurrent Require Export
   base.
 
-Definition inf_chaselev_deque_namespace :=
-  concurrent_namespace .@ "inf_chaselev_deque".
-
 Class InfChaselevGS Σ `{!heapGS Σ} (array : inf_array Σ) := {
   inf_chaselev_deque_GS_ctl_G : AuthExclG Σ (prodO ZO (nat -d> valO)) ;
   inf_chaselev_deque_GS_front_G : AuthNatMaxG Σ ;
@@ -206,7 +203,7 @@ Section inf_chaselev_deque_GS.
     inf_chaselev_deque_pub₁ γ_pub pub ∗
     (* state *)
     inf_chaselev_deque_state γ_lock front back pub.
-  Definition inf_chaselev_deque_inv t : iProp Σ :=
+  Definition inf_chaselev_deque_inv t ι : iProp Σ :=
     ∃ l γ_ctl γ_front γ_hist γ_pub γ_lock arr,
     ⌜t = #l⌝ ∗
     (* metas *)
@@ -218,7 +215,7 @@ Section inf_chaselev_deque_GS.
     (* physical fields *)
     l.(array) ↦□ arr ∗
     (* invariant *)
-    inv inf_chaselev_deque_namespace (inf_chaselev_deque_inv_inner l γ_ctl γ_front γ_hist γ_pub γ_lock arr).
+    inv ι (inf_chaselev_deque_inv_inner l γ_ctl γ_front γ_hist γ_pub γ_lock arr).
 
   Definition inf_chaselev_deque_model t pub : iProp Σ :=
     ∃ l γ_pub,
@@ -239,8 +236,8 @@ Section inf_chaselev_deque_GS.
     (* lock *)
     inf_chaselev_deque_lock γ_lock.
 
-  #[global] Instance inf_chaselev_deque_inv_persistent t :
-    Persistent (inf_chaselev_deque_inv t).
+  #[global] Instance inf_chaselev_deque_inv_persistent t ι :
+    Persistent (inf_chaselev_deque_inv t ι).
   Proof.
     apply _.
   Qed.
@@ -379,12 +376,12 @@ Section inf_chaselev_deque_GS.
     iApply (inf_chaselev_deque_lock_exclusive with "Hlock1 Hlock2").
   Qed.
 
-  Lemma inf_chaselev_deque_make_spec :
+  Lemma inf_chaselev_deque_make_spec ι :
     {{{ True }}}
       inf_chaselev_deque_make #()
     {{{ t,
       RET t;
-      inf_chaselev_deque_inv t ∗ inf_chaselev_deque_model t [] ∗ inf_chaselev_deque_own t
+      inf_chaselev_deque_inv t ι ∗ inf_chaselev_deque_model t [] ∗ inf_chaselev_deque_own t
     }}}.
   Proof.
     iIntros "%Φ _ HΦ".
@@ -425,13 +422,13 @@ Section inf_chaselev_deque_GS.
     iExists l, γ_ctl, γ_lock, 0%Z, (λ _, #()). iFrame "∗#". done.
   Qed.
 
-  Lemma inf_chaselev_deque_push_spec t v :
+  Lemma inf_chaselev_deque_push_spec t ι v :
     <<<
-      inf_chaselev_deque_inv t ∗ inf_chaselev_deque_own t |
+      inf_chaselev_deque_inv t ι ∗ inf_chaselev_deque_own t |
       ∀∀ pub, inf_chaselev_deque_model t pub
     >>>
       inf_chaselev_deque_push t v
-      @ ↑ inf_chaselev_deque_namespace
+      @ ↑ ι
     <<<
       inf_chaselev_deque_model t (pub ++ [v]) |
       RET #(); inf_chaselev_deque_own t
@@ -555,13 +552,13 @@ Section inf_chaselev_deque_GS.
     iApply "HΦ". repeat iExists _. iFrame "∗#". done.
   Qed.
 
-  Lemma inf_chaselev_deque_steal_spec t :
+  Lemma inf_chaselev_deque_steal_spec t ι :
     <<<
-      inf_chaselev_deque_inv t |
+      inf_chaselev_deque_inv t ι |
       ∀∀ pub, inf_chaselev_deque_model t pub
     >>>
       inf_chaselev_deque_steal t
-      @ ↑ inf_chaselev_deque_namespace
+      @ ↑ ι
     <<<
       ∃∃ o,
       (⌜length pub ≤ 1 ∧ o = NONEV⌝ ∗ inf_chaselev_deque_model t pub) ∨
@@ -847,13 +844,13 @@ Section inf_chaselev_deque_GS.
     iApply "HΦ".
   Qed.
 
-  Lemma inf_chaselev_deque_pop_spec t :
+  Lemma inf_chaselev_deque_pop_spec t ι :
     <<<
-      inf_chaselev_deque_inv t ∗ inf_chaselev_deque_own t |
+      inf_chaselev_deque_inv t ι ∗ inf_chaselev_deque_own t |
       ∀∀ pub, inf_chaselev_deque_model t pub
     >>>
       inf_chaselev_deque_pop t
-      @ ↑ inf_chaselev_deque_namespace
+      @ ↑ ι
     <<<
       ∃∃ o,
       (⌜pub = [] ∧ o = NONEV⌝ ∗ inf_chaselev_deque_model t []) ∨

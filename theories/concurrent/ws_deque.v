@@ -14,13 +14,12 @@ Record ws_deque `{!heapGS Σ} := {
   ws_deque_pop : val ;
   ws_deque_steal : val ;
 
-  ws_deque_namespace : namespace ;
-  ws_deque_inv : val → iProp Σ ;
+  ws_deque_inv : val → namespace → iProp Σ ;
   ws_deque_model : val → list val → iProp Σ ;
   ws_deque_own : val → iProp Σ ;
 
-  ws_deque_inv_persistent t :
-    Persistent (ws_deque_inv t) ;
+  ws_deque_inv_persistent t ι :
+    Persistent (ws_deque_inv t ι) ;
   ws_deque_model_timeless t vs :
     Timeless (ws_deque_model t vs) ;
   ws_deque_own_timeless t :
@@ -31,43 +30,43 @@ Record ws_deque `{!heapGS Σ} := {
     ws_deque_own t -∗
     False ;
 
-  ws_deque_make_spec :
+  ws_deque_make_spec ι :
     {{{ True }}}
       ws_deque_make #()
-    {{{ t, RET t; ws_deque_inv t ∗ ws_deque_model t [] ∗ ws_deque_own t }}} ;
+    {{{ t, RET t; ws_deque_inv t ι ∗ ws_deque_model t [] ∗ ws_deque_own t }}} ;
 
-  ws_deque_push_spec t v :
+  ws_deque_push_spec t ι v :
     <<<
-      ws_deque_inv t ∗ ws_deque_own t |
+      ws_deque_inv t ι ∗ ws_deque_own t |
       ∀∀ vs, ws_deque_model t vs
     >>>
       ws_deque_push t v
-      @ ↑ ws_deque_namespace
+      @ ↑ ι
     <<<
       ws_deque_model t (vs ++ [v]) |
       RET #(); ws_deque_own t
     >>> ;
 
-  ws_deque_pop_spec t :
+  ws_deque_pop_spec t ι :
     <<<
-      ws_deque_inv t ∗ ws_deque_own t |
+      ws_deque_inv t ι ∗ ws_deque_own t |
       ∀∀ vs, ws_deque_model t vs
     >>>
       ws_deque_pop t
-      @ ↑ ws_deque_namespace
+      @ ↑ ι
     <<< ∃∃ o,
       (⌜vs = [] ∧ o = NONEV⌝ ∗ ws_deque_model t []) ∨
       (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ ws_deque_model t vs') |
       RET o; ws_deque_own t
     >>> ;
 
-  ws_deque_steal_spec t :
+  ws_deque_steal_spec t ι :
     <<<
-      ws_deque_inv t |
+      ws_deque_inv t ι |
       ∀∀ vs, ws_deque_model t vs
     >>>
       ws_deque_steal t
-      @ ↑ ws_deque_namespace
+      @ ↑ ι
     <<< ∃∃ o,
       (⌜vs = [] ∧ o = NONEV⌝ ∗ ws_deque_model t []) ∨
       (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ ws_deque_model t vs') |
@@ -75,7 +74,7 @@ Record ws_deque `{!heapGS Σ} := {
     >>> ;
 }.
 #[global] Arguments ws_deque _ {_} : assert.
-#[global] Arguments Build_ws_deque {_ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ : assert.
+#[global] Arguments Build_ws_deque {_ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ : assert.
 #[global] Existing Instance ws_deque_inv_persistent.
 #[global] Existing Instance ws_deque_model_timeless.
 #[global] Existing Instance ws_deque_own_timeless.

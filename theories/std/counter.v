@@ -14,9 +14,6 @@ From caml5.lang Require Import
 From caml5.std Require Export
   base.
 
-Definition counter_namespace :=
-  std_namespace .@ "counter".
-
 Class CounterGS Σ `{!heapGS Σ} := {
   counter_GS_mono_G : AuthNatMaxG Σ ;
   counter_GS_token_G : inG Σ (authR (gset_disjUR nat)) ;
@@ -96,11 +93,11 @@ Section counter_GS.
     ∃ n,
     l ↦ #n ∗
     counter_model₁ γ_model n.
-  Definition counter_inv t : iProp Σ :=
+  Definition counter_inv t ι : iProp Σ :=
     ∃ l γ_model,
     ⌜t = #l⌝ ∗
     meta l counter_meta_model γ_model ∗
-    inv counter_namespace (counter_inv_inner l γ_model).
+    inv ι (counter_inv_inner l γ_model).
 
   #[global] Instance counter_lb_persistent t lb :
     Persistent (counter_lb t lb).
@@ -122,8 +119,8 @@ Section counter_GS.
   Proof.
     apply _.
   Qed.
-  #[global] Instance counter_inv_persistent t :
-    Persistent (counter_inv t).
+  #[global] Instance counter_inv_persistent t ι :
+    Persistent (counter_inv t ι).
   Proof.
     apply _.
   Qed.
@@ -273,10 +270,10 @@ Section counter_GS.
     iDestruct (counter_model_ne with "Hmodel1 Hmodel2") as %?; naive_solver.
   Qed.
 
-  Lemma counter_make_spec :
+  Lemma counter_make_spec ι :
     {{{ True }}}
       counter_make #()
-    {{{ t, RET t; counter_inv t ∗ counter_model t (DfracOwn 1) 0 }}}.
+    {{{ t, RET t; counter_inv t ι ∗ counter_model t (DfracOwn 1) 0 }}}.
   Proof.
     iIntros "%Φ _ HΦ".
     wp_rec. iApply wp_fupd. wp_apply (wp_alloc with "[//]"). iIntros "%l (Hl & Hmeta)".
@@ -295,10 +292,10 @@ Section counter_GS.
     - iExists l, γ_mono, γ_token, γ_model. iFrame "∗#". done.
   Qed.
 
-  Lemma counter_incr_spec t :
-    <<< counter_inv t | ∀∀ n, counter_model t (DfracOwn 1) n >>>
+  Lemma counter_incr_spec t ι :
+    <<< counter_inv t ι | ∀∀ n, counter_model t (DfracOwn 1) n >>>
       counter_incr t
-      @ ↑ counter_namespace
+      @ ↑ ι
     <<< counter_model t (DfracOwn 1) (S n) ∗ counter_token t n | RET #n; True >>>.
   Proof.
     iIntros "!> %Φ (%l & %γ_model & -> & #Hmeta_model & #Hinv) HΦ".
@@ -324,10 +321,10 @@ Section counter_GS.
     assert (n + 1 = S n)%Z as -> by lia. done.
   Qed.
 
-  Lemma counter_get_spec t :
-    <<< counter_inv t | ∀∀ dq n, counter_model t dq n >>>
+  Lemma counter_get_spec t ι :
+    <<< counter_inv t ι | ∀∀ dq n, counter_model t dq n >>>
       counter_get t
-      @ ↑ counter_namespace
+      @ ↑ ι
     <<< counter_model t dq n | RET #n; True >>>.
   Proof.
     iIntros "!> %Φ (%l & %γ_model & -> & #Hmeta_model & #Hinv) HΦ".

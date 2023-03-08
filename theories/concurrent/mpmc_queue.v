@@ -13,30 +13,29 @@ Record mpmc_queue `{!heapGS Σ} := {
   mpmc_queue_push : val ;
   mpmc_queue_pop : val ;
 
-  mpmc_queue_namespace : namespace ;
-  mpmc_queue_inv : val → iProp Σ ;
+  mpmc_queue_inv : val → namespace → iProp Σ ;
   mpmc_queue_model : val → list val → iProp Σ ;
 
-  mpmc_queue_inv_persistent t :
-    Persistent (mpmc_queue_inv t) ;
+  mpmc_queue_inv_persistent t ι :
+    Persistent (mpmc_queue_inv t ι) ;
   mpmc_queue_model_timeless t vs :
     Timeless (mpmc_queue_model t vs) ;
 
-  mpmc_queue_make_spec :
+  mpmc_queue_make_spec ι :
     {{{ True }}}
       mpmc_queue_make #()
-    {{{ t, RET t; mpmc_queue_inv t ∗ mpmc_queue_model t [] }}} ;
+    {{{ t, RET t; mpmc_queue_inv t ι ∗ mpmc_queue_model t [] }}} ;
 
-  mpmc_queue_push_spec t v :
-    <<< mpmc_queue_inv t | ∀∀ vs, mpmc_queue_model t vs >>>
+  mpmc_queue_push_spec t ι v :
+    <<< mpmc_queue_inv t ι | ∀∀ vs, mpmc_queue_model t vs >>>
       mpmc_queue_push t v
-      @ ↑ mpmc_queue_namespace
+      @ ↑ ι
     <<< mpmc_queue_model t (v :: vs) | RET #(); True >>> ;
 
-  mpmc_queue_pop_spec t :
-    <<< mpmc_queue_inv t | ∀∀ vs, mpmc_queue_model t vs >>>
+  mpmc_queue_pop_spec t ι :
+    <<< mpmc_queue_inv t ι | ∀∀ vs, mpmc_queue_model t vs >>>
       mpmc_queue_pop t
-      @ ↑ mpmc_queue_namespace
+      @ ↑ ι
     <<< ∃∃ o,
       (⌜vs = [] ∧ o = NONEV⌝ ∗ mpmc_queue_model t []) ∨
       (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ mpmc_queue_model t vs') |
@@ -44,6 +43,6 @@ Record mpmc_queue `{!heapGS Σ} := {
     >>> ;
 }.
 #[global] Arguments mpmc_queue _ {_} : assert.
-#[global] Arguments Build_mpmc_queue {_ _ _ _ _ _ _ _ _ _} _ _ _ : assert.
+#[global] Arguments Build_mpmc_queue {_ _ _ _ _ _ _ _ _} _ _ _ : assert.
 #[global] Existing Instance mpmc_queue_inv_persistent.
 #[global] Existing Instance mpmc_queue_model_timeless.

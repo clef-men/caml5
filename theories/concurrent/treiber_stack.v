@@ -15,9 +15,6 @@ From caml5.concurrent Require Import
 From caml5.concurrent Require Export
   base.
 
-Definition treiber_stack_namespace :=
-  concurrent_namespace .@ "treiber_stack".
-
 Class TreiberG Σ `{!heapGS Σ} := {
   treiber_stack_G_model_G : AuthExclG Σ (listO valO) ;
 }.
@@ -76,11 +73,11 @@ Section treiber_stack_GS.
   Definition treiber_stack_inv_inner t l γ : iProp Σ :=
     ∃ lst vs,
     l ↦ lst ∗ mlst_model lst DfracDiscarded vs ∗ treiber_stack_model₁ γ vs.
-  Definition treiber_stack_inv t : iProp Σ :=
+  Definition treiber_stack_inv t ι : iProp Σ :=
     ∃ l γ,
     ⌜t = #l⌝ ∗
     meta l treiber_stack_meta_model γ ∗
-    inv treiber_stack_namespace (treiber_stack_inv_inner t l γ).
+    inv ι (treiber_stack_inv_inner t l γ).
 
   Definition treiber_stack_model t vs : iProp Σ :=
     ∃ l γ,
@@ -88,8 +85,8 @@ Section treiber_stack_GS.
     meta l treiber_stack_meta_model γ ∗
     treiber_stack_model₂ γ vs.
 
-  #[global] Instance treiber_stack_inv_persistent t :
-    Persistent (treiber_stack_inv t).
+  #[global] Instance treiber_stack_inv_persistent t ι :
+    Persistent (treiber_stack_inv t ι).
   Proof.
     apply _.
   Qed.
@@ -99,10 +96,10 @@ Section treiber_stack_GS.
     apply _.
   Qed.
 
-  Lemma treiber_stack_make_spec :
+  Lemma treiber_stack_make_spec ι :
     {{{ True }}}
       treiber_stack_make #()
-    {{{ t, RET t; treiber_stack_inv t ∗ treiber_stack_model t [] }}}.
+    {{{ t, RET t; treiber_stack_inv t ι ∗ treiber_stack_model t [] }}}.
   Proof.
     iIntros "%Φ _ HΦ".
     wp_rec.
@@ -115,10 +112,10 @@ Section treiber_stack_GS.
     iApply mlst_nil_spec.
   Qed.
 
-  Lemma treiber_stack_push_spec t v :
-    <<< treiber_stack_inv t | ∀∀ vs, treiber_stack_model t vs >>>
+  Lemma treiber_stack_push_spec t ι v :
+    <<< treiber_stack_inv t ι | ∀∀ vs, treiber_stack_model t vs >>>
       treiber_stack_push t v
-      @ ↑ treiber_stack_namespace
+      @ ↑ ι
     <<< treiber_stack_model t (v :: vs) | RET #(); True >>>.
   Proof.
     iIntros "!> %Φ (%l & %γ & -> & #Hmeta & #Hinv) HΦ".
@@ -161,10 +158,10 @@ Section treiber_stack_GS.
       wp_apply ("HLöb" with "HΦ").
   Qed.
 
-  Lemma treiber_stack_pop_spec t :
-    <<< treiber_stack_inv t | ∀∀ vs, treiber_stack_model t vs >>>
+  Lemma treiber_stack_pop_spec t ι :
+    <<< treiber_stack_inv t ι | ∀∀ vs, treiber_stack_model t vs >>>
       treiber_stack_pop t
-      @ ↑ treiber_stack_namespace
+      @ ↑ ι
     <<< ∃∃ o,
       (⌜vs = [] ∧ o = NONEV⌝ ∗ treiber_stack_model t []) ∨
       (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ treiber_stack_model t vs') |
