@@ -76,7 +76,7 @@ Section heapGS.
     λ: "t" "i" "v",
       dlchain_set_data (dlchain_advance "t" "i") "v".
 
-  #[local] Definition dlchain_cell l dq prev v next :=
+  #[local] Definition dlchain_node l dq prev v next :=
     record_three_model l dq prev v next.
   Fixpoint dlchain_model t dq prev vs last next : iProp Σ :=
     match vs with
@@ -85,7 +85,7 @@ Section heapGS.
     | v :: vs =>
         ∃ l t',
         ⌜t = #l⌝ ∗
-        dlchain_cell l dq prev v t' ∗ dlchain_model t' dq t vs last next
+        dlchain_node l dq prev v t' ∗ dlchain_model t' dq t vs last next
     end.
 
   Lemma dlchain_model_unboxed t dq prev v vs last next :
@@ -105,7 +105,7 @@ Section heapGS.
   Proof.
     rewrite /Persistent.
     iInduction vs as [| v vs] "IH" forall (t prev); first naive_solver.
-    iIntros "(%l & %t' & -> & #Hcell & Hmodel')".
+    iIntros "(%l & %t' & -> & #Hnode & Hmodel')".
     iDestruct ("IH" with "Hmodel'") as "#?".
     iModIntro. naive_solver.
   Qed.
@@ -115,14 +115,14 @@ Section heapGS.
   Proof.
     intros q1 q2. iSplit.
     - iInduction vs as [| v vs] "IH" forall (t prev); first done.
-      iIntros "(%l & %t' & -> & Hcell & Hmodel')".
-      iDestruct (fractional_split_1 with "Hcell") as "(Hcell1 & Hcell2)".
+      iIntros "(%l & %t' & -> & Hnode & Hmodel')".
+      iDestruct (fractional_split_1 with "Hnode") as "(Hnode1 & Hnode2)".
       iDestruct ("IH" with "Hmodel'") as "(Hmodel'1 & Hmodel'2)".
-      iSplitL "Hcell1 Hmodel'1"; repeat iExists _; auto with iFrame.
+      iSplitL "Hnode1 Hmodel'1"; repeat iExists _; auto with iFrame.
     - iInduction vs as [| v vs] "IH" forall (t prev); first iIntros "(% & _) //".
-      iIntros "((%l & %t' & -> & Hcell1 & Hmodel'1) & (%_l & %_t' & %Heq & Hcell2 & Hmodel'2))". injection Heq as <-.
-      iDestruct (record_three_model_agree with "Hcell1 Hcell2") as %(_ & _ & <-).
-      iDestruct (fractional_merge with "Hcell1 Hcell2") as "Hcell".
+      iIntros "((%l & %t' & -> & Hnode1 & Hmodel'1) & (%_l & %_t' & %Heq & Hnode2 & Hmodel'2))". injection Heq as <-.
+      iDestruct (record_three_model_agree with "Hnode1 Hnode2") as %(_ & _ & <-).
+      iDestruct (fractional_merge with "Hnode1 Hnode2") as "Hnode".
       iDestruct ("IH" with "[$Hmodel'1 $Hmodel'2]") as "Hmodel'".
       repeat iExists _. auto with iFrame.
   Qed.
@@ -157,7 +157,7 @@ Section heapGS.
   Proof.
     iInduction vs1 as [| v1 vs1] "IH" forall (t1 prev).
     - iIntros "(-> & ->)". naive_solver.
-    - iIntros "(%l1 & %t1' & -> & Hcell1 & Hmodel1') Hmodel2".
+    - iIntros "(%l1 & %t1' & -> & Hnode1 & Hmodel1') Hmodel2".
       rewrite -app_comm_cons.
       iExists l1, t1'. iFrame. iSplit; first done.
       iApply ("IH" with "Hmodel1' Hmodel2").
@@ -172,7 +172,7 @@ Section heapGS.
     iInduction vs1 as [| v1 vs1] "IH" forall (t prev vs); iIntros (->).
     - naive_solver.
     - rewrite -app_comm_cons.
-      iIntros "(%l & %t' & -> & Hcell & Hmodel')".
+      iIntros "(%l & %t' & -> & Hnode & Hmodel')".
       iDestruct ("IH" with "[//] Hmodel'") as "(%last' & %t'' & Hmodel' & Hmodel'')".
       iExists last', t''. iFrame. iExists l, t'. auto with iFrame.
   Qed.
@@ -194,8 +194,8 @@ Section heapGS.
     dlchain_model t DfracDiscarded prev vs last next.
   Proof.
     iInduction vs as [| v vs] "IH" forall (t prev); first done.
-    iIntros "(%l & %t' & -> & Hcell & Hmodel')".
-    iMod (record_three_model_persist with "Hcell") as "Hcell".
+    iIntros "(%l & %t' & -> & Hnode & Hmodel')".
+    iMod (record_three_model_persist with "Hnode") as "Hnode".
     iMod ("IH" with "Hmodel'") as "Hmodel'".
     repeat iExists _. naive_solver.
   Qed.
@@ -206,8 +206,8 @@ Section heapGS.
     ⌜✓ dq⌝.
   Proof.
     intros. destruct vs as [| v vs]; first naive_solver lia.
-    iIntros "(%l & %t' & -> & Hcell & Hmodel')".
-    iApply (record_three_model_valid with "Hcell").
+    iIntros "(%l & %t' & -> & Hnode & Hmodel')".
+    iApply (record_three_model_valid with "Hnode").
   Qed.
   Lemma dlchain_model_combine t prev dq1 vs1 last1 next1 dq2 vs2 last2 next2 :
     length vs1 ≤ length vs2 →
@@ -220,12 +220,12 @@ Section heapGS.
     iInduction vs1 as [| v1 vs1] "IH" forall (t prev vs2);
       destruct vs2 as [| v2 vs2].
     - iIntros "_ (-> & ->) (-> & ->) //".
-    - iIntros "_ (-> & ->) (%l & %t' & -> & Hcell & Hmodel')".
+    - iIntros "_ (-> & ->) (%l & %t' & -> & Hnode & Hmodel')".
       repeat iSplit; try done. iExists l, t'. auto with iFrame.
     - iIntros "%Hlength". simpl in Hlength. lia.
-    - iIntros "%Hlength (%l & %t' & -> & Hcell1 & Hmodel'1) (%_l & %_t' & %Heq & Hcell2 & Hmodel'2)". injection Heq as <-.
+    - iIntros "%Hlength (%l & %t' & -> & Hnode1 & Hmodel'1) (%_l & %_t' & %Heq & Hnode2 & Hmodel'2)". injection Heq as <-.
       simpl in Hlength. eapply le_S_n in Hlength.
-      iDestruct (record_three_model_combine with "Hcell1 Hcell2") as "(Hcell & _ & <- & <-)".
+      iDestruct (record_three_model_combine with "Hnode1 Hnode2") as "(Hnode & _ & <- & <-)".
       iDestruct ("IH" with "[] Hmodel'1 Hmodel'2") as "(Hmodel' & Hmodel'2 & ->)"; first done.
       iFrame. iSplit; last rewrite /= take_length min_l //.
       iExists l, t'. auto with iFrame.
@@ -309,9 +309,9 @@ Section heapGS.
     {{{ RET prev; dlchain_model t dq prev vs last next }}}.
   Proof.
     destruct vs as [| v vs]; [naive_solver lia | intros _].
-    iIntros "%Φ (%l & %t' & -> & Hcell & Hmodel') HΦ".
+    iIntros "%Φ (%l & %t' & -> & Hnode & Hmodel') HΦ".
     wp_rec. wp_pures.
-    wp_apply (record_three_get0_spec with "Hcell"). iIntros "Hcell".
+    wp_apply (record_three_get0_spec with "Hnode"). iIntros "Hnode".
     iApply "HΦ". iExists l, t'. auto with iFrame.
   Qed.
   Lemma dlchain_data_spec t dq prev v vs last next :
@@ -319,9 +319,9 @@ Section heapGS.
       dlchain_data t
     {{{ RET v; dlchain_model t dq prev (v :: vs) last next }}}.
   Proof.
-    iIntros "%Φ (%l & %t' & -> & Hcell & Hmodel') HΦ".
+    iIntros "%Φ (%l & %t' & -> & Hnode & Hmodel') HΦ".
     wp_rec. wp_pures.
-    wp_apply (record_three_get1_spec with "Hcell"). iIntros "Hcell".
+    wp_apply (record_three_get1_spec with "Hnode"). iIntros "Hnode".
     iApply "HΦ". iFrame. iExists l, t'. auto with iFrame.
   Qed.
   Lemma dlchain_next_spec t dq prev v vs last next :
@@ -333,9 +333,9 @@ Section heapGS.
       dlchain_model t' dq t vs last next
     }}}.
   Proof.
-    iIntros "%Φ (%l & %t' & -> & Hcell & Hmodel') HΦ".
+    iIntros "%Φ (%l & %t' & -> & Hnode & Hmodel') HΦ".
     wp_rec. wp_pures.
-    wp_apply (record_three_get2_spec with "Hcell"). iIntros "Hcell".
+    wp_apply (record_three_get2_spec with "Hnode"). iIntros "Hnode".
     iApply "HΦ". iFrame. iExists l, t'. auto with iFrame.
   Qed.
 
@@ -346,9 +346,9 @@ Section heapGS.
     {{{ RET #(); dlchain_model t (DfracOwn 1) prev' vs last next }}}.
   Proof.
     destruct vs as [| v vs]; [naive_solver lia | intros _].
-    iIntros "%Φ (%l & %t' & -> & Hcell & Hmodel') HΦ".
+    iIntros "%Φ (%l & %t' & -> & Hnode & Hmodel') HΦ".
     wp_rec. wp_pures.
-    wp_apply (record_three_set0_spec with "Hcell"). iIntros "Hcell".
+    wp_apply (record_three_set0_spec with "Hnode"). iIntros "Hnode".
     iApply "HΦ". iExists l, t'. auto with iFrame.
   Qed.
   Lemma dlchain_set_data_spec t prev v vs last next w :
@@ -356,9 +356,9 @@ Section heapGS.
       dlchain_set_data t w
     {{{ RET #(); dlchain_model t (DfracOwn 1) prev (w :: vs) last next }}}.
   Proof.
-    iIntros "%Φ (%l & %t' & -> & Hcell & Hmodel') HΦ".
+    iIntros "%Φ (%l & %t' & -> & Hnode & Hmodel') HΦ".
     wp_rec. wp_pures.
-    wp_apply (record_three_set1_spec with "Hcell"). iIntros "Hcell".
+    wp_apply (record_three_set1_spec with "Hnode"). iIntros "Hnode".
     iApply "HΦ". iExists l, t'. auto with iFrame.
   Qed.
   Lemma dlchain_set_next_spec t prev v vs last next w :
@@ -370,9 +370,9 @@ Section heapGS.
       dlchain_model t' (DfracOwn 1) t vs last next
     }}}.
   Proof.
-    iIntros "%Φ (%l & %t' & -> & Hcell & Hmodel') HΦ".
+    iIntros "%Φ (%l & %t' & -> & Hnode & Hmodel') HΦ".
     wp_rec. wp_pures.
-    wp_apply (record_three_set2_spec with "Hcell"). iIntros "Hcell".
+    wp_apply (record_three_set2_spec with "Hnode"). iIntros "Hnode".
     iApply "HΦ". iFrame. iExists l, w. auto with iFrame.
   Qed.
 
