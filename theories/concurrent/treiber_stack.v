@@ -237,11 +237,26 @@ Section treiber_stack_GS.
         wp_apply ("HLöb" with "HΦ").
   Qed.
 
-  Definition treiber_mpmc_stack :=
-    Build_mpmc_stack
-      treiber_stack_make_spec
-      treiber_stack_push_spec
-      treiber_stack_pop_spec.
+  Program Definition treiber_mpmc_stack := {|
+    mpmc_stack_make := treiber_stack_make ;
+    mpmc_stack_push := treiber_stack_push ;
+    mpmc_stack_pop := treiber_stack_pop ;
+
+    mpmc_stack_name := unit ;
+    mpmc_stack_inv t _ ι := treiber_stack_inv t ι ;
+    mpmc_stack_model t _ vs := treiber_stack_model t vs ;
+  |}.
+  Next Obligation.
+    iIntros "%ι %Φ _ HΦ".
+    wp_apply (treiber_stack_make_spec with "[//]"). iIntros "%t".
+    iApply ("HΦ" $! t ()).
+  Qed.
+  Next Obligation.
+    iIntros "%t _ %ι %v". iApply treiber_stack_push_spec.
+  Qed.
+  Next Obligation.
+    iIntros "%t _ %ι". iApply treiber_stack_pop_spec.
+  Qed.
 End treiber_stack_GS.
 
 #[global] Opaque treiber_stack_make.
