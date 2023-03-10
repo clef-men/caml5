@@ -5,7 +5,7 @@ From caml5.lang Require Import
 From caml5.concurrent Require Export
   base.
 
-Implicit Types v w t : val.
+Implicit Types v t : val.
 Implicit Types vs : list val.
 
 Record mpmc_queue `{!heapGS Σ} := {

@@ -57,6 +57,8 @@ theories/concurrent/base.v
 theories/concurrent/counter.v
 theories/concurrent/mpmc_stack.v
 theories/concurrent/mpmc_queue.v
+theories/concurrent/spmc_stack.v
+theories/concurrent/spmc_queue.v
 theories/concurrent/ws_deque.v
 theories/concurrent/treiber_stack.v
 theories/concurrent/inf_chaselev_deque.v

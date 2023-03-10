@@ -247,15 +247,15 @@ Section treiber_stack_GS.
     mpmc_stack_model t _ vs := treiber_stack_model t vs ;
   |}.
   Next Obligation.
-    iIntros "%ι %Φ _ HΦ".
+    intros. iIntros "_ HΦ".
     wp_apply (treiber_stack_make_spec with "[//]"). iIntros "%t".
     iApply ("HΦ" $! t ()).
   Qed.
   Next Obligation.
-    iIntros "%t _ %ι %v". iApply treiber_stack_push_spec.
+    intros. iApply treiber_stack_push_spec.
   Qed.
   Next Obligation.
-    iIntros "%t _ %ι". iApply treiber_stack_pop_spec.
+    intros. iApply treiber_stack_pop_spec.
   Qed.
 End treiber_stack_GS.
 
