@@ -225,7 +225,7 @@ Section inf_chaselev_deque_GS.
     (* public values *)
     inf_chaselev_deque_pub₂ γ_pub pub.
 
-  Definition inf_chaselev_deque_own t : iProp Σ :=
+  Definition inf_chaselev_deque_owner t : iProp Σ :=
     ∃ l γ_ctl γ_lock back priv,
     ⌜t = #l⌝ ∗
     (* metas *)
@@ -246,8 +246,8 @@ Section inf_chaselev_deque_GS.
   Proof.
     apply _.
   Qed.
-  #[global] Instance inf_chaselev_deque_own_timeless t :
-    Timeless (inf_chaselev_deque_own t).
+  #[global] Instance inf_chaselev_deque_owner_timeless t :
+    Timeless (inf_chaselev_deque_owner t).
   Proof.
     apply _.
   Qed.
@@ -366,9 +366,9 @@ Section inf_chaselev_deque_GS.
     iDestruct (inf_chaselev_deque_lock_exclusive with "Hlock Hlock'") as %[].
   Qed.
 
-  Lemma inf_chaselev_deque_own_exclusive t :
-    inf_chaselev_deque_own t -∗
-    inf_chaselev_deque_own t -∗
+  Lemma inf_chaselev_deque_owner_exclusive t :
+    inf_chaselev_deque_owner t -∗
+    inf_chaselev_deque_owner t -∗
     False.
   Proof.
     iIntros "(%l1 & %γ_ctl1 & %γ_lock1 & %back1 & %priv1 & %Heq1 & #Hmeta_ctl1 & #Hmeta_lock1 & Hctl₂1 & Hlock1) (%l2 & %γ_ctl2 & %γ_lock2 & %back2 & %priv2 & %Heq2 & #Hmeta_ctl2 & #Hmeta_lock2 & Hctl₂2 & Hlock2)". simplify.
@@ -381,7 +381,7 @@ Section inf_chaselev_deque_GS.
       inf_chaselev_deque_make #()
     {{{ t,
       RET t;
-      inf_chaselev_deque_inv t ι ∗ inf_chaselev_deque_model t [] ∗ inf_chaselev_deque_own t
+      inf_chaselev_deque_inv t ι ∗ inf_chaselev_deque_model t [] ∗ inf_chaselev_deque_owner t
     }}}.
   Proof.
     iIntros "%Φ _ HΦ".
@@ -424,14 +424,14 @@ Section inf_chaselev_deque_GS.
 
   Lemma inf_chaselev_deque_push_spec t ι v :
     <<<
-      inf_chaselev_deque_inv t ι ∗ inf_chaselev_deque_own t |
+      inf_chaselev_deque_inv t ι ∗ inf_chaselev_deque_owner t |
       ∀∀ pub, inf_chaselev_deque_model t pub
     >>>
       inf_chaselev_deque_push t v
       @ ↑ ι
     <<<
       inf_chaselev_deque_model t (pub ++ [v]) |
-      RET #(); inf_chaselev_deque_own t
+      RET #(); inf_chaselev_deque_owner t
     >>>.
   Proof.
     iIntros "!> %Φ ((%l & %γ_ctl & %γ_front & %γ_hist & %γ_pub & %γ_lock & %arr & -> & #Hmeta_ctl & #Hmeta_front & #Hmeta_hist & #Hmeta_pub & #Hmeta_lock & #Harr & #Hinv) & (%l' & %_γ_ctl & %_γ_lock & %back & %priv & %Heq & #_Hmeta_ctl & #_Hmeta_lock & Hctl₂ & Hlock)) HΦ".
@@ -846,7 +846,7 @@ Section inf_chaselev_deque_GS.
 
   Lemma inf_chaselev_deque_pop_spec t ι :
     <<<
-      inf_chaselev_deque_inv t ι ∗ inf_chaselev_deque_own t |
+      inf_chaselev_deque_inv t ι ∗ inf_chaselev_deque_owner t |
       ∀∀ pub, inf_chaselev_deque_model t pub
     >>>
       inf_chaselev_deque_pop t
@@ -855,7 +855,7 @@ Section inf_chaselev_deque_GS.
       ∃∃ o,
       (⌜pub = [] ∧ o = NONEV⌝ ∗ inf_chaselev_deque_model t []) ∨
       (∃ pub' v, ⌜pub = pub' ++ [v] ∧ o = SOMEV v⌝ ∗ inf_chaselev_deque_model t pub') |
-      RET o; inf_chaselev_deque_own t
+      RET o; inf_chaselev_deque_owner t
     >>>.
   Proof.
     iIntros "!> %Φ ((%l & %γ_ctl & %γ_front & %γ_hist & %γ_pub & %γ_lock & %arr & -> & #Hmeta_ctl & #Hmeta_front & #Hmeta_hist & #Hmeta_pub & #Hmeta_lock & #Harr & #Hinv) & (%_l & %_γ_ctl & %_γ_lock & %back & %priv & %Heq & #_Hmeta_ctl & #_Hmeta_lock & Hctl₂ & Hlock)) HΦ".
@@ -1475,4 +1475,4 @@ End inf_chaselev_deque_GS.
 
 #[global] Opaque inf_chaselev_deque_inv.
 #[global] Opaque inf_chaselev_deque_model.
-#[global] Opaque inf_chaselev_deque_own.
+#[global] Opaque inf_chaselev_deque_owner.
