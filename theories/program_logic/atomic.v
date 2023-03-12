@@ -12,49 +12,213 @@ From caml5 Require Import
 From caml5 Require Export
   base.
 
-Definition atomic_wp `{!irisGS Λ Σ} {TA TB : tele}
-  (e : expr Λ)
-  (E : coPset)
-  (α : TA → iProp Σ)
-  (β : TA → TB → iProp Σ)
-  (Φ : TA → TB → iProp Σ)
-  (f : TA → TB → val Λ)
-  : iProp Σ :=
-    ∀ Ψ,
-    atomic_update (⊤ ∖ E) ∅ α β (λ.. x y, Φ x y -∗ Ψ (f x y)) -∗
-    WP e {{ Ψ }}.
+Section atomic_acc.
+  Context `{BiFUpd PROP} {TA TB : tele}.
+  Implicit Types α : TA → PROP.
+  Implicit Types P : PROP.
+  Implicit Types β Ψ : TA → TB → PROP.
 
-Section lemmas.
-  Context `{!irisGS Λ Σ} {TA TB : tele}.
-  Implicit Types α : TA → iProp Σ.
-  Implicit Types β Φ : TA → TB → iProp Σ.
-  Implicit Types f : TA → TB → val Λ.
-
-  Lemma atomic_wp_seq e E α β Φ f :
-    atomic_wp e E α β Φ f -∗
-    ∀ Ψ, ∀.. x, α x -∗ (∀.. y, β x y -∗ Φ x y -∗ Ψ (f x y)) -∗ WP e {{ Ψ }}.
+  #[global] Instance atomic_acc_proper Eo Ei :
+    Proper (
+      pointwise_relation TA (≡) ==>
+      (≡) ==>
+      pointwise_relation TA (pointwise_relation TB (≡)) ==>
+      pointwise_relation TA (pointwise_relation TB (≡)) ==>
+      (≡)
+    ) (atomic_acc (PROP := PROP) Eo Ei).
   Proof.
-    iIntros "Hawp %Ψ %x Hα HΨ".
-    iApply (wp_frame_wand with "HΨ"). iApply "Hawp".
-    iAuIntro. iAaccIntro with "Hα"; first auto. iIntros "%y Hβ !>".
-    rewrite !tele_app_bind. iIntros "HΦ HΨ". iApply ("HΨ" with "Hβ HΦ").
+    solve_proper.
   Qed.
 
-  Lemma atomic_wp_inv e E α β Φ f N I :
-    ↑ N ⊆ E →
-    atomic_wp e (E ∖ ↑ N) (λ.. x, ▷ I ∗ α x) (λ.. x y, ▷ I ∗ β x y) Φ f -∗
-    inv N I -∗
-    atomic_wp e E α β Φ f.
+  #[global] Instance frame_atomic_acc p R Eo Ei α P1 P2 β Ψ1 Ψ2 :
+    Frame p R P1 P2 →
+    (∀ x y, Frame p R (Ψ1 x y) (Ψ2 x y)) →
+    Frame p R (atomic_acc Eo Ei α P1 β (λ.. x y, Ψ1 x y)) (atomic_acc Eo Ei α P2 β (λ.. x y, Ψ2 x y)).
   Proof.
-    iIntros "% Hawp #Hinv %Ψ HΨ".
-    iApply "Hawp". iAuIntro.
-    iInv "Hinv" as "HI". iApply (aacc_aupd with "HΨ"); first solve_ndisj.
-    iIntros "%x Hα". iAaccIntro with "[HI Hα]"; rewrite !tele_app_bind; first by iFrame.
+    rewrite /Frame. iIntros "%HP %HΨ (HR & H)".
+    iApply (atomic_acc_wand with "[HR] H"). iSplit.
+    - iIntros "HP2". iApply HP. iFrame.
+    - iIntros "%x %y HΨ2". rewrite !tele_app_bind. iApply HΨ. iFrame.
+  Qed.
+  Lemma atomic_acc_frame_l R Eo Ei α P β Ψ :
+    R -∗
+    atomic_acc Eo Ei α P β Ψ -∗
+    atomic_acc Eo Ei α (R ∗ P) β (λ.. x y, R ∗ Ψ x y).
+  Proof.
+    iIntros "HR H". iFrame.
+    iApply (atomic_acc_proper with "H"); try done.
+    intros x y. rewrite !tele_app_bind //.
+  Qed.
+  Lemma atomic_acc_frame_r R Eo Ei α P β Ψ :
+    atomic_acc Eo Ei α P β Ψ -∗
+    R -∗
+    atomic_acc Eo Ei α (P ∗ R) β (λ.. x y, Ψ x y ∗ R).
+  Proof.
+    iIntros "H HR". iFrame.
+    iApply (atomic_acc_proper with "H"); try done.
+    intros x y. rewrite !tele_app_bind //.
+  Qed.
+End atomic_acc.
+
+Section atomic_update.
+  Context `{BiFUpd PROP} {TA TB : tele}.
+  Implicit Types α : TA → PROP.
+  Implicit Types β Ψ : TA → TB → PROP.
+
+  #[global] Instance atomic_update_proper Eo Ei :
+    Proper (
+      pointwise_relation TA (≡) ==>
+      pointwise_relation TA (pointwise_relation TB (≡)) ==>
+      pointwise_relation TA (pointwise_relation TB (≡)) ==>
+      (≡)
+    ) (atomic_update (PROP := PROP) Eo Ei).
+  Proof.
+    rewrite atomic.atomic_update_unseal /atomic.atomic_update_def /atomic_update_pre.
+    solve_proper.
+  Qed.
+
+  Lemma atomic_update_wand Eo Ei α β Ψ1 Ψ2 :
+    (∀.. x y, Ψ1 x y -∗ Ψ2 x y) -∗
+    atomic_update Eo Ei α β Ψ1 -∗
+    atomic_update Eo Ei α β Ψ2.
+  Proof.
+    iIntros "HΨ H".
+    iEval (rewrite atomic.atomic_update_unseal /atomic.atomic_update_def /atomic_update_pre).
+    set Φ := (λ (_ : ()), (∀.. x y, Ψ1 x y -∗ Ψ2 x y) ∗ atomic_update Eo Ei α β Ψ1)%I.
+    iApply (fixpoint.greatest_fixpoint_coiter _ Φ); last iFrame.
+    iIntros "!>" ([]) "(HΨ & H)". rewrite atomic.aupd_unfold /atomic_acc.
+    iMod "H" as "(%x & Hα & H)".
+    iModIntro. iExists x. iFrame. iSplit.
+    - iIntros "Hα". iFrame. iApply ("H" with "Hα").
+    - iIntros "%y Hβ". iMod ("H" with "Hβ") as "HΨ1". iApply "HΨ". auto.
+  Qed.
+
+  #[global] Instance frame_atomic_update p R Eo Ei α β Ψ1 Ψ2 :
+    (∀ x y, Frame p R (Ψ1 x y) (Ψ2 x y)) →
+    Frame p R (atomic_update Eo Ei α β (λ.. x y, Ψ1 x y)) (atomic_update Eo Ei α β (λ.. x y, Ψ2 x y)).
+  Proof.
+    rewrite /Frame. iIntros "%HΨ (HR & H)".
+    iApply (atomic_update_wand with "[HR] H").
+    iIntros "%x %y HΨ2". rewrite !tele_app_bind. iApply HΨ. iFrame.
+  Qed.
+  Lemma atomic_update_frame_l R Eo Ei α β Ψ :
+    R -∗
+    atomic_update Eo Ei α β Ψ -∗
+    atomic_update Eo Ei α β (λ.. x y, R ∗ Ψ x y).
+  Proof.
+    iIntros "HR H". iFrame.
+    iApply (atomic_update_proper with "H"); try done.
+    intros x y. rewrite !tele_app_bind //.
+  Qed.
+  Lemma atomic_update_frame_r R Eo Ei α β Ψ :
+    atomic_update Eo Ei α β Ψ -∗
+    R -∗
+    atomic_update Eo Ei α β (λ.. x y, Ψ x y ∗ R).
+  Proof.
+    iIntros "H HR". iFrame.
+    iApply (atomic_update_proper with "H"); try done.
+    intros x y. rewrite !tele_app_bind //.
+  Qed.
+End atomic_update.
+
+Section atomic_wp.
+  Context `{!irisGS Λ Σ} {TA TB : tele}.
+  Implicit Types α : TA → iProp Σ.
+  Implicit Types β Ψ : TA → TB → iProp Σ.
+  Implicit Types f : TA → TB → val Λ.
+
+  Definition atomic_wp e E α β Ψ f : iProp Σ :=
+    ∀ Φ,
+    atomic_update (⊤ ∖ E) ∅ α β (λ.. x y, Ψ x y -∗ Φ (f x y)) -∗
+    WP e {{ Φ }}.
+
+  #[global] Instance atomic_wp_ne e E n :
+    Proper (
+      pointwise_relation TA (≡{n}≡) ==>
+      pointwise_relation TA (pointwise_relation TB (≡{n}≡)) ==>
+      pointwise_relation TA (pointwise_relation TB (≡{n}≡)) ==>
+      pointwise_relation TA (pointwise_relation TB (=)) ==>
+      (≡{n}≡)
+    ) (atomic_wp e E).
+  Proof.
+    intros α1 α2 Hα β1 β2 Hβ Ψ1 Ψ2 HΨ f1 f2 Hf. rewrite /atomic_wp.
+    f_equiv. intros Φ. do 2 f_equiv; [done.. |]. intros x y.
+    rewrite !tele_app_bind. solve_proper.
+  Qed.
+  #[global] Instance atomic_wp_proper e E :
+    Proper (
+      pointwise_relation TA (≡) ==>
+      pointwise_relation TA (pointwise_relation TB (≡)) ==>
+      pointwise_relation TA (pointwise_relation TB (≡)) ==>
+      pointwise_relation TA (pointwise_relation TB (=)) ==>
+      (≡)
+    ) (atomic_wp e E).
+  Proof.
+    intros α1 α2 Hα β1 β2 Hβ Ψ1 Ψ2 HΨ f1 f2 Hf. rewrite /atomic_wp.
+    f_equiv. intros Φ. do 2 f_equiv; [done.. |]. intros x y.
+    rewrite !tele_app_bind. f_equiv; first solve_proper. f_equiv. apply Hf.
+  Qed.
+
+  Lemma atomic_wp_wand e E α β Ψ1 Ψ2 f :
+    (∀.. x y, Ψ1 x y -∗ Ψ2 x y) -∗
+    atomic_wp e E α β Ψ1 f -∗
+    atomic_wp e E α β Ψ2 f.
+  Proof.
+    iIntros "HΨ H %Φ HΦ".
+    iApply "H". iApply (atomic_update_wand with "[HΨ] HΦ").
+    iIntros "%x %y HΨ2". rewrite !tele_app_bind. iIntros "HΨ1".
+    iApply "HΨ2". iApply "HΨ". done.
+  Qed.
+
+  #[global] Instance frame_atomic_wp p R e E α β Ψ1 Ψ2 f :
+    (∀ x y, Frame p R (Ψ1 x y) (Ψ2 x y)) →
+    Frame p R (atomic_wp e E α β (λ.. x y, Ψ1 x y) f) (atomic_wp e E α β (λ.. x y, Ψ2 x y) f).
+  Proof.
+    rewrite /Frame. iIntros "%HΨ (HR & H)".
+    iApply (atomic_wp_wand with "[HR] H").
+    iIntros "%x %y HΨ2". rewrite !tele_app_bind. iApply HΨ. iFrame.
+  Qed.
+  Lemma atomic_wp_frame_l R e E α β Ψ f :
+    R -∗
+    atomic_wp e E α β Ψ f -∗
+    atomic_wp e E α β (λ x y, R ∗ Ψ x y) f.
+  Proof.
+    iIntros "HR H". iApply (atomic_wp_wand with "[HR] H"). auto with iFrame.
+  Qed.
+  Lemma atomic_wp_frame_r R e E α β Ψ f :
+    atomic_wp e E α β Ψ f -∗
+    R -∗
+    atomic_wp e E α β (λ x y, Ψ x y ∗ R) f.
+  Proof.
+    iIntros "H HR". iApply (atomic_wp_wand with "[HR] H"). auto with iFrame.
+  Qed.
+
+  Lemma atomic_wp_seq e E α β Ψ f :
+    atomic_wp e E α β Ψ f -∗
+    ∀ Φ, ∀.. x, α x -∗ (∀.. y, β x y -∗ Ψ x y -∗ Φ (f x y)) -∗ WP e {{ Φ }}.
+  Proof.
+    iIntros "H %Φ %x Hα HΦ".
+    iApply (wp_frame_wand with "HΦ"). iApply "H".
+    iAuIntro. iAaccIntro with "Hα"; first auto. iIntros "%y Hβ !>".
+    rewrite !tele_app_bind. iIntros "HΨ HΦ". iApply ("HΦ" with "Hβ HΨ").
+  Qed.
+
+  Lemma atomic_wp_inv ι I e E α β Ψ f :
+    ↑ ι ⊆ E →
+    inv ι I -∗
+    atomic_wp e (E ∖ ↑ ι) (λ.. x, ▷ I ∗ α x) (λ.. x y, ▷ I ∗ β x y) Ψ f -∗
+    atomic_wp e E α β Ψ f.
+  Proof.
+    iIntros "% #Hinv H %Φ HΦ".
+    iApply "H". iAuIntro.
+    iInv "Hinv" as "HI".
+    iApply (aacc_aupd with "HΦ"); first solve_ndisj. iIntros "%x Hα".
+    iAaccIntro with "[HI Hα]"; rewrite !tele_app_bind; first by iFrame.
     - iIntros "(HI & $)". auto with iFrame.
     - iIntros "%y". rewrite !tele_app_bind. iIntros "(HI & Hβ)". iRight.
       iExists y. rewrite !tele_app_bind. auto with iFrame.
   Qed.
-End lemmas.
+End atomic_wp.
 
 Notation "'AWP' '<<' ∀∀ x1 .. xn , α '>>' e @ E '<<' ∃∃ y1 .. yn , β | 'RET' v ; Q '>>'" := (
   atomic_wp
@@ -193,53 +357,117 @@ Notation "'AWP' '<<' α '>>' e '<<' β | 'RET' v ; Q '>>'" := (
   format "'[hv' '[' 'AWP'  '<<'  '/  ' '[' α ']'  '/' '>>' ']'  '/  ' e  '/' '[' '<<'  '/  ' '[' β  |  '/' RET v ;  Q ']'  '/' '>>' ']' ']'"
 ) : bi_scope.
 
-Definition atomic_triple `{!irisGS Λ Σ} {TA TB : tele}
-  (e : expr Λ)
-  (E : coPset)
-  (P : iProp Σ)
-  (α : TA → iProp Σ)
-  (β : TA → TB → iProp Σ)
-  (Φ : TA → TB → iProp Σ)
-  (f : TA → TB → val Λ)
-  : iProp Σ :=
-    □ (
-      ∀ Ψ,
-      P -∗
-      atomic_update (⊤ ∖ E) ∅ α β (λ.. x y, Φ x y -∗ Ψ (f x y)) -∗
-      WP e {{ Ψ }}
-    ).
-
-Section lemmas.
+Section atomic_triple.
   Context `{!irisGS Λ Σ} {TA TB : tele}.
+  Implicit Types P : iProp Σ.
   Implicit Types α : TA → iProp Σ.
-  Implicit Types β Φ : TA → TB → iProp Σ.
+  Implicit Types β Ψ : TA → TB → iProp Σ.
   Implicit Types f : TA → TB → val Λ.
 
-  Lemma atomic_triple_seq e E P α β Φ f :
-    atomic_triple e E P α β Φ f -∗
-    □ ∀ Ψ, P -∗ ∀.. x, α x -∗ (∀.. y, β x y -∗ Φ x y -∗ Ψ (f x y)) -∗ WP e {{ Ψ }}.
+  Definition atomic_triple e E P α β Ψ f : iProp Σ :=
+    □ (
+      ∀ Φ,
+      P -∗
+      atomic_update (⊤ ∖ E) ∅ α β (λ.. x y, Ψ x y -∗ Φ (f x y)) -∗
+      WP e {{ Φ }}
+    ).
+
+  #[global] Instance atomic_triple_ne e E n :
+    Proper (
+      (≡{n}≡) ==>
+      pointwise_relation TA (≡{n}≡) ==>
+      pointwise_relation TA (pointwise_relation TB (≡{n}≡)) ==>
+      pointwise_relation TA (pointwise_relation TB (≡{n}≡)) ==>
+      pointwise_relation TA (pointwise_relation TB (=)) ==>
+      (≡{n}≡)
+    ) (atomic_triple e E).
   Proof.
-    iIntros "#Hatriple !> %Ψ HP %x Hα HΨ".
-    iApply (wp_frame_wand with "HΨ"). iApply ("Hatriple" with "HP").
-    iAuIntro. iAaccIntro with "Hα"; first auto. iIntros "%y Hβ !>".
-    rewrite !tele_app_bind. iIntros "HΦ HΨ". iApply ("HΨ" with "Hβ HΦ").
+    intros P1 P2 HP α1 α2 Hα β1 β2 Hβ Ψ1 Ψ2 HΨ f1 f2 Hf. rewrite /atomic_triple.
+    do 2 f_equiv. intros Φ. f_equiv; first done. do 2 f_equiv; [done.. |]. intros x y.
+    rewrite !tele_app_bind. solve_proper.
+  Qed.
+  #[global] Instance atomic_triple_proper e E :
+    Proper (
+      (≡) ==>
+      pointwise_relation TA (≡) ==>
+      pointwise_relation TA (pointwise_relation TB (≡)) ==>
+      pointwise_relation TA (pointwise_relation TB (≡)) ==>
+      pointwise_relation TA (pointwise_relation TB (=)) ==>
+      (≡)
+    ) (atomic_triple e E).
+  Proof.
+    intros P1 P2 HP α1 α2 Hα β1 β2 Hβ Ψ1 Ψ2 HΨ f1 f2 Hf. rewrite /atomic_triple.
+    do 2 f_equiv. intros Φ. f_equiv; first done. do 2 f_equiv; [done.. |]. intros x y.
+    rewrite !tele_app_bind. f_equiv; first solve_proper. f_equiv.
+    rewrite leibniz_equiv_iff. solve_proper.
   Qed.
 
-  Lemma atomic_triple_inv e E P α β Φ f N I :
-    ↑ N ⊆ E →
-    atomic_triple e (E ∖ ↑ N) P (λ.. x, ▷ I ∗ α x) (λ.. x y, ▷ I ∗ β x y) Φ f -∗
-    inv N I -∗
-    atomic_triple e E P α β Φ f.
+  Lemma atomic_triple_wand e E P α β Ψ1 Ψ2 f :
+    □ (∀.. x y, Ψ1 x y -∗ Ψ2 x y) -∗
+    atomic_triple e E P α β Ψ1 f -∗
+    atomic_triple e E P α β Ψ2 f.
   Proof.
-    iIntros "% #Hatriple #Hinv !> %Ψ HP HΨ".
-    iApply ("Hatriple" with "HP"). iAuIntro.
-    iInv "Hinv" as "HI". iApply (aacc_aupd with "HΨ"); first solve_ndisj.
-    iIntros "%x Hα". iAaccIntro with "[HI Hα]"; rewrite !tele_app_bind; first by iFrame.
+    iIntros "#HΨ #H !> %Φ HP HΦ".
+    iApply ("H" with "HP"). iApply (atomic_update_wand with "[HΨ] HΦ").
+    iIntros "%x %y HΨ2". rewrite !tele_app_bind. iIntros "HΨ1".
+    iApply "HΨ2". iApply "HΨ". done.
+  Qed.
+
+  #[global] Instance frame_atomic_triple R e E P α β Ψ1 Ψ2 f :
+    (∀ x y, Frame true R (Ψ1 x y) (Ψ2 x y)) →
+    Frame true R (atomic_triple e E P α β (λ.. x y, Ψ1 x y) f) (atomic_triple e E P α β (λ.. x y, Ψ2 x y) f).
+  Proof.
+    rewrite /Frame. iIntros "/= %HΨ (#HR & H)".
+    iApply (atomic_triple_wand with "[HR] H").
+    iIntros "!> %x %y HΨ2". rewrite !tele_app_bind. iApply HΨ. iFrame "#∗".
+  Qed.
+  Lemma atomic_triple_frame_l R e E P α β Ψ f :
+    atomic_triple e E P α β Ψ f -∗
+    atomic_triple e E (R ∗ P) α β (λ x y, R ∗ Ψ x y) f.
+  Proof.
+    iIntros "#H !> %Φ (HR & HP) HΦ".
+    iApply ("H" with "HP").
+    iApply (atomic_update_wand with "[HR] HΦ").
+    iIntros "%x %y HΦ". rewrite !tele_app_bind. iIntros "HΨ".
+    iApply "HΦ". auto with iFrame.
+  Qed.
+  Lemma atomic_triple_frame_r R e E P α β Ψ f :
+    atomic_triple e E P α β Ψ f -∗
+    atomic_triple e E (P ∗ R) α β (λ x y, Ψ x y ∗ R) f.
+  Proof.
+    iIntros "#H !> %Φ (HP & HR) HΦ".
+    iApply ("H" with "HP").
+    iApply (atomic_update_wand with "[HR] HΦ").
+    iIntros "%x %y HΦ". rewrite !tele_app_bind. iIntros "HΨ".
+    iApply "HΦ". auto with iFrame.
+  Qed.
+
+  Lemma atomic_triple_seq e E P α β Ψ f :
+    atomic_triple e E P α β Ψ f -∗
+    □ ∀ Φ, P -∗ ∀.. x, α x -∗ (∀.. y, β x y -∗ Ψ x y -∗ Φ (f x y)) -∗ WP e {{ Φ }}.
+  Proof.
+    iIntros "#H !> %Φ HP %x Hα HΦ".
+    iApply (wp_frame_wand with "HΦ"). iApply ("H" with "HP").
+    iAuIntro. iAaccIntro with "Hα"; first auto. iIntros "%y Hβ !>".
+    rewrite !tele_app_bind. iIntros "HΨ HΦ". iApply ("HΦ" with "Hβ HΨ").
+  Qed.
+
+  Lemma atomic_triple_inv ι I e E P α β Ψ f :
+    ↑ ι ⊆ E →
+    inv ι I -∗
+    atomic_triple e (E ∖ ↑ ι) P (λ.. x, ▷ I ∗ α x) (λ.. x y, ▷ I ∗ β x y) Ψ f -∗
+    atomic_triple e E P α β Ψ f.
+  Proof.
+    iIntros "% #Hinv #H !> %Φ HP HΦ".
+    iApply ("H" with "HP"). iAuIntro.
+    iInv "Hinv" as "HI".
+    iApply (aacc_aupd with "HΦ"); first solve_ndisj. iIntros "%x Hα".
+    iAaccIntro with "[HI Hα]"; rewrite !tele_app_bind; first by iFrame.
     - iIntros "(HI & $)". auto with iFrame.
     - iIntros "%y". rewrite !tele_app_bind. iIntros "(HI & Hβ)". iRight.
       iExists y. rewrite !tele_app_bind. auto with iFrame.
   Qed.
-End lemmas.
+End atomic_triple.
 
 Notation "'<<<' P | ∀∀ x1 .. xn , α '>>>' e @ E '<<<' ∃∃ y1 .. yn , β | 'RET' v ; Q '>>>'" := (
   atomic_triple
