@@ -1,5 +1,7 @@
 From caml5 Require Import
   prelude.
+From caml5.base_logic Require Import
+  lib.excl.
 From caml5.lang Require Import
   notations
   proofmode.
@@ -27,6 +29,11 @@ Record spmc_stack `{!heapGS Σ} := {
     Timeless (spmc_stack_model t γ vs) ;
   spmc_stack_producer_timeless t γ :
     Timeless (spmc_stack_producer t γ) ;
+
+  spmc_stack_producer_exclusive t γ :
+    spmc_stack_producer t γ -∗
+    spmc_stack_producer t γ -∗
+    False ;
 
   spmc_stack_make_spec ι :
     {{{ True }}}
@@ -65,31 +72,69 @@ Record spmc_stack `{!heapGS Σ} := {
     >>> ;
 }.
 #[global] Arguments spmc_stack _ {_} : assert.
-#[global] Arguments Build_spmc_stack {_ _ _ _ _ _ _ _ _ _ _ _} _ _ _ : assert.
+#[global] Arguments Build_spmc_stack {_ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ : assert.
 #[global] Existing Instance spmc_stack_inv_persistent.
 #[global] Existing Instance spmc_stack_model_timeless.
 #[global] Existing Instance spmc_stack_producer_timeless.
 
-Program Definition spmc_stack_of_mpmc_stack `{!heapGS Σ} mpmc_stack := {|
-  spmc_stack_make := mpmc_stack.(mpmc_stack_make) ;
-  spmc_stack_push := mpmc_stack.(mpmc_stack_push) ;
-  spmc_stack_pop := mpmc_stack.(mpmc_stack_pop) ;
+Class SpmcStackOfMpmcStackG Σ `{!heapGS Σ} := {
+  spmc_stack_of_mpmc_stack_G_producer_G : ExclG Σ unitO ;
+}.
+#[local] Existing Instance spmc_stack_of_mpmc_stack_G_producer_G.
 
-  spmc_stack_name := mpmc_stack.(mpmc_stack_name) ;
-  spmc_stack_inv := mpmc_stack.(mpmc_stack_inv) ;
-  spmc_stack_model := mpmc_stack.(mpmc_stack_model) ;
-  spmc_stack_producer _ _ := True%I ;
-|}.
-Next Obligation.
-  intros.
-  setoid_rewrite (@right_id _ equiv True%I); last apply _.
-  apply mpmc_stack_make_spec.
+Definition spmc_stack_of_mpmc_stack_Σ := #[
+  excl_Σ unitO
+].
+Lemma subG_spmc_stack_of_mpmc_stack_Σ Σ `{!heapGS Σ} :
+  subG spmc_stack_of_mpmc_stack_Σ Σ →
+  SpmcStackOfMpmcStackG Σ.
+Proof.
+  solve_inG.
 Qed.
-Next Obligation.
-  intros.
-  rewrite /atomic_triple. setoid_rewrite (@right_id _ equiv True%I); last apply _.
-  apply mpmc_stack_push_spec.
-Qed.
-Next Obligation.
-  intros. apply mpmc_stack_pop_spec.
-Qed.
+
+Section spmc_stack_of_mpmc_stack.
+  Context `{SpmcStackOfMpmcStackG Σ} (mpmc_stack : mpmc_stack Σ).
+
+  Notation "γ .(base)" := γ.1
+  ( at level 5
+  ) : stdpp_scope.
+  Notation "γ .(producer)" := γ.2
+  ( at level 5
+  ) : stdpp_scope.
+
+  Program Definition spmc_stack_of_mpmc_stack := {|
+    spmc_stack_make :=
+      mpmc_stack.(mpmc_stack_make) ;
+    spmc_stack_push :=
+      mpmc_stack.(mpmc_stack_push) ;
+    spmc_stack_pop :=
+      mpmc_stack.(mpmc_stack_pop) ;
+
+    spmc_stack_name :=
+      mpmc_stack.(mpmc_stack_name) * gname ;
+    spmc_stack_inv t γ ι :=
+      mpmc_stack.(mpmc_stack_inv) t γ.(base) ι ;
+    spmc_stack_model t γ :=
+      mpmc_stack.(mpmc_stack_model) t γ.(base) ;
+    spmc_stack_producer _ γ :=
+      excl γ.(producer) () ;
+  |}.
+  Next Obligation.
+    intros. apply excl_exclusive.
+  Qed.
+  Next Obligation.
+    iIntros "%ι %Φ _ HΦ".
+    iMod excl_alloc as "(%γ_producer & Hproducer)".
+    wp_apply (mpmc_stack_make_spec with "[//]"). iIntros "%t %γ_base (Hinv & Hmodel)".
+    iApply ("HΦ" $! t (γ_base, γ_producer)). iFrame.
+  Qed.
+  Next Obligation.
+    iIntros "%t %γ %ι %v !> %Φ (Hinv & Hproducer) HΦ".
+    wp_apply (mpmc_stack_push_spec with "Hinv").
+    iApply (atomic_update_wand with "[Hproducer] HΦ").
+    iIntros "_ HΦ _". iApply "HΦ". done.
+  Qed.
+  Next Obligation.
+    intros. apply mpmc_stack_pop_spec.
+  Qed.
+End spmc_stack_of_mpmc_stack.
