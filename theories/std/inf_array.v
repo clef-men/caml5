@@ -1,3 +1,6 @@
+From Coq.Logic Require Import
+  FunctionalExtensionality.
+
 From caml5 Require Import
   prelude.
 From caml5.lang Require Import
@@ -15,8 +18,6 @@ Record inf_array `{!heapGS Σ} := {
 
   inf_array_model : val → (nat → val) → iProp Σ ;
 
-  inf_array_model_ne t :
-    NonExpansive (inf_array_model t : (nat -d> valO) → iProp Σ) ;
   inf_array_model_timeless t vs :
     Timeless (inf_array_model t vs) ;
 
@@ -38,12 +39,20 @@ Record inf_array `{!heapGS Σ} := {
     <<< inf_array_model t (<[Z.to_nat i := v]> vs) | RET #(); True >>> ;
 }.
 #[global] Arguments inf_array _ {_} : assert.
-#[global] Arguments Build_inf_array {_ _ _ _ _ _ _ _} _ _ _ : assert.
-#[global] Existing Instance inf_array_model_ne.
+#[global] Arguments Build_inf_array {_ _ _ _ _ _ _} _ _ _ : assert.
 #[global] Existing Instance inf_array_model_timeless.
 
-#[global] Instance inf_array_model_proper `{!heapGS Σ} inf_array t :
-  Proper ((≡) ==> (≡)) (inf_array.(inf_array_model) t : (nat -d> valO) → iProp Σ).
-Proof.
-  apply ne_proper, _.
-Qed.
+Section inf_array.
+  Context `{!heapGS Σ} (inf_array : inf_array Σ).
+
+  #[global] Instance inf_array_model_ne t n :
+    Proper ((pointwise_relation nat (=)) ==> (≡{n}≡)) (inf_array.(inf_array_model) t).
+  Proof.
+    intros vs1 vs2 ->%functional_extensionality. done.
+  Qed.
+  #[global] Instance inf_array_model_proper t :
+    Proper ((pointwise_relation nat (=)) ==> (≡)) (inf_array.(inf_array_model) t).
+  Proof.
+    intros vs1 vs2 Hvs. rewrite equiv_dist. solve_proper.
+  Qed.
+End inf_array.
