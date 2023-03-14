@@ -61,6 +61,8 @@ theories/concurrent/spmc_stack.v
 theories/concurrent/spmc_queue.v
 theories/concurrent/mpsc_stack.v
 theories/concurrent/mpsc_queue.v
+theories/concurrent/spsc_stack.v
+theories/concurrent/spsc_queue.v
 theories/concurrent/ws_deque.v
 theories/concurrent/ws_bag.v
 theories/concurrent/treiber_stack.v
