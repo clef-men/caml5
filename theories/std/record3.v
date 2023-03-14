@@ -13,14 +13,14 @@ Section heapGS.
   Definition record3_make : val :=
     λ: "v₀" "v₁" "v₂",
       let: "l" := AllocN #3 "v₀" in
-      "l".1 <- "v₁" ;;
-      "l".2 <- "v₂" ;;
+      "l".(1) <- "v₁" ;;
+      "l".(2) <- "v₂" ;;
       "l".
 
   Definition record3_model l dq v₀ v₁ v₂ : iProp Σ :=
-    (l +ₗ 0%Z) ↦{dq} v₀ ∗
-    (l +ₗ 1%Z) ↦{dq} v₁ ∗
-    (l +ₗ 2%Z) ↦{dq} v₂.
+    l.(0) ↦{dq} v₀ ∗
+    l.(1) ↦{dq} v₁ ∗
+    l.(2) ↦{dq} v₂.
 
   #[global] Instance record3_model_timeless l dq v₀ v₁ v₂ :
     Timeless (record3_model l dq v₀ v₁ v₂).
@@ -146,7 +146,7 @@ Section heapGS.
 
   Lemma record3_get0_spec l dq v₀ v₁ v₂ :
     {{{ record3_model l dq v₀ v₁ v₂ }}}
-      !#(l +ₗ 0)
+      !#l.(0)
     {{{ RET v₀; record3_model l dq v₀ v₁ v₂ }}}.
   Proof.
     iIntros "%Φ (Hv₀ & Hv₁ & Hv₂) HΦ".
@@ -155,7 +155,7 @@ Section heapGS.
   Qed.
   Lemma record3_get1_spec l dq v₀ v₁ v₂ :
     {{{ record3_model l dq v₀ v₁ v₂ }}}
-      !#(l +ₗ 1)
+      !#l.(1)
     {{{ RET v₁; record3_model l dq v₀ v₁ v₂ }}}.
   Proof.
     iIntros "%Φ (Hv₀ & Hv₁ & Hv₂) HΦ".
@@ -164,7 +164,7 @@ Section heapGS.
   Qed.
   Lemma record3_get2_spec l dq v₀ v₁ v₂ :
     {{{ record3_model l dq v₀ v₁ v₂ }}}
-      !#(l +ₗ 2)
+      !#l.(2)
     {{{ RET v₂; record3_model l dq v₀ v₁ v₂ }}}.
   Proof.
     iIntros "%Φ (Hv₀ & Hv₁ & Hv₂) HΦ".
@@ -174,7 +174,7 @@ Section heapGS.
 
   Lemma record3_set0_spec l v₀ v₁ v₂ v :
     {{{ record3_model l (DfracOwn 1) v₀ v₁ v₂ }}}
-      #(l +ₗ 0) <- v
+      #l.(0) <- v
     {{{ RET #(); record3_model l (DfracOwn 1) v v₁ v₂ }}}.
   Proof.
     iIntros "%Φ (Hv₀ & Hv₁ & Hv₂) HΦ".
@@ -183,7 +183,7 @@ Section heapGS.
   Qed.
   Lemma record3_set1_spec l v₀ v₁ v₂ v :
     {{{ record3_model l (DfracOwn 1) v₀ v₁ v₂ }}}
-      #(l +ₗ 1) <- v
+      #l.(1) <- v
     {{{ RET #(); record3_model l (DfracOwn 1) v₀ v v₂ }}}.
   Proof.
     iIntros "%Φ (Hv₀ & Hv₁ & Hv₂) HΦ".
@@ -192,7 +192,7 @@ Section heapGS.
   Qed.
   Lemma record3_set2_spec l v₀ v₁ v₂ v :
     {{{ record3_model l (DfracOwn 1) v₀ v₁ v₂ }}}
-      #(l +ₗ 2) <- v
+      #l.(2) <- v
     {{{ RET #(); record3_model l (DfracOwn 1) v₀ v₁ v }}}.
   Proof.
     iIntros "%Φ (Hv₀ & Hv₁ & Hv₂) HΦ".

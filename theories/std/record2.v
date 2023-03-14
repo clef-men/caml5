@@ -13,12 +13,12 @@ Section heapGS.
   Definition record2_make : val :=
     λ: "v₀" "v₁",
       let: "l" := AllocN #2 "v₀" in
-      "l".1 <- "v₁" ;;
+      "l".(1) <- "v₁" ;;
       "l".
 
   Definition record2_model l dq v₀ v₁ : iProp Σ :=
-    (l +ₗ 0%Z) ↦{dq} v₀ ∗
-    (l +ₗ 1%Z) ↦{dq} v₁.
+    l.(0) ↦{dq} v₀ ∗
+    l.(1) ↦{dq} v₁.
 
   #[global] Instance record2_model_timeless l dq v₀ v₁ :
     Timeless (record2_model l dq v₀ v₁).
@@ -139,7 +139,7 @@ Section heapGS.
 
   Lemma record2_get0_spec l dq v₀ v₁ :
     {{{ record2_model l dq v₀ v₁ }}}
-      !#(l +ₗ 0)
+      !#l.(0)
     {{{ RET v₀; record2_model l dq v₀ v₁ }}}.
   Proof.
     iIntros "%Φ (Hv₀ & Hv₁) HΦ".
@@ -148,7 +148,7 @@ Section heapGS.
   Qed.
   Lemma record2_get1_spec l dq v₀ v₁ :
     {{{ record2_model l dq v₀ v₁ }}}
-      !#(l +ₗ 1)
+      !#l.(1)
     {{{ RET v₁; record2_model l dq v₀ v₁ }}}.
   Proof.
     iIntros "%Φ (Hv₀ & Hv₁) HΦ".
@@ -158,7 +158,7 @@ Section heapGS.
 
   Lemma record2_set0_spec l v₀ v₁ v :
     {{{ record2_model l (DfracOwn 1) v₀ v₁ }}}
-      #(l +ₗ 0) <- v
+      #l.(0) <- v
     {{{ RET #(); record2_model l (DfracOwn 1) v v₁ }}}.
   Proof.
     iIntros "%Φ (Hv₀ & Hv₁) HΦ".
@@ -167,7 +167,7 @@ Section heapGS.
   Qed.
   Lemma record2_set1_spec l v₀ v₁ v :
     {{{ record2_model l (DfracOwn 1) v₀ v₁ }}}
-      #(l +ₗ 1) <- v
+      #l.(1) <- v
     {{{ RET #(); record2_model l (DfracOwn 1) v₀ v }}}.
   Proof.
     iIntros "%Φ (Hv₀ & Hv₁) HΦ".

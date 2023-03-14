@@ -57,26 +57,22 @@ Section inf_chaselev_deque_GS.
   Implicit Types hist pub : list val.
   Implicit Types priv : nat → val.
 
-  Notation inf_chaselev_deque_offset_front := 0%Z.
-  Notation inf_chaselev_deque_offset_back := 1%Z.
-  Notation inf_chaselev_deque_offset_data := 2%Z.
-
-  Notation "t '.(front)'" := (t +ₗ inf_chaselev_deque_offset_front)%stdpp
+  Notation "t '.(front)'" := t.(0)%stdpp
   ( at level 5
   ) : stdpp_scope.
-  Notation "t '.(back)'" := (t +ₗ inf_chaselev_deque_offset_back)%stdpp
+  Notation "t '.(back)'" := t.(1)%stdpp
   ( at level 5
   ) : stdpp_scope.
-  Notation "t '.(data)'" := (t +ₗ inf_chaselev_deque_offset_data)%stdpp
+  Notation "t '.(data)'" := t.(2)%stdpp
   ( at level 5
   ) : stdpp_scope.
-  Notation "t '.(front)'" := (t +ₗ #inf_chaselev_deque_offset_front)%E
+  Notation "t '.(front)'" := t.(0)%E
   ( at level 5
   ) : expr_scope.
-  Notation "t '.(back)'" := (t +ₗ #inf_chaselev_deque_offset_back)%E
+  Notation "t '.(back)'" := t.(1)%E
   ( at level 5
   ) : expr_scope.
-  Notation "t '.(data)'" := (t +ₗ #inf_chaselev_deque_offset_data)%E
+  Notation "t '.(data)'" := t.(2)%E
   ( at level 5
   ) : expr_scope.
 

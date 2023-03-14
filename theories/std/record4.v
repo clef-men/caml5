@@ -13,16 +13,16 @@ Section heapGS.
   Definition record4_make : val :=
     λ: "v₀" "v₁" "v₂" "v₃",
       let: "l" := AllocN #4 "v₀" in
-      "l".1 <- "v₁" ;;
-      "l".2 <- "v₂" ;;
-      "l".3 <- "v₃" ;;
+      "l".(1) <- "v₁" ;;
+      "l".(2) <- "v₂" ;;
+      "l".(3) <- "v₃" ;;
       "l".
 
   Definition record4_model l dq v₀ v₁ v₂ v₃ : iProp Σ :=
-    (l +ₗ 0%Z) ↦{dq} v₀ ∗
-    (l +ₗ 1%Z) ↦{dq} v₁ ∗
-    (l +ₗ 2%Z) ↦{dq} v₂ ∗
-    (l +ₗ 3%Z) ↦{dq} v₃.
+    l.(0) ↦{dq} v₀ ∗
+    l.(1) ↦{dq} v₁ ∗
+    l.(2) ↦{dq} v₂ ∗
+    l.(3) ↦{dq} v₃.
 
   #[global] Instance record4_model_timeless l dq v₀ v₁ v₂ v₃ :
     Timeless (record4_model l dq v₀ v₁ v₂ v₃).
@@ -153,7 +153,7 @@ Section heapGS.
 
   Lemma record4_get0_spec l dq v₀ v₁ v₂ v₃ :
     {{{ record4_model l dq v₀ v₁ v₂ v₃ }}}
-      !#(l +ₗ 0)
+      !#l.(0)
     {{{ RET v₀; record4_model l dq v₀ v₁ v₂ v₃ }}}.
   Proof.
     iIntros "%Φ (Hv₀ & Hv₁ & Hv₂ & Hv₃) HΦ".
@@ -162,7 +162,7 @@ Section heapGS.
   Qed.
   Lemma record4_get1_spec l dq v₀ v₁ v₂ v₃ :
     {{{ record4_model l dq v₀ v₁ v₂ v₃ }}}
-      !#(l +ₗ 1)
+      !#l.(1)
     {{{ RET v₁; record4_model l dq v₀ v₁ v₂ v₃ }}}.
   Proof.
     iIntros "%Φ (Hv₀ & Hv₁ & Hv₂ & Hv₃) HΦ".
@@ -171,7 +171,7 @@ Section heapGS.
   Qed.
   Lemma record4_get2_spec l dq v₀ v₁ v₂ v₃ :
     {{{ record4_model l dq v₀ v₁ v₂ v₃ }}}
-      !#(l +ₗ 2)
+      !#l.(2)
     {{{ RET v₂; record4_model l dq v₀ v₁ v₂ v₃ }}}.
   Proof.
     iIntros "%Φ (Hv₀ & Hv₁ & Hv₂ & Hv₃) HΦ".
@@ -180,7 +180,7 @@ Section heapGS.
   Qed.
   Lemma record4_get3_spec l dq v₀ v₁ v₂ v₃ :
     {{{ record4_model l dq v₀ v₁ v₂ v₃ }}}
-      !#(l +ₗ 3)
+      !#l.(3)
     {{{ RET v₃; record4_model l dq v₀ v₁ v₂ v₃ }}}.
   Proof.
     iIntros "%Φ (Hv₀ & Hv₁ & Hv₂ & Hv₃) HΦ".
@@ -190,7 +190,7 @@ Section heapGS.
 
   Lemma record4_set0_spec l v₀ v₁ v₂ v₃ v :
     {{{ record4_model l (DfracOwn 1) v₀ v₁ v₂ v₃ }}}
-      #(l +ₗ 0) <- v
+      #l.(0) <- v
     {{{ RET #(); record4_model l (DfracOwn 1) v v₁ v₂ v₃ }}}.
   Proof.
     iIntros "%Φ (Hv₀ & Hv₁ & Hv₂ & Hv₃) HΦ".
@@ -199,7 +199,7 @@ Section heapGS.
   Qed.
   Lemma record4_set1_spec l v₀ v₁ v₂ v₃ v :
     {{{ record4_model l (DfracOwn 1) v₀ v₁ v₂ v₃ }}}
-      #(l +ₗ 1) <- v
+      #l.(1) <- v
     {{{ RET #(); record4_model l (DfracOwn 1) v₀ v v₂ v₃ }}}.
   Proof.
     iIntros "%Φ (Hv₀ & Hv₁ & Hv₂ & Hv₃) HΦ".
@@ -208,7 +208,7 @@ Section heapGS.
   Qed.
   Lemma record4_set2_spec l v₀ v₁ v₂ v₃ v :
     {{{ record4_model l (DfracOwn 1) v₀ v₁ v₂ v₃ }}}
-      #(l +ₗ 2) <- v
+      #l.(2) <- v
     {{{ RET #(); record4_model l (DfracOwn 1) v₀ v₁ v v₃ }}}.
   Proof.
     iIntros "%Φ (Hv₀ & Hv₁ & Hv₂ & Hv₃) HΦ".

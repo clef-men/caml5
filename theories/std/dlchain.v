@@ -13,13 +13,13 @@ Section heapGS.
   Implicit Types l : loc.
   Implicit Types v w t prev last next : val.
 
-  Notation "t '.(prev)'" := (t.0)%E
+  Notation "t '.(prev)'" := t.(0)%E
   ( at level 5
   ) : expr_scope.
-  Notation "t '.(data)'" := (t.1)%E
+  Notation "t '.(data)'" := t.(1)%E
   ( at level 5
   ) : expr_scope.
-  Notation "t '.(next)'" := (t.2)%E
+  Notation "t '.(next)'" := t.(2)%E
   ( at level 5
   ) : expr_scope.
 
