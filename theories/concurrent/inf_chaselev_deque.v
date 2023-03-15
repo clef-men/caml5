@@ -21,7 +21,7 @@ From caml5.std Require Import
 From caml5.concurrent Require Export
   base.
 
-Class InfChaselevGS Σ `{!heapGS Σ} (array : inf_array Σ) := {
+Class InfChaselevDequeGS Σ `{!heapGS Σ} (array : inf_array Σ) := {
   inf_chaselev_deque_GS_ctl_G : AuthExclG Σ (prodO ZO (nat -d> valO)) ;
   inf_chaselev_deque_GS_front_G : AuthNatMaxG Σ ;
   inf_chaselev_deque_GS_hist_G : mono_listG val Σ ;
@@ -43,13 +43,13 @@ Definition inf_chaselev_deque_Σ := #[
 ].
 Lemma subG_inf_chaselev_deque_Σ Σ `{!heapGS Σ} array :
   subG inf_chaselev_deque_Σ Σ →
-  InfChaselevGS Σ array.
+  InfChaselevDequeGS Σ array.
 Proof.
   solve_inG.
 Qed.
 
 Section inf_chaselev_deque_GS.
-  Context `{!heapGS Σ} {array} `{!InfChaselevGS Σ array}.
+  Context `{!heapGS Σ} {array} `{!InfChaselevDequeGS Σ array}.
   Implicit Types front : nat.
   Implicit Types back : Z.
   Implicit Types l : loc.
