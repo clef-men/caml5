@@ -176,6 +176,15 @@ Section auth_excl_G.
       iDestruct (auth_excl_auth_valid_2 with "H●1 H●2") as %(? & _). done.
     Qed.
 
+    Lemma auth_excl_frag_exclusive γ a1 a2 :
+      auth_excl_frag γ a1 -∗
+      auth_excl_frag γ a1 -∗
+      False.
+    Proof.
+      iIntros "H◯1 H◯2".
+      iDestruct (own_valid_2 with "H◯1 H◯2") as %[]%auth_excl_frag_op_valid.
+    Qed.
+
     Lemma auth_excl_both_agree γ dq a b :
       auth_excl_auth γ dq a -∗
       auth_excl_frag γ b -∗
