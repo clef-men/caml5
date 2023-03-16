@@ -115,15 +115,15 @@ Section inf_array.
     iApply (aacc_aupd with "HΦ"); first done.
     iIntros "%vsₗ %vsᵣ Hmodel". iAaccIntro with "Hmodel"; first auto with iFrame.
     iIntros "Hmodel !>". iRight. iSplitL "Hmodel".
-    - generalize (Z.to_nat i). clear. intros i. destruct (decide (i < length vsₗ)).
+    - generalize (Z.to_nat i). clear. intros i. case_decide.
       all: iApply (inf_array_model_proper with "Hmodel"); intros j.
-      + rewrite insert_length. destruct (decide (j < length vsₗ)).
+      + rewrite insert_length. case_decide.
         * destruct (decide (j = i)) as [-> |].
           -- rewrite list_lookup_total_insert // fn_lookup_insert //.
           -- rewrite list_lookup_total_insert_ne // fn_lookup_insert_ne // decide_True //.
         * rewrite fn_lookup_insert_ne; last lia.
           rewrite decide_False //.
-      + destruct (decide (j < length vsₗ)).
+      + case_decide.
         * rewrite fn_lookup_insert_ne; last lia.
           rewrite decide_True //.
         * destruct (decide (j = i)) as [-> |].
