@@ -8,7 +8,7 @@ From caml5.std Require Export
 From caml5.std Require Import
   chain.
 
-Record queue `{!heapGS Σ} := {
+Record queue `{!heapGS Σ} {unboxed : bool} := {
   queue_make : val ;
   queue_is_empty : val ;
   queue_push : val ;
@@ -42,9 +42,16 @@ Record queue `{!heapGS Σ} := {
       (⌜vs = [] ∧ o = NONEV⌝ ∗ queue_model t []) ∨
       (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ queue_model t vs')
     }}} ;
+
+  queue_unboxed :
+    if unboxed then ∀ t vs,
+      queue_model t vs -∗
+      ⌜val_is_unboxed t⌝
+    else
+      True ;
 }.
-#[global] Arguments queue _ {_} : assert.
-#[global] Arguments Build_queue {_ _ _ _ _ _ _ _} _ _ _ _ : assert.
+#[global] Arguments queue _ {_} _ : assert.
+#[global] Arguments Build_queue {_ _} _ {_ _ _ _ _ _} _ _ _ _ _ : assert.
 #[global] Existing Instance queue_model_timeless.
 
 Section std_queue.
@@ -130,10 +137,10 @@ Section std_queue.
     wp_rec. wp_pures. wp_load. wp_pures. wp_load.
     destruct vs as [| v vs].
     - iDestruct (chain_model_nil with "Hhd_model") as %->.
-      iDestruct (chain_model_unboxed with "Hsent_model") as %?.
+      iDestruct (chain_unboxed with "Hsent_model") as %?.
       wp_pures.
       iEval (rewrite bool_decide_eq_true_2). iApply "HΦ". iExists l, sent, sent. auto with iFrame.
-    - iDestruct (chain_model_unboxed with "Hsent_model") as %?.
+    - iDestruct (chain_unboxed with "Hsent_model") as %?.
       wp_pures.
       iDestruct (chain_model_ne with "Hsent_model Hhd_model") as %?; first (rewrite reverse_length /=; lia).
       rewrite (bool_decide_eq_false_2 (hd = sent)); last done.
@@ -184,12 +191,20 @@ Section std_queue.
     iExists l, hd', sent. rewrite reverse_involutive. auto with iFrame.
   Qed.
 
-  Definition std_queue : queue Σ :=
-    Build_queue
+  Lemma std_queue_unboxed t vs :
+    std_queue_model t vs -∗
+    ⌜val_is_unboxed t⌝.
+  Proof.
+    iIntros "(%l & %hd & %sent & -> & Hhd & Hsent & Hhd_model & Hsent_model) //".
+  Qed.
+
+  Definition std_queue :=
+    Build_queue true
       std_queue_make_spec
       std_queue_is_empty_spec
       std_queue_push_spec
-      std_queue_pop_spec.
+      std_queue_pop_spec
+      std_queue_unboxed.
 End std_queue.
 
 #[global] Opaque std_queue_make.

@@ -8,7 +8,7 @@ From caml5.std Require Export
 From caml5.std Require Import
   lst.
 
-Record fun_queue `{!heapGS Σ} := {
+Record fun_queue `{!heapGS Σ} {unboxed : bool} := {
   fun_queue_make : val ;
   fun_queue_is_empty : val ;
   fun_queue_push : val ;
@@ -44,9 +44,16 @@ Record fun_queue `{!heapGS Σ} := {
       (⌜vs = [] ∧ w = NONEV⌝) ∨
       (∃ vs' v t', ⌜vs = vs' ++ [v] ∧ w = SOMEV (v, t')⌝ ∗ fun_queue_model t' vs')
     }}} ;
+
+  fun_queue_unboxed :
+    if unboxed then ∀ t vs,
+      fun_queue_model t vs -∗
+      ⌜val_is_unboxed t⌝
+    else
+      True ;
 }.
-#[global] Arguments fun_queue _ {_} : assert.
-#[global] Arguments Build_fun_queue {_ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
+#[global] Arguments fun_queue _ {_} _ : assert.
+#[global] Arguments Build_fun_queue {_ _} _ {_ _ _ _ _ _ _} _ _ _ _ _ : assert.
 #[global] Existing Instance fun_queue_model_persistent.
 #[global] Existing Instance fun_queue_model_timeless.
 
@@ -180,12 +187,13 @@ Section std_fun_queue.
       iExists back, vs_back, front', vs_front. auto with iFrame.
   Qed.
 
-  Definition std_fun_queue : fun_queue Σ :=
-    Build_fun_queue
+  Definition std_fun_queue :=
+    Build_fun_queue false
       std_fun_queue_make_spec
       std_fun_queue_is_empty_spec
       std_fun_queue_push_spec
-      std_fun_queue_pop_spec.
+      std_fun_queue_pop_spec
+      I.
 End std_fun_queue.
 
 #[global] Opaque std_fun_queue_make.

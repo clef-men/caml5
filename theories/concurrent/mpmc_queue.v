@@ -8,7 +8,7 @@ From caml5.concurrent Require Export
 Implicit Types v t : val.
 Implicit Types vs : list val.
 
-Record mpmc_queue `{!heapGS Σ} := {
+Record mpmc_queue `{!heapGS Σ} {unboxed : bool} := {
   mpmc_queue_make : val ;
   mpmc_queue_push : val ;
   mpmc_queue_pop : val ;
@@ -42,8 +42,15 @@ Record mpmc_queue `{!heapGS Σ} := {
       (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ mpmc_queue_model t γ vs') |
       RET o; True
     >>> ;
+
+  mpmc_queue_unboxed :
+  if unboxed then ∀ t γ ι,
+    mpmc_queue_inv t γ ι -∗
+    ⌜val_is_unboxed t⌝
+  else
+    True ;
 }.
-#[global] Arguments mpmc_queue _ {_} : assert.
-#[global] Arguments Build_mpmc_queue {_ _ _ _ _ _ _ _ _ _} _ _ _ : assert.
+#[global] Arguments mpmc_queue _ {_} _ : assert.
+#[global] Arguments Build_mpmc_queue {_ _} _ {_ _ _ _ _ _ _ _} _ _ _ _ : assert.
 #[global] Existing Instance mpmc_queue_inv_persistent.
 #[global] Existing Instance mpmc_queue_model_timeless.

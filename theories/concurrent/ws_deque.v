@@ -8,7 +8,7 @@ From caml5.concurrent Require Export
 Implicit Types v w t : val.
 Implicit Types vs : list val.
 
-Record ws_deque `{!heapGS Σ} := {
+Record ws_deque `{!heapGS Σ} {unboxed : bool} := {
   ws_deque_make : val ;
   ws_deque_push : val ;
   ws_deque_pop : val ;
@@ -73,9 +73,16 @@ Record ws_deque `{!heapGS Σ} := {
       (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ ws_deque_model t γ vs') |
       RET o; True
     >>> ;
+
+  ws_deque_unboxed :
+    if unboxed then ∀ t γ ι,
+      ws_deque_inv t γ ι -∗
+      ⌜val_is_unboxed t⌝
+    else
+      True ;
 }.
-#[global] Arguments ws_deque _ {_} : assert.
-#[global] Arguments Build_ws_deque {_ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ : assert.
+#[global] Arguments ws_deque _ {_} _ : assert.
+#[global] Arguments Build_ws_deque {_ _} _ {_ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ _ : assert.
 #[global] Existing Instance ws_deque_inv_persistent.
 #[global] Existing Instance ws_deque_model_timeless.
 #[global] Existing Instance ws_deque_owner_timeless.

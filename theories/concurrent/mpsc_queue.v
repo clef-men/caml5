@@ -13,7 +13,7 @@ From caml5.concurrent Require Import
 Implicit Types v t : val.
 Implicit Types vs : list val.
 
-Record mpsc_queue `{!heapGS Σ} := {
+Record mpsc_queue `{!heapGS Σ} {unboxed : bool} := {
   mpsc_queue_make : val ;
   mpsc_queue_push : val ;
   mpsc_queue_pop : val ;
@@ -70,9 +70,16 @@ Record mpsc_queue `{!heapGS Σ} := {
       (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ mpsc_queue_model t γ vs') |
       RET o; mpsc_queue_consumer t γ
     >>> ;
+
+  mpsc_queue_unboxed :
+    if unboxed then ∀ t γ ι,
+      mpsc_queue_inv t γ ι -∗
+      ⌜val_is_unboxed t⌝
+    else
+      True ;
 }.
-#[global] Arguments mpsc_queue _ {_} : assert.
-#[global] Arguments Build_mpsc_queue {_ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ : assert.
+#[global] Arguments mpsc_queue _ {_} _ : assert.
+#[global] Arguments Build_mpsc_queue {_ _} _ {_ _ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
 #[global] Existing Instance mpsc_queue_inv_persistent.
 #[global] Existing Instance mpsc_queue_model_timeless.
 #[global] Existing Instance mpsc_queue_consumer_timeless.
@@ -93,7 +100,7 @@ Proof.
 Qed.
 
 Section mpsc_queue_of_mpmc_queue.
-  Context `{MpscQueueOfMpmcQueueG Σ} (mpmc_queue : mpmc_queue Σ).
+  Context `{MpscQueueOfMpmcQueueG Σ} {unboxed} (mpmc_queue : mpmc_queue Σ unboxed).
 
   Notation "γ .(base)" := γ.1
   ( at level 5
@@ -102,7 +109,7 @@ Section mpsc_queue_of_mpmc_queue.
   ( at level 5
   ) : stdpp_scope.
 
-  Program Definition mpsc_queue_of_mpmc_queue := {|
+  Program Definition mpsc_queue_of_mpmc_queue : mpsc_queue Σ unboxed := {|
     mpsc_queue_make :=
       mpmc_queue.(mpmc_queue_make) ;
     mpsc_queue_push :=
@@ -136,5 +143,8 @@ Section mpsc_queue_of_mpmc_queue.
     wp_apply (mpmc_queue_pop_spec with "Hinv").
     iApply (atomic_update_wand with "[Hconsumer] HΦ").
     iIntros "_ %v HΦ _". iApply "HΦ". done.
+  Qed.
+  Next Obligation.
+    destruct unboxed; last done. eauto using mpmc_queue.(mpmc_queue_unboxed).
   Qed.
 End mpsc_queue_of_mpmc_queue.

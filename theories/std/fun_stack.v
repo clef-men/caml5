@@ -8,7 +8,7 @@ From caml5.std Require Export
 From caml5.std Require Import
   lst.
 
-Record fun_stack `{!heapGS Σ} := {
+Record fun_stack `{!heapGS Σ} {unboxed : bool} := {
   fun_stack_make : val ;
   fun_stack_is_empty : val ;
   fun_stack_push : val ;
@@ -44,9 +44,16 @@ Record fun_stack `{!heapGS Σ} := {
       (⌜vs = [] ∧ w = NONEV⌝) ∨
       (∃ v vs' t', ⌜vs = v :: vs' ∧ w = SOMEV (v, t')⌝ ∗ fun_stack_model t' vs')
     }}} ;
+
+  fun_stack_unboxed :
+    if unboxed then ∀ t vs,
+      fun_stack_model t vs -∗
+      ⌜val_is_unboxed t⌝
+    else
+      True ;
 }.
-#[global] Arguments fun_stack _ {_} : assert.
-#[global] Arguments Build_fun_stack {_ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
+#[global] Arguments fun_stack _ {_} _ : assert.
+#[global] Arguments Build_fun_stack {_ _} _ {_ _ _ _ _ _ _} _ _ _ _ _ : assert.
 #[global] Existing Instance fun_stack_model_persistent.
 #[global] Existing Instance fun_stack_model_timeless.
 
@@ -138,11 +145,12 @@ Section std_fun_stack.
   Qed.
 
   Definition std_fun_stack :=
-    Build_fun_stack
+    Build_fun_stack false
       std_fun_stack_make_spec
       std_fun_stack_is_empty_spec
       std_fun_stack_push_spec
-      std_fun_stack_pop_spec.
+      std_fun_stack_pop_spec
+      I.
 End std_fun_stack.
 
 #[global] Opaque std_fun_stack_make.

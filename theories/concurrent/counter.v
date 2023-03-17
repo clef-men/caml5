@@ -339,6 +339,13 @@ Section counter_GS.
     iMod ("HΦ" with "Hmodel [//]") as "$".
     iModIntro. iNext. iExists n. iFrame.
   Qed.
+
+  Lemma counter_unboxed t ι :
+    counter_inv t ι -∗
+    ⌜val_is_unboxed t⌝.
+  Proof.
+    iIntros "(%l & %γ_model & -> & #Hmeta_model & #Hinv) //".
+  Qed.
 End counter_GS.
 
 #[global] Opaque counter_make.

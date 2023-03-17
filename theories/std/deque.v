@@ -8,7 +8,7 @@ From caml5.std Require Export
 From caml5.std Require Import
   dlchain.
 
-Record deque `{!heapGS Σ} := {
+Record deque `{!heapGS Σ} {unboxed : bool} := {
   deque_make : val ;
   deque_is_empty : val ;
   deque_push_front : val ;
@@ -58,9 +58,16 @@ Record deque `{!heapGS Σ} := {
       (⌜vs = [] ∧ w = NONEV⌝ ∗ deque_model t []) ∨
       (∃ vs' v, ⌜vs = vs' ++ [v] ∧ w = SOMEV v⌝ ∗ deque_model t vs')
     }}} ;
+
+  deque_unboxed :
+    if unboxed then ∀ t vs,
+      deque_model t vs -∗
+      ⌜val_is_unboxed t⌝
+    else
+      True ;
 }.
-#[global] Arguments deque _ {_} : assert.
-#[global] Arguments Build_deque {_ _ _ _ _ _ _ _ _ _} _ _ _ _ _ _ : assert.
+#[global] Arguments deque _ {_} _ : assert.
+#[global] Arguments Build_deque {_ _} _ {_ _ _ _ _ _ _ _} _ _ _ _ _ _ _ : assert.
 #[global] Existing Instance deque_model_timeless.
 
 Section std_deque.
@@ -148,7 +155,7 @@ Section std_deque.
     iIntros "%Φ (%back & Hsent) HΦ".
     wp_rec.
     wp_apply (dlchain_next_spec with "Hsent"). iIntros "%front (Hsent & Hfront)".
-    iDestruct (dlchain_model_unboxed with "Hsent") as %Hunboxed. wp_pures. clear Hunboxed.
+    iDestruct (dlchain_unboxed with "Hsent") as %Hunboxed. wp_pures. clear Hunboxed.
     destruct vs as [| v vs].
     - iDestruct (dlchain_model_nil_2 with "Hfront") as %(-> & ->).
       rewrite /= bool_decide_eq_true_2; last done.
@@ -197,14 +204,22 @@ Section std_deque.
   Proof.
   Admitted.
 
+  Lemma std_deque_unboxed t vs :
+    std_deque_model t vs -∗
+    ⌜val_is_unboxed t⌝.
+  Proof.
+    iIntros "(%back & Hsent)". iApply (dlchain_unboxed with "Hsent").
+  Qed.
+
   Definition std_deque :=
-    Build_deque
+    Build_deque true
       std_deque_make_spec
       std_deque_is_empty_spec
       std_deque_push_front_spec
       std_deque_pop_front_spec
       std_deque_push_back_spec
-      std_deque_pop_back_spec.
+      std_deque_pop_back_spec
+      std_deque_unboxed.
 End std_deque.
 
 #[global] Opaque std_deque_make.

@@ -88,13 +88,6 @@ Section heapGS.
         dlchain_node l dq prev v t' ∗ dlchain_model t' dq t vs last next
     end.
 
-  Lemma dlchain_model_unboxed t dq prev v vs last next :
-    dlchain_model t dq prev (v :: vs) last next -∗
-    ⌜val_is_unboxed t⌝.
-  Proof.
-    iIntros "(%l & %_ & -> & _) //".
-  Qed.
-
   #[global] Instance dlchain_model_timeless t dq prev vs last next :
     Timeless (dlchain_model t dq prev vs last next).
   Proof.
@@ -385,6 +378,13 @@ Section heapGS.
     wp_rec. wp_pures.
     wp_apply (record3_make_spec with "[//]"). iIntros "%l Hl".
     iApply "HΦ". iExists l, next. auto with iFrame.
+  Qed.
+
+  Lemma dlchain_unboxed t dq prev v vs last next :
+    dlchain_model t dq prev (v :: vs) last next -∗
+    ⌜val_is_unboxed t⌝.
+  Proof.
+    iIntros "(%l & %_ & -> & _) //".
   Qed.
 End heapGS.
 

@@ -15,7 +15,7 @@ From caml5.concurrent Require Import
 Implicit Types v t : val.
 Implicit Types vs : list val.
 
-Record spsc_stack `{!heapGS Σ} := {
+Record spsc_stack `{!heapGS Σ} {unboxed : bool} := {
   spsc_stack_make : val ;
   spsc_stack_push : val ;
   spsc_stack_pop : val ;
@@ -81,9 +81,16 @@ Record spsc_stack `{!heapGS Σ} := {
       (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ spsc_stack_model t γ vs') |
       RET o; spsc_stack_consumer t γ
     >>> ;
+
+  spsc_stack_unboxed :
+    if unboxed then ∀ t γ ι,
+      spsc_stack_inv t γ ι -∗
+      ⌜val_is_unboxed t⌝
+    else
+      True ;
 }.
-#[global] Arguments spsc_stack _ {_} : assert.
-#[global] Arguments Build_spsc_stack {_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ : assert.
+#[global] Arguments spsc_stack _ {_} _ : assert.
+#[global] Arguments Build_spsc_stack {_ _} _ {_ _ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
 #[global] Existing Instance spsc_stack_inv_persistent.
 #[global] Existing Instance spsc_stack_model_timeless.
 #[global] Existing Instance spsc_stack_producer_timeless.
@@ -105,7 +112,7 @@ Proof.
 Qed.
 
 Section spsc_stack_of_spmc_stack.
-  Context `{SpscStackOfSpmcStackG Σ} (spmc_stack : spmc_stack Σ).
+  Context `{SpscStackOfSpmcStackG Σ} {unboxed} (spmc_stack : spmc_stack Σ unboxed).
 
   Notation "γ .(base)" := γ.1
   ( at level 5
@@ -114,7 +121,7 @@ Section spsc_stack_of_spmc_stack.
   ( at level 5
   ) : stdpp_scope.
 
-  Program Definition spsc_stack_of_spmc_stack := {|
+  Program Definition spsc_stack_of_spmc_stack : spsc_stack Σ unboxed := {|
     spsc_stack_make :=
       spmc_stack.(spmc_stack_make) ;
     spsc_stack_push :=
@@ -154,6 +161,9 @@ Section spsc_stack_of_spmc_stack.
     iApply (atomic_update_wand with "[Hconsumer] HΦ").
     iIntros "_ %v HΦ _". iApply "HΦ". done.
   Qed.
+  Next Obligation.
+    destruct unboxed; last done. eauto using spmc_stack.(spmc_stack_unboxed).
+  Qed.
 End spsc_stack_of_spmc_stack.
 
 Class SpscStackOfMpscStackG Σ `{!heapGS Σ} := {
@@ -172,7 +182,7 @@ Proof.
 Qed.
 
 Section spsc_stack_of_mpsc_stack.
-  Context `{SpscStackOfMpscStackG Σ} (mpsc_stack : mpsc_stack Σ).
+  Context `{SpscStackOfMpscStackG Σ} {unboxed} (mpsc_stack : mpsc_stack Σ unboxed).
 
   Notation "γ .(base)" := γ.1
   ( at level 5
@@ -181,7 +191,7 @@ Section spsc_stack_of_mpsc_stack.
   ( at level 5
   ) : stdpp_scope.
 
-  Program Definition spsc_stack_of_mpsc_stack := {|
+  Program Definition spsc_stack_of_mpsc_stack : spsc_stack Σ unboxed := {|
     spsc_stack_make :=
       mpsc_stack.(mpsc_stack_make) ;
     spsc_stack_push :=
@@ -221,6 +231,9 @@ Section spsc_stack_of_mpsc_stack.
   Next Obligation.
     intros. apply mpsc_stack_pop_spec.
   Qed.
+  Next Obligation.
+    destruct unboxed; last done. eauto using mpsc_stack.(mpsc_stack_unboxed).
+  Qed.
 End spsc_stack_of_mpsc_stack.
 
 Class SpscStackOfMpmcStackG Σ `{!heapGS Σ} := {
@@ -243,5 +256,5 @@ Proof.
   solve_inG.
 Qed.
 
-Definition spsc_stack_of_mpmc_stack `{SpscStackOfMpmcStackG Σ} mpmc_stack :=
+Definition spsc_stack_of_mpmc_stack `{SpscStackOfMpmcStackG Σ} {unboxed} {mpmc_stack : mpmc_stack Σ unboxed} :=
   spsc_stack_of_spmc_stack (spmc_stack_of_mpmc_stack mpmc_stack).

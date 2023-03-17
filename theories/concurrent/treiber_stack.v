@@ -134,7 +134,7 @@ Section treiber_stack_GS.
 
     wp_bind (CmpXchg _ _ _).
     iInv "Hinv" as "(%lst2 & %vs2 & Hl & >#Hlst2 & Hmodel₁)".
-    iDestruct (mlst_model_unboxed with "Hlst1") as %?. wp_cmpxchg as -> | ?.
+    iDestruct (mlst_unboxed with "Hlst1") as %?. wp_cmpxchg as -> | ?.
 
     - iDestruct (mlst_model_agree with "Hlst1 Hlst2") as %<-.
       iMod "HΦ" as "(%_vs1 & (%_l & %_γ & %Heq & #_Hmeta & Hmodel₂) & _ & HΦ)". injection Heq as <-.
@@ -213,7 +213,7 @@ Section treiber_stack_GS.
 
       wp_bind (CmpXchg _ _ _).
       iInv "Hinv" as "(%lst2 & %vs2 & Hl & >#Hlst2 & Hmodel₁)".
-      iDestruct (mlst_model_unboxed with "Hlst1") as %?. wp_cmpxchg as -> | ?.
+      iDestruct (mlst_unboxed with "Hlst1") as %?. wp_cmpxchg as -> | ?.
 
       + iDestruct (mlst_model_agree with "Hlst1 Hlst2") as %<-.
         iMod "HΦ" as "(%_vs1 & (%_l & %_γ & %Heq & #_Hmeta & Hmodel₂) & _ & HΦ)". injection Heq as <-.
@@ -237,7 +237,14 @@ Section treiber_stack_GS.
         wp_apply ("HLöb" with "HΦ").
   Qed.
 
-  Program Definition treiber_mpmc_stack := {|
+  Lemma treiber_stack_unboxed t ι :
+    treiber_stack_inv t ι -∗
+    ⌜val_is_unboxed t⌝.
+  Proof.
+    iIntros "(%l & %γ & -> & #Hmeta & #Hinv) //".
+  Qed.
+
+  Program Definition treiber_mpmc_stack : mpmc_stack Σ true := {|
     mpmc_stack_make := treiber_stack_make ;
     mpmc_stack_push := treiber_stack_push ;
     mpmc_stack_pop := treiber_stack_pop ;
@@ -256,6 +263,9 @@ Section treiber_stack_GS.
   Qed.
   Next Obligation.
     intros. iApply treiber_stack_pop_spec.
+  Qed.
+  Next Obligation.
+    simpl. intros. iApply treiber_stack_unboxed.
   Qed.
 End treiber_stack_GS.
 

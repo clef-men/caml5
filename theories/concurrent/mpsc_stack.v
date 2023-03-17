@@ -13,7 +13,7 @@ From caml5.concurrent Require Import
 Implicit Types v t : val.
 Implicit Types vs : list val.
 
-Record mpsc_stack `{!heapGS Σ} := {
+Record mpsc_stack `{!heapGS Σ} {unboxed : bool} := {
   mpsc_stack_make : val ;
   mpsc_stack_push : val ;
   mpsc_stack_pop : val ;
@@ -70,9 +70,16 @@ Record mpsc_stack `{!heapGS Σ} := {
       (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ mpsc_stack_model t γ vs') |
       RET o; mpsc_stack_consumer t γ
     >>> ;
+
+  mpsc_stack_unboxed :
+    if unboxed then ∀ t γ ι,
+      mpsc_stack_inv t γ ι -∗
+      ⌜val_is_unboxed t⌝
+    else
+      True ;
 }.
-#[global] Arguments mpsc_stack _ {_} : assert.
-#[global] Arguments Build_mpsc_stack {_ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ : assert.
+#[global] Arguments mpsc_stack _ {_} _ : assert.
+#[global] Arguments Build_mpsc_stack {_ _} _ {_ _ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
 #[global] Existing Instance mpsc_stack_inv_persistent.
 #[global] Existing Instance mpsc_stack_model_timeless.
 #[global] Existing Instance mpsc_stack_consumer_timeless.
@@ -93,7 +100,7 @@ Proof.
 Qed.
 
 Section mpsc_stack_of_mpmc_stack.
-  Context `{MpscStackOfMpmcStackG Σ} (mpmc_stack : mpmc_stack Σ).
+  Context `{MpscStackOfMpmcStackG Σ} {unboxed} (mpmc_stack : mpmc_stack Σ unboxed).
 
   Notation "γ .(base)" := γ.1
   ( at level 5
@@ -102,7 +109,7 @@ Section mpsc_stack_of_mpmc_stack.
   ( at level 5
   ) : stdpp_scope.
 
-  Program Definition mpsc_stack_of_mpmc_stack := {|
+  Program Definition mpsc_stack_of_mpmc_stack : mpsc_stack Σ unboxed := {|
     mpsc_stack_make :=
       mpmc_stack.(mpmc_stack_make) ;
     mpsc_stack_push :=
@@ -136,5 +143,8 @@ Section mpsc_stack_of_mpmc_stack.
     wp_apply (mpmc_stack_pop_spec with "Hinv").
     iApply (atomic_update_wand with "[Hconsumer] HΦ").
     iIntros "_ %v HΦ _". iApply "HΦ". done.
+  Qed.
+  Next Obligation.
+    destruct unboxed; last done. eauto using mpmc_stack.(mpmc_stack_unboxed).
   Qed.
 End mpsc_stack_of_mpmc_stack.

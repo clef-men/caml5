@@ -93,15 +93,6 @@ Section heapGS.
   Definition mlst_model t dq vs :=
     chain_model t dq vs #().
 
-  Lemma mlst_model_unboxed t dq vs :
-    mlst_model t dq vs -∗
-    ⌜val_is_unboxed t⌝.
-  Proof.
-    iIntros "Hmodel". destruct vs as [| v vs].
-    - iDestruct (chain_model_nil_2 _ dq with "Hmodel") as %->. done.
-    - iApply (chain_model_unboxed with "Hmodel").
-  Qed.
-
   #[global] Instance mlst_model_timeless t dq vs :
     Timeless (mlst_model t dq vs).
   Proof.
@@ -373,6 +364,15 @@ Section heapGS.
   (*       let: "t" := "mlst" "t" "fn" in *)
   (*       mlst_cons "v" "t" *)
   (*     ). *)
+
+  Lemma mlst_unboxed t dq vs :
+    mlst_model t dq vs -∗
+    ⌜val_is_unboxed t⌝.
+  Proof.
+    iIntros "Hmodel". destruct vs as [| v vs].
+    - iDestruct (chain_model_nil_2 _ dq with "Hmodel") as %->. done.
+    - iApply (chain_unboxed with "Hmodel").
+  Qed.
 End heapGS.
 
 #[global] Opaque mlst_nil.

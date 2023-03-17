@@ -6,7 +6,7 @@ From caml5.lang Require Import
 From caml5.std Require Export
   mutex.
 
-Record condition `{!heapGS Σ} {mutex : mutex Σ} := {
+Record condition `{!heapGS Σ} {mutex_unboxed} {mutex : mutex Σ mutex_unboxed} {unboxed : bool} := {
   condition_make : val ;
   condition_wait : val ;
   condition_signal : val ;
@@ -36,13 +36,20 @@ Record condition `{!heapGS Σ} {mutex : mutex Σ} := {
     {{{ condition_inv t }}}
       condition_broadcast t
     {{{ RET #(); True }}} ;
+
+  condition_unboxed :
+    if unboxed then ∀ t,
+      condition_inv t -∗
+      ⌜val_is_unboxed t⌝
+    else
+      True ;
 }.
-#[global] Arguments condition _ {_} _ : assert.
-#[global] Arguments Build_condition {_ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
+#[global] Arguments condition _ {_ _} _ _ : assert.
+#[global] Arguments Build_condition {_ _ _ _} _ {_ _ _ _ _ _} _ _ _ _ _ : assert.
 #[global] Existing Instance condition_inv_persistent.
 
 Section condition.
-  Context `{!heapGS Σ} {mutex : mutex Σ} (condition : condition Σ mutex).
+  Context `{!heapGS Σ} {mutex_unboxed} {mutex : mutex Σ mutex_unboxed} {unboxed} (condition : condition Σ mutex unboxed).
 
   #[local] Definition condition_wait_until_aux (cond : val) : val :=
     rec: "condition_wait_until_aux" "t" "mtx" :=

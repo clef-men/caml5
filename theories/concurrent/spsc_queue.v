@@ -15,7 +15,7 @@ From caml5.concurrent Require Import
 Implicit Types v t : val.
 Implicit Types vs : list val.
 
-Record spsc_queue `{!heapGS Σ} := {
+Record spsc_queue `{!heapGS Σ} {unboxed : bool} := {
   spsc_queue_make : val ;
   spsc_queue_push : val ;
   spsc_queue_pop : val ;
@@ -81,9 +81,16 @@ Record spsc_queue `{!heapGS Σ} := {
       (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ spsc_queue_model t γ vs') |
       RET o; spsc_queue_consumer t γ
     >>> ;
+
+  spsc_queue_unboxed :
+    if unboxed then ∀ t γ ι,
+      spsc_queue_inv t γ ι -∗
+      ⌜val_is_unboxed t⌝
+    else
+      True ;
 }.
-#[global] Arguments spsc_queue _ {_} : assert.
-#[global] Arguments Build_spsc_queue {_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ : assert.
+#[global] Arguments spsc_queue _ {_} _ : assert.
+#[global] Arguments Build_spsc_queue {_ _} _ {_ _ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
 #[global] Existing Instance spsc_queue_inv_persistent.
 #[global] Existing Instance spsc_queue_model_timeless.
 #[global] Existing Instance spsc_queue_producer_timeless.
@@ -105,7 +112,7 @@ Proof.
 Qed.
 
 Section spsc_queue_of_spmc_queue.
-  Context `{SpscQueueOfSpmcQueueG Σ} (spmc_queue : spmc_queue Σ).
+  Context `{SpscQueueOfSpmcQueueG Σ} {unboxed} (spmc_queue : spmc_queue Σ unboxed).
 
   Notation "γ .(base)" := γ.1
   ( at level 5
@@ -114,7 +121,7 @@ Section spsc_queue_of_spmc_queue.
   ( at level 5
   ) : stdpp_scope.
 
-  Program Definition spsc_queue_of_spmc_queue := {|
+  Program Definition spsc_queue_of_spmc_queue : spsc_queue Σ unboxed := {|
     spsc_queue_make :=
       spmc_queue.(spmc_queue_make) ;
     spsc_queue_push :=
@@ -154,6 +161,9 @@ Section spsc_queue_of_spmc_queue.
     iApply (atomic_update_wand with "[Hconsumer] HΦ").
     iIntros "_ %v HΦ _". iApply "HΦ". done.
   Qed.
+  Next Obligation.
+    destruct unboxed; last done. eauto using spmc_queue.(spmc_queue_unboxed).
+  Qed.
 End spsc_queue_of_spmc_queue.
 
 Class SpscQueueOfMpscQueueG Σ `{!heapGS Σ} := {
@@ -172,7 +182,7 @@ Proof.
 Qed.
 
 Section spsc_queue_of_mpsc_queue.
-  Context `{SpscQueueOfMpscQueueG Σ} (mpsc_queue : mpsc_queue Σ).
+  Context `{SpscQueueOfMpscQueueG Σ} {unboxed} (mpsc_queue : mpsc_queue Σ unboxed).
 
   Notation "γ .(base)" := γ.1
   ( at level 5
@@ -181,7 +191,7 @@ Section spsc_queue_of_mpsc_queue.
   ( at level 5
   ) : stdpp_scope.
 
-  Program Definition spsc_queue_of_mpsc_queue := {|
+  Program Definition spsc_queue_of_mpsc_queue : spsc_queue Σ unboxed := {|
     spsc_queue_make :=
       mpsc_queue.(mpsc_queue_make) ;
     spsc_queue_push :=
@@ -221,6 +231,9 @@ Section spsc_queue_of_mpsc_queue.
   Next Obligation.
     intros. apply mpsc_queue_pop_spec.
   Qed.
+  Next Obligation.
+    destruct unboxed; last done. eauto using mpsc_queue.(mpsc_queue_unboxed).
+  Qed.
 End spsc_queue_of_mpsc_queue.
 
 Class SpscQueueOfMpmcQueueG Σ `{!heapGS Σ} := {
@@ -243,5 +256,5 @@ Proof.
   solve_inG.
 Qed.
 
-Definition spsc_queue_of_mpmc_queue `{SpscQueueOfMpmcQueueG Σ} mpmc_queue :=
+Definition spsc_queue_of_mpmc_queue `{SpscQueueOfMpmcQueueG Σ} {unboxed} {mpmc_queue : mpmc_queue Σ unboxed} :=
   spsc_queue_of_spmc_queue (spmc_queue_of_mpmc_queue mpmc_queue).

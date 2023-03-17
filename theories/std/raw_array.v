@@ -704,6 +704,13 @@ Section raw_array_G.
     iExists l, γ. iFrame "∗#". iSplit; first done.
     rewrite Z2Nat.id //. lia.
   Qed.
+
+  Lemma raw_array_unboxed t sz :
+    raw_array_inv t sz -∗
+    ⌜val_is_unboxed t⌝.
+  Proof.
+    iIntros "(%l & %γ & -> & #Hmeta & % & #H●) //".
+  Qed.
 End raw_array_G.
 
 #[global] Opaque raw_array_make.

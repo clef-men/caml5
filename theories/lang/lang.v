@@ -9,6 +9,9 @@ From caml5 Require Import
 From caml5 Require Export
   base.
 
+Definition prophecy : Type := val * val.
+Definition prophecies := list prophecy.
+
 Lemma mapsto_dfrac_relax `{heapGS Σ} dq l v :
   ✓ dq →
   l ↦ v ==∗

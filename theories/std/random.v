@@ -8,7 +8,7 @@ From caml5.std Require Export
 
 Implicit Types t : val.
 
-Record random `{!heapGS Σ} := {
+Record random `{!heapGS Σ} {unboxed : bool} := {
   random_make : val ;
   random_gen : val ;
 
@@ -27,13 +27,20 @@ Record random `{!heapGS Σ} := {
     {{{ random_inv t }}}
       random_gen t #bound
     {{{ n, RET #n; ⌜0 ≤ n < bound⌝%Z }}} ;
+
+  random_unboxed :
+    if unboxed then ∀ t,
+      random_inv t -∗
+      ⌜val_is_unboxed t⌝
+    else
+      True ;
 }.
-#[global] Arguments random _ {_} : assert.
-#[global] Arguments Build_random {_ _ _ _ _ _} _ _ : assert.
+#[global] Arguments random _ {_} _ : assert.
+#[global] Arguments Build_random {_ _} _ {_ _ _ _} _ _ _ : assert.
 #[global] Existing Instance random_inv_persistent.
 
 Section random.
-  Context `{!heapGS Σ} (random : random Σ).
+  Context `{!heapGS Σ} {unboxed} (random : random Σ unboxed).
 
   Definition random_gen_Z : val :=
     λ: "t" "lb" "ub",

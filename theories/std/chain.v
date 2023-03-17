@@ -64,13 +64,6 @@ Section heapGS.
         chain_node l dq v t' ∗ chain_model t' dq vs dst
     end.
 
-  Lemma chain_model_unboxed t dq v vs dst :
-    chain_model t dq (v :: vs) dst -∗
-    ⌜val_is_unboxed t⌝.
-  Proof.
-    iIntros "(%l & %_ & -> & _) //".
-  Qed.
-
   #[global] Instance chain_model_timeless t dq vs dst :
     Timeless (chain_model t dq vs dst).
   Proof.
@@ -419,6 +412,13 @@ Section heapGS.
     rewrite take_length min_l; last lia.
     rewrite Nat.sub_diag.
     iApply (chain_model_app_1 with "Hmodel Hmodel'").
+  Qed.
+
+  Lemma chain_unboxed t dq v vs dst :
+    chain_model t dq (v :: vs) dst -∗
+    ⌜val_is_unboxed t⌝.
+  Proof.
+    iIntros "(%l & %_ & -> & _) //".
   Qed.
 End heapGS.
 

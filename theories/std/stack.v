@@ -8,7 +8,7 @@ From caml5.std Require Export
 From caml5.std Require Import
   lst.
 
-Record stack `{!heapGS Σ} := {
+Record stack `{!heapGS Σ} {unboxed : bool} := {
   stack_make : val ;
   stack_is_empty : val ;
   stack_push : val ;
@@ -42,9 +42,16 @@ Record stack `{!heapGS Σ} := {
       (⌜vs = [] ∧ o = NONEV⌝ ∗ stack_model t []) ∨
       (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ stack_model t vs')
     }}} ;
+
+    stack_unboxed :
+      if unboxed then ∀ t vs,
+        stack_model t vs -∗
+        ⌜val_is_unboxed t⌝
+      else
+        True ;
 }.
-#[global] Arguments stack _ {_} : assert.
-#[global] Arguments Build_stack {_ _ _ _ _ _ _ _} _ _ _ _ : assert.
+#[global] Arguments stack _ {_} _ : assert.
+#[global] Arguments Build_stack {_ _} _ {_ _ _ _ _ _} _ _ _ _ _ : assert.
 #[global] Existing Instance stack_model_timeless.
 
 Section std_stack.
@@ -139,12 +146,20 @@ Section std_stack.
       iExists l, lst'. naive_solver.
   Qed.
 
+  Lemma std_stack_unboxed t vs :
+    std_stack_model t vs -∗
+    ⌜val_is_unboxed t⌝.
+  Proof.
+    iIntros "(%l & %lst & -> & Hl & #Hlst) //".
+  Qed.
+
   Definition std_stack :=
-    Build_stack
+    Build_stack true
       std_stack_make_spec
       std_stack_is_empty_spec
       std_stack_push_spec
-      std_stack_pop_spec.
+      std_stack_pop_spec
+      std_stack_unboxed.
 End std_stack.
 
 #[global] Opaque std_stack_make.

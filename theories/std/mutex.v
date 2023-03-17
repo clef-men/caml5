@@ -8,7 +8,7 @@ From caml5.std Require Export
 
 Implicit Types t : val.
 
-Record mutex `{!heapGS Σ} := {
+Record mutex `{!heapGS Σ} {unboxed : bool} := {
   mutex_make : val ;
   mutex_lock : val ;
   mutex_unlock : val ;
@@ -43,15 +43,22 @@ Record mutex `{!heapGS Σ} := {
     {{{ mutex_inv t P ∗ mutex_locked t ∗ P }}}
       mutex_unlock t
     {{{ RET #(); True }}} ;
+
+  mutex_unboxed :
+    if unboxed then ∀ t P,
+      mutex_inv t P -∗
+      ⌜val_is_unboxed t⌝
+    else
+      True ;
 }.
-#[global] Arguments mutex _ {_} : assert.
-#[global] Arguments Build_mutex {_ _ _ _ _ _ _ _ _ _ _} _ _ _ : assert.
+#[global] Arguments mutex _ {_} _ : assert.
+#[global] Arguments Build_mutex {_ _} _ {_ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
 #[global] Existing Instance mutex_inv_contractive.
 #[global] Existing Instance mutex_inv_persistent.
 #[global] Existing Instance mutex_locked_timeless.
 
 Section mutex.
-  Context `{!heapGS Σ} (mutex : mutex Σ).
+  Context `{!heapGS Σ} {unboxed} (mutex : mutex Σ unboxed).
 
   #[global] Instance mutex_inv_ne t :
     NonExpansive (mutex.(mutex_inv) t).

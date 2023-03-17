@@ -11,7 +11,7 @@ From caml5.std Require Export
 
 Implicit Types t v : val.
 
-Record inf_array `{!heapGS Σ} := {
+Record inf_array `{!heapGS Σ} {unboxed : bool} := {
   inf_array_make : val ;
   inf_array_get : val ;
   inf_array_set : val ;
@@ -37,13 +37,20 @@ Record inf_array `{!heapGS Σ} := {
     <<< True | ∀∀ vs, inf_array_model t vs >>>
       inf_array_set t #i v
     <<< inf_array_model t (<[Z.to_nat i := v]> vs) | RET #(); True >>> ;
+
+  inf_array_unboxed :
+    if unboxed then ∀ t vs,
+      inf_array_model t vs -∗
+      ⌜val_is_unboxed t⌝
+    else
+      True ;
 }.
-#[global] Arguments inf_array _ {_} : assert.
-#[global] Arguments Build_inf_array {_ _ _ _ _ _ _} _ _ _ : assert.
+#[global] Arguments inf_array _ {_} _ : assert.
+#[global] Arguments Build_inf_array {_ _} _ {_ _ _ _ _} _ _ _ _ : assert.
 #[global] Existing Instance inf_array_model_timeless.
 
 Section inf_array.
-  Context `{!heapGS Σ} (inf_array : inf_array Σ).
+  Context `{!heapGS Σ} {unboxed} (inf_array : inf_array Σ unboxed).
 
   #[global] Instance inf_array_model_ne t n :
     Proper (pointwise_relation nat (=) ==> (≡{n}≡)) (inf_array.(inf_array_model) t).

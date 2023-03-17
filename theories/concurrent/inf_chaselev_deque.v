@@ -21,7 +21,7 @@ From caml5.std Require Import
 From caml5.concurrent Require Export
   base.
 
-Class InfChaselevDequeGS Σ `{!heapGS Σ} (array : inf_array Σ) := {
+Class InfChaselevDequeGS Σ `{!heapGS Σ} (array : inf_array Σ false) := {
   inf_chaselev_deque_GS_ctl_G : AuthExclG Σ (prodO ZO (nat -d> valO)) ;
   inf_chaselev_deque_GS_front_G : AuthNatMaxG Σ ;
   inf_chaselev_deque_GS_hist_G : mono_listG val Σ ;
@@ -1461,6 +1461,13 @@ Section inf_chaselev_deque_GS.
         wp_pures.
 
         iApply "HΦ". repeat iExists _. iFrame "∗#". done.
+  Qed.
+
+  Lemma inf_chaselev_deque_unboxed t ι :
+    inf_chaselev_deque_inv t ι -∗
+    ⌜val_is_unboxed t⌝.
+  Proof.
+    iIntros "(%l & %γ_ctl & %γ_front & %γ_hist & %γ_pub & %γ_lock & %data & -> & #Hmeta_ctl & #Hmeta_front & #Hmeta_hist & #Hmeta_pub & #Hmeta_lock & #Hdata & #Hinv) //".
   Qed.
 End inf_chaselev_deque_GS.
 

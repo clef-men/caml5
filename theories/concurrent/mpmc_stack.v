@@ -8,7 +8,7 @@ From caml5.concurrent Require Export
 Implicit Types v t : val.
 Implicit Types vs : list val.
 
-Record mpmc_stack `{!heapGS Σ} := {
+Record mpmc_stack `{!heapGS Σ} {unboxed : bool} := {
   mpmc_stack_make : val ;
   mpmc_stack_push : val ;
   mpmc_stack_pop : val ;
@@ -42,8 +42,15 @@ Record mpmc_stack `{!heapGS Σ} := {
       (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ mpmc_stack_model t γ vs') |
       RET o; True
     >>> ;
+
+  mpmc_stack_unboxed :
+    if unboxed then ∀ t γ ι,
+      mpmc_stack_inv t γ ι -∗
+      ⌜val_is_unboxed t⌝
+    else
+      True ;
 }.
-#[global] Arguments mpmc_stack _ {_} : assert.
-#[global] Arguments Build_mpmc_stack {_ _ _ _ _ _ _ _ _ _} _ _ _ : assert.
+#[global] Arguments mpmc_stack _ {_} _ : assert.
+#[global] Arguments Build_mpmc_stack {_ _} _ {_ _ _ _ _ _ _ _} _ _ _ _ : assert.
 #[global] Existing Instance mpmc_stack_inv_persistent.
 #[global] Existing Instance mpmc_stack_model_timeless.
