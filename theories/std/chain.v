@@ -275,7 +275,7 @@ Section heapGS.
     {{{ t', RET t'; chain_model t' dq (v :: vs) dst }}}.
   Proof.
     iIntros "% %Φ Hmodel HΦ".
-    iApply wp_fupd. wp_apply (record2_make_spec with "[//]"). iIntros "%l' Hnode'".
+    iApply wp_fupd. wp_apply (record2_make_spec with "[//]"). iIntros "%l' (Hnode' & _)".
     iMod (record2_dfrac_relax with "Hnode'") as "Hnode'"; first done.
     iApply "HΦ". iExists l', t. auto with iFrame.
   Qed.

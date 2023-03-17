@@ -376,7 +376,7 @@ Section heapGS.
   Proof.
     iIntros "%Φ _ HΦ".
     wp_rec. wp_pures.
-    wp_apply (record3_make_spec with "[//]"). iIntros "%l Hl".
+    wp_apply (record3_make_spec with "[//]"). iIntros "%l (Hl & _)".
     iApply "HΦ". iExists l, next. auto with iFrame.
   Qed.
 
