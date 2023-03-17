@@ -139,7 +139,9 @@ Section heapGS.
     {{{ l, RET #l; record4_model l (DfracOwn 1) v₀ v₁ v₂ v₃ }}}.
   Proof.
     iIntros "%Φ _ HΦ".
-    wp_rec. wp_pures. wp_alloc l as "Hl"; first done. wp_pures.
+    wp_rec. wp_pures.
+    wp_apply (wp_allocN with "[//]"); first done. iIntros "%l (Hl & Hmeta & _)". rewrite loc_add_0.
+    wp_pures.
     iDestruct (array_cons with "Hl") as "(Hv₀ & Hl)".
     iEval (setoid_rewrite <- loc_add_0) in "Hv₀".
     iDestruct (array_cons with "Hl") as "(Hv₁ & Hl)".
@@ -148,7 +150,7 @@ Section heapGS.
     iDestruct (array_singleton with "Hl") as "Hv₃".
     rewrite loc_add_assoc Z.add_1_r. assert (Z.succ 2 = 3)%Z as -> by lia.
     wp_store. wp_store. wp_store.
-    iApply ("HΦ" with "[$Hv₀ $Hv₁ $Hv₂ $Hv₃]").
+    iApply "HΦ". iFrame. done.
   Qed.
 
   Lemma record4_get0_spec l dq v₀ v₁ v₂ v₃ :

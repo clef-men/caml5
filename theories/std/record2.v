@@ -126,15 +126,17 @@ Section heapGS.
   Lemma record2_make_spec v₀ v₁ :
     {{{ True }}}
       record2_make v₀ v₁
-    {{{ l, RET #l; record2_model l (DfracOwn 1) v₀ v₁ }}}.
+    {{{ l, RET #l; record2_model l (DfracOwn 1) v₀ v₁ ∗ meta_token l ⊤ }}}.
   Proof.
     iIntros "%Φ _ HΦ".
-    wp_rec. wp_pures. wp_alloc l as "Hl"; first done. wp_pures.
+    wp_rec. wp_pures.
+    wp_apply (wp_allocN with "[//]"); first done. iIntros "%l (Hl & Hmeta & _)". rewrite loc_add_0.
+    wp_pures.
     iDestruct (array_cons with "Hl") as "(Hv₀ & Hl)".
     iEval (setoid_rewrite <- loc_add_0) in "Hv₀".
     iDestruct (array_singleton with "Hl") as "Hv₁".
     wp_store.
-    iApply ("HΦ" with "[$Hv₀ $Hv₁]").
+    iApply "HΦ". iFrame. done.
   Qed.
 
   Lemma record2_get0_spec l dq v₀ v₁ :
