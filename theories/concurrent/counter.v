@@ -14,14 +14,14 @@ From caml5.lang Require Import
 From caml5.concurrent Require Export
   base.
 
-Class CounterGS Σ `{!heapGS Σ} := {
-  counter_GS_mono_G : AuthNatMaxG Σ ;
-  counter_GS_token_G : inG Σ (authR (gset_disjUR nat)) ;
-  counter_GS_model_G : AuthExclG Σ natO ;
+Class CounterG Σ `{!heapGS Σ} := {
+  counter_G_mono_G : AuthNatMaxG Σ ;
+  counter_G_token_G : inG Σ (authR (gset_disjUR nat)) ;
+  counter_G_model_G : AuthExclG Σ natO ;
 }.
-#[local] Existing Instance counter_GS_mono_G.
-#[local] Existing Instance counter_GS_token_G.
-#[local] Existing Instance counter_GS_model_G.
+#[local] Existing Instance counter_G_mono_G.
+#[local] Existing Instance counter_G_token_G.
+#[local] Existing Instance counter_G_model_G.
 
 Definition counter_Σ := #[
   auth_nat_max_Σ ;
@@ -30,13 +30,13 @@ Definition counter_Σ := #[
 ].
 Lemma subG_counter_Σ Σ `{!heapGS Σ} :
   subG counter_Σ Σ →
-  CounterGS Σ.
+  CounterG Σ.
 Proof.
   solve_inG.
 Qed.
 
-Section counter_GS.
-  Context `{CounterGS Σ}.
+Section counter_G.
+  Context `{CounterG Σ}.
   Implicit Types n m lb : nat.
   Implicit Types l : loc.
   Implicit Types t : val.
@@ -346,7 +346,7 @@ Section counter_GS.
   Proof.
     iIntros "(%l & %γ_model & -> & #Hmeta_model & #Hinv) //".
   Qed.
-End counter_GS.
+End counter_G.
 
 #[global] Opaque counter_make.
 #[global] Opaque counter_incr.

@@ -21,18 +21,18 @@ From caml5.std Require Import
 From caml5.concurrent Require Export
   base.
 
-Class InfChaselevDequeGS Σ `{!heapGS Σ} (array : inf_array Σ false) := {
-  inf_chaselev_deque_GS_ctl_G : AuthExclG Σ (prodO ZO (nat -d> valO)) ;
-  inf_chaselev_deque_GS_front_G : AuthNatMaxG Σ ;
-  inf_chaselev_deque_GS_hist_G : mono_listG val Σ ;
-  inf_chaselev_deque_GS_pub_G : AuthExclG Σ (listO valO) ;
-  inf_chaselev_deque_GS_lock_G : ExclG Σ unitO ;
+Class InfChaselevDequeG Σ `{!heapGS Σ} (array : inf_array Σ false) := {
+  inf_chaselev_deque_G_ctl_G : AuthExclG Σ (prodO ZO (nat -d> valO)) ;
+  inf_chaselev_deque_G_front_G : AuthNatMaxG Σ ;
+  inf_chaselev_deque_G_hist_G : mono_listG val Σ ;
+  inf_chaselev_deque_G_pub_G : AuthExclG Σ (listO valO) ;
+  inf_chaselev_deque_G_lock_G : ExclG Σ unitO ;
 }.
-#[local] Existing Instance inf_chaselev_deque_GS_ctl_G.
-#[local] Existing Instance inf_chaselev_deque_GS_front_G.
-#[local] Existing Instance inf_chaselev_deque_GS_hist_G.
-#[local] Existing Instance inf_chaselev_deque_GS_pub_G.
-#[local] Existing Instance inf_chaselev_deque_GS_lock_G.
+#[local] Existing Instance inf_chaselev_deque_G_ctl_G.
+#[local] Existing Instance inf_chaselev_deque_G_front_G.
+#[local] Existing Instance inf_chaselev_deque_G_hist_G.
+#[local] Existing Instance inf_chaselev_deque_G_pub_G.
+#[local] Existing Instance inf_chaselev_deque_G_lock_G.
 
 Definition inf_chaselev_deque_Σ := #[
   auth_excl_Σ (prodO ZO (nat -d> valO)) ;
@@ -43,13 +43,13 @@ Definition inf_chaselev_deque_Σ := #[
 ].
 Lemma subG_inf_chaselev_deque_Σ Σ `{!heapGS Σ} array :
   subG inf_chaselev_deque_Σ Σ →
-  InfChaselevDequeGS Σ array.
+  InfChaselevDequeG Σ array.
 Proof.
   solve_inG.
 Qed.
 
-Section inf_chaselev_deque_GS.
-  Context `{!heapGS Σ} {array} `{!InfChaselevDequeGS Σ array}.
+Section inf_chaselev_deque_G.
+  Context `{!heapGS Σ} {array} `{!InfChaselevDequeG Σ array}.
   Implicit Types front : nat.
   Implicit Types back : Z.
   Implicit Types l : loc.
@@ -136,9 +136,9 @@ Section inf_chaselev_deque_GS.
   Notation inf_chaselev_deque_meta_lock := (nroot .@ "lock").
 
   #[local] Definition inf_chaselev_deque_ctl₁ γ_ctl back priv :=
-    @auth_excl_auth _ _ inf_chaselev_deque_GS_ctl_G γ_ctl (DfracOwn 1) (back, priv).
+    @auth_excl_auth _ _ inf_chaselev_deque_G_ctl_G γ_ctl (DfracOwn 1) (back, priv).
   #[local] Definition inf_chaselev_deque_ctl₂ γ_ctl back priv :=
-    @auth_excl_frag _ _ inf_chaselev_deque_GS_ctl_G γ_ctl (back, priv).
+    @auth_excl_frag _ _ inf_chaselev_deque_G_ctl_G γ_ctl (back, priv).
 
   #[local] Definition inf_chaselev_deque_front_auth γ_front front :=
     auth_nat_max_auth γ_front (DfracOwn 1) front.
@@ -155,9 +155,9 @@ Section inf_chaselev_deque_GS.
     mono_list_idx_own γ_hist i v.
 
   #[local] Definition inf_chaselev_deque_pub₁ γ_pub pub :=
-    @auth_excl_frag _ _ inf_chaselev_deque_GS_pub_G γ_pub pub.
+    @auth_excl_frag _ _ inf_chaselev_deque_G_pub_G γ_pub pub.
   #[local] Definition inf_chaselev_deque_pub₂ γ_pub pub :=
-    @auth_excl_auth _ _ inf_chaselev_deque_GS_pub_G γ_pub (DfracOwn 1) pub.
+    @auth_excl_auth _ _ inf_chaselev_deque_G_pub_G γ_pub (DfracOwn 1) pub.
 
   #[local] Definition inf_chaselev_deque_lock γ_lock :=
     excl γ_lock ().
@@ -1469,7 +1469,7 @@ Section inf_chaselev_deque_GS.
   Proof.
     iIntros "(%l & %γ_ctl & %γ_front & %γ_hist & %γ_pub & %γ_lock & %data & -> & #Hmeta_ctl & #Hmeta_front & #Hmeta_hist & #Hmeta_pub & #Hmeta_lock & #Hdata & #Hinv) //".
   Qed.
-End inf_chaselev_deque_GS.
+End inf_chaselev_deque_G.
 
 #[global] Opaque inf_chaselev_deque_make.
 #[global] Opaque inf_chaselev_deque_push.
