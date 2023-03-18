@@ -22,6 +22,12 @@ Definition auth_Z_min_auth dq n : auth_Z_min_UR :=
 Definition auth_Z_min_frag n : auth_Z_min_UR :=
   ◯O Build_Z_min n.
 
+#[global] Instance auth_Z_min_cmra_discrete :
+  CmraDiscrete auth_Z_min_R.
+Proof.
+  apply _.
+Qed.
+
 #[global] Instance auth_Z_min_auth_core_id n :
   CoreId (auth_Z_min_auth DfracDiscarded n).
 Proof.

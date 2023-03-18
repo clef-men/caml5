@@ -24,6 +24,12 @@ Definition auth_nat_min_auth dq n : auth_nat_min_UR :=
 Definition auth_nat_min_frag n : auth_nat_min_UR :=
   ◯O Build_nat_min n.
 
+#[global] Instance auth_nat_min_cmra_discrete :
+  CmraDiscrete auth_nat_min_R.
+Proof.
+  apply _.
+Qed.
+
 #[global] Instance auth_nat_min_auth_core_id n :
   CoreId (auth_nat_min_auth DfracDiscarded n).
 Proof.

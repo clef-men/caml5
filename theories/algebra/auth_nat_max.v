@@ -23,6 +23,12 @@ Definition auth_nat_max_auth dq n : auth_nat_max_UR :=
 Definition auth_nat_max_frag n : auth_nat_max_UR :=
   ◯ Build_nat_max n.
 
+#[global] Instance auth_nat_max_cmra_discrete :
+  CmraDiscrete auth_nat_max_R.
+Proof.
+  apply _.
+Qed.
+
 #[global] Instance auth_nat_max_auth_core_id n :
   CoreId (auth_nat_max_auth DfracDiscarded n).
 Proof.

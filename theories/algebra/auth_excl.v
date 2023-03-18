@@ -97,6 +97,12 @@ Section ofe.
   Proof.
     apply _.
   Qed.
+  #[global] Instance auth_excl_cmra_discrete :
+    OfeDiscrete A →
+    CmraDiscrete (auth_excl_R A).
+  Proof.
+    apply _.
+  Qed.
 
   Lemma auth_excl_auth_dfrac_op dq1 dq2 a :
     ●E{dq1 ⋅ dq2} a ≡ ●E{dq1} a ⋅ ●E{dq2} a.

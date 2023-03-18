@@ -22,6 +22,12 @@ Definition auth_Z_max_auth dq n : auth_Z_max_UR :=
 Definition auth_Z_max_frag n : auth_Z_max_UR :=
   ◯O Build_Z_max n.
 
+#[global] Instance auth_Z_max_cmra_discrete :
+  CmraDiscrete auth_Z_max_R.
+Proof.
+  apply _.
+Qed.
+
 #[global] Instance auth_Z_max_auth_core_id n :
   CoreId (auth_Z_max_auth DfracDiscarded n).
 Proof.
