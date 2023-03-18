@@ -62,7 +62,7 @@ Section raw_array_G.
       raw_array_token_frag γ i -∗
       ⌜i ≤ sz⌝.
     Proof.
-      iApply auth_nat_max_both_valid.
+      iApply auth_nat_max_valid.
     Qed.
     #[local] Lemma raw_array_token_frag_le γ i i' :
       i' ≤ i →

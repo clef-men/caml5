@@ -262,7 +262,7 @@ Section inf_chaselev_deque_G.
     ⌜back1 = back2 ∧ priv1 = priv2⌝.
   Proof.
     iIntros "Hctl₁ Hctl₂".
-    iDestruct (auth_excl_both_agree with "Hctl₁ Hctl₂") as %(? & ?%functional_extensionality).
+    iDestruct (auth_excl_agree with "Hctl₁ Hctl₂") as %(? & ?%functional_extensionality).
     done.
   Qed.
   #[local] Lemma inf_chaselev_deque_ctl_update {γ_ctl back1 priv1 back2 priv2} back priv :
@@ -288,7 +288,7 @@ Section inf_chaselev_deque_G.
     inf_chaselev_deque_front_frag γ_front front2 -∗
     ⌜front2 ≤ front1⌝.
   Proof.
-    iApply auth_nat_max_both_valid.
+    iApply auth_nat_max_valid.
   Qed.
   #[local] Lemma inf_chaselev_deque_front_auth_update {γ_front front} front' :
     front ≤ front' →
@@ -327,7 +327,7 @@ Section inf_chaselev_deque_G.
     ⌜pub1 = pub2⌝.
   Proof.
     iIntros "Hpub₁ Hpub₂".
-    iDestruct (auth_excl_both_agree_L with "Hpub₂ Hpub₁") as %->. done.
+    iDestruct (auth_excl_agree_L with "Hpub₂ Hpub₁") as %->. done.
   Qed.
   #[local] Lemma inf_chaselev_deque_pub_update {γ_pub pub1 pub2} pub :
     inf_chaselev_deque_pub₁ γ_pub pub1 -∗

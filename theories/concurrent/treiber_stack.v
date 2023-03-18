@@ -139,7 +139,7 @@ Section treiber_stack_GS.
     - iDestruct (mlst_model_agree with "Hlst1 Hlst2") as %<-.
       iMod "HΦ" as "(%_vs1 & (%_l & %_γ & %Heq & #_Hmeta & Hmodel₂) & _ & HΦ)". injection Heq as <-.
       iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
-      iDestruct (auth_excl_both_agree_L with "Hmodel₂ Hmodel₁") as %->.
+      iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
       iMod (auth_excl_update' (v :: vs1) with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
       iMod ("HΦ" with "[Hmodel₂] [//]") as "HΦ".
       { iExists l, γ. auto with iFrame. }
@@ -180,7 +180,7 @@ Section treiber_stack_GS.
 
     - iMod "HΦ" as "(%_vs1 & (%_l & %_γ & %Heq & #_Hmeta & Hmodel₂) & _ & HΦ)". injection Heq as <-.
       iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
-      iDestruct (auth_excl_both_agree_L with "Hmodel₂ Hmodel₁") as %->.
+      iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
       iMod ("HΦ" with "[Hmodel₂] [//]") as "HΦ".
       { iLeft. iSplit; first done. iExists l, γ. auto with iFrame. }
       iModIntro. iSplitL "Hl Hmodel₁".
@@ -218,7 +218,7 @@ Section treiber_stack_GS.
       + iDestruct (mlst_model_agree with "Hlst1 Hlst2") as %<-.
         iMod "HΦ" as "(%_vs1 & (%_l & %_γ & %Heq & #_Hmeta & Hmodel₂) & _ & HΦ)". injection Heq as <-.
         iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
-        iDestruct (auth_excl_both_agree_L with "Hmodel₂ Hmodel₁") as %->.
+        iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
         iMod (auth_excl_update' vs1 with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iMod ("HΦ" with "[Hmodel₂] [//]") as "HΦ".
         { iRight. iExists v1, vs1. iSplit; first done. iExists l, γ. auto with iFrame. }

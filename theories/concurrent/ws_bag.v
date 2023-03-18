@@ -263,7 +263,7 @@ Section ws_bag_of_ws_deque.
     iInv "Hinv_extra" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
     iIntros "%sz (%_vs & -> & Hmodel₂ & Hmodel_deque)".
-    iDestruct (auth_excl_both_agree_L with "Hmodel₂ Hmodel₁") as %->.
+    iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hmodel_deque".
     - iIntros "Hmodel_deque !>". iSplitL "Hmodel₂ Hmodel_deque".
       { iExists vs. auto with iFrame. }
@@ -298,7 +298,7 @@ Section ws_bag_of_ws_deque.
     iInv "Hinv_extra" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
     iIntros "%sz (%_vs & -> & Hmodel₂ & Hmodel_deque)".
-    iDestruct (auth_excl_both_agree_L with "Hmodel₂ Hmodel₁") as %->.
+    iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hmodel_deque".
     - iIntros "Hmodel_deque !>". iSplitL "Hmodel₂ Hmodel_deque".
       { iExists vs. auto with iFrame. }
@@ -341,7 +341,7 @@ Section ws_bag_of_ws_deque.
     iInv "Hinv_extra" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
     iIntros "%sz (%_vs & -> & Hmodel₂ & Hmodel_deque)".
-    iDestruct (auth_excl_both_agree_L with "Hmodel₂ Hmodel₁") as %->.
+    iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hmodel_deque".
     - iIntros "Hmodel_deque !>". iSplitL "Hmodel₂ Hmodel_deque".
       { iExists vs. auto with iFrame. }
@@ -509,7 +509,7 @@ Section ws_bag_of_spmc_stack.
     iInv "Hinv_extra" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
     iIntros "%sz (%_vs & -> & Hmodel₂ & Hmodel_deque)".
-    iDestruct (auth_excl_both_agree_L with "Hmodel₂ Hmodel₁") as %->.
+    iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hmodel_deque".
     - iIntros "Hmodel_deque !>". iSplitL "Hmodel₂ Hmodel_deque".
       { iExists vs. auto with iFrame. }
@@ -544,7 +544,7 @@ Section ws_bag_of_spmc_stack.
     iInv "Hinv_extra" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
     iIntros "%sz (%_vs & -> & Hmodel₂ & Hmodel_deque)".
-    iDestruct (auth_excl_both_agree_L with "Hmodel₂ Hmodel₁") as %->.
+    iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hmodel_deque".
     - iIntros "Hmodel_deque !>". iSplitL "Hmodel₂ Hmodel_deque".
       { iExists vs. auto with iFrame. }
@@ -586,7 +586,7 @@ Section ws_bag_of_spmc_stack.
     iInv "Hinv_extra" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
     iIntros "%sz (%_vs & -> & Hmodel₂ & Hmodel_deque)".
-    iDestruct (auth_excl_both_agree_L with "Hmodel₂ Hmodel₁") as %->.
+    iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hmodel_deque".
     - iIntros "Hmodel_deque !>". iSplitL "Hmodel₂ Hmodel_deque".
       { iExists vs. auto with iFrame. }
@@ -814,7 +814,7 @@ Section ws_bag_of_spmc_queue.
     iInv "Hinv_extra" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
     iIntros "%sz (%_vs & -> & Hmodel₂ & Hmodel_deque)".
-    iDestruct (auth_excl_both_agree_L with "Hmodel₂ Hmodel₁") as %->.
+    iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hmodel_deque".
     - iIntros "Hmodel_deque !>". iSplitL "Hmodel₂ Hmodel_deque".
       { iExists vs. auto with iFrame. }
@@ -849,7 +849,7 @@ Section ws_bag_of_spmc_queue.
     iInv "Hinv_extra" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
     iIntros "%sz (%_vs & -> & Hmodel₂ & Hmodel_deque)".
-    iDestruct (auth_excl_both_agree_L with "Hmodel₂ Hmodel₁") as %->.
+    iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hmodel_deque".
     - iIntros "Hmodel_deque !>". iSplitL "Hmodel₂ Hmodel_deque".
       { iExists vs. auto with iFrame. }
@@ -892,7 +892,7 @@ Section ws_bag_of_spmc_queue.
     iInv "Hinv_extra" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
     iIntros "%sz (%_vs & -> & Hmodel₂ & Hmodel_deque)".
-    iDestruct (auth_excl_both_agree_L with "Hmodel₂ Hmodel₁") as %->.
+    iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hmodel_deque".
     - iIntros "Hmodel_deque !>". iSplitL "Hmodel₂ Hmodel_deque".
       { iExists vs. auto with iFrame. }

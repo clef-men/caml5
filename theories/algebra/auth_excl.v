@@ -230,10 +230,10 @@ Section ofe.
     rewrite auth_excl_both_dfrac_valid. naive_solver done.
   Qed.
 
-  Lemma auth_excl_auth_update_persist dq a :
+  Lemma auth_excl_auth_persist dq a :
     ●E{dq} a ~~> ●E□ a.
   Proof.
-    apply auth_option_auth_update_persist.
+    apply auth_option_auth_persist.
   Qed.
   Lemma auth_excl_both_update a b a' b' :
     a' ≡ b' →

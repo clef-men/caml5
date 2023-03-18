@@ -68,7 +68,7 @@ Section auth_nat_min_G.
     auth_nat_min_auth γ dq n ==∗
     auth_nat_min_auth γ DfracDiscarded n.
   Proof.
-    iApply own_update. apply auth_nat_min_auth_update_persist.
+    iApply own_update. apply auth_nat_min_auth_persist.
   Qed.
 
   Lemma auth_nat_min_alloc n :
@@ -137,7 +137,7 @@ Section auth_nat_min_G.
     intros. apply own_mono, auth_nat_min_frag_mono. done.
   Qed.
 
-  Lemma auth_nat_min_both_valid γ dq n m :
+  Lemma auth_nat_min_valid γ dq n m :
     auth_nat_min_auth γ dq n -∗
     auth_nat_min_frag γ m -∗
     ⌜n ≤ m⌝.

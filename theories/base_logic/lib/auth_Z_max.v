@@ -68,7 +68,7 @@ Section auth_Z_max_G.
     auth_Z_max_auth γ dq n ==∗
     auth_Z_max_auth γ DfracDiscarded n.
   Proof.
-    iApply own_update. apply auth_Z_max_auth_update_persist.
+    iApply own_update. apply auth_Z_max_auth_persist.
   Qed.
 
   Lemma auth_Z_max_alloc n :
@@ -137,7 +137,7 @@ Section auth_Z_max_G.
     intros. apply own_mono, auth_Z_max_frag_mono. done.
   Qed.
 
-  Lemma auth_Z_max_both_valid γ dq n m :
+  Lemma auth_Z_max_valid γ dq n m :
     auth_Z_max_auth γ dq n -∗
     auth_Z_max_frag γ m -∗
     ⌜m ≤ n⌝%Z.

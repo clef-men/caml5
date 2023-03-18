@@ -432,7 +432,7 @@ Section cmra.
     - naive_solver solve_proper.
   Qed.
 
-  Lemma auth_option_auth_update_persist dq a :
+  Lemma auth_option_auth_persist dq a :
     ●O{dq} a ~~> ●O□ a.
   Proof.
     apply auth_update_auth_persist.
