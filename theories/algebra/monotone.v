@@ -240,3 +240,5 @@ Section mra_over_ofe.
   Qed.
 
 End mra_over_ofe.
+
+#[global] Typeclasses Opaque principal.
