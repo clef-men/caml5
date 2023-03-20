@@ -204,9 +204,9 @@ Section atomic_wp.
   Qed.
 
   Lemma atomic_wp_inv ι I e E α β Ψ f :
-    ↑ ι ⊆ E →
+    ↑ι ⊆ E →
     inv ι I -∗
-    atomic_wp e (E ∖ ↑ ι) (λ.. x, ▷ I ∗ α x) (λ.. x y, ▷ I ∗ β x y) Ψ f -∗
+    atomic_wp e (E ∖ ↑ι) (λ.. x, ▷ I ∗ α x) (λ.. x y, ▷ I ∗ β x y) Ψ f -∗
     atomic_wp e E α β Ψ f.
   Proof.
     iIntros "% #Hinv H %Φ HΦ".
@@ -453,9 +453,9 @@ Section atomic_triple.
   Qed.
 
   Lemma atomic_triple_inv ι I e E P α β Ψ f :
-    ↑ ι ⊆ E →
+    ↑ι ⊆ E →
     inv ι I -∗
-    atomic_triple e (E ∖ ↑ ι) P (λ.. x, ▷ I ∗ α x) (λ.. x y, ▷ I ∗ β x y) Ψ f -∗
+    atomic_triple e (E ∖ ↑ι) P (λ.. x, ▷ I ∗ α x) (λ.. x y, ▷ I ∗ β x y) Ψ f -∗
     atomic_triple e E P α β Ψ f.
   Proof.
     iIntros "% #Hinv #H !> %Φ HP HΦ".

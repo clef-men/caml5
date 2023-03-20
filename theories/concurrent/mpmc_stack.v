@@ -29,14 +29,12 @@ Record mpmc_stack `{!heapGS Σ} {unboxed : bool} := {
 
   mpmc_stack_push_spec t γ ι v :
     <<< mpmc_stack_inv t γ ι | ∀∀ vs, mpmc_stack_model t γ vs >>>
-      mpmc_stack_push t v
-      @ ↑ ι
+      mpmc_stack_push t v @ ↑ι
     <<< mpmc_stack_model t γ (v :: vs) | RET #(); True >>> ;
 
   mpmc_stack_pop_spec t γ ι :
     <<< mpmc_stack_inv t γ ι | ∀∀ vs, mpmc_stack_model t γ vs >>>
-      mpmc_stack_pop t
-      @ ↑ ι
+      mpmc_stack_pop t @ ↑ι
     <<< ∃∃ o,
       (⌜vs = [] ∧ o = NONEV⌝ ∗ mpmc_stack_model t γ []) ∨
       (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ mpmc_stack_model t γ vs') |

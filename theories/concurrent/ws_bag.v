@@ -60,8 +60,7 @@ Record ws_bag `{!heapGS Σ} {unboxed : bool} := {
       ws_bag_owner t γ ∗ Ψ v |
       ∀∀ sz, ws_bag_model t γ sz
     >>>
-      ws_bag_push t v
-      @ ↑ ι
+      ws_bag_push t v @ ↑ι
     <<<
       ws_bag_model t γ (S sz) |
       RET #(); ws_bag_owner t γ
@@ -73,8 +72,7 @@ Record ws_bag `{!heapGS Σ} {unboxed : bool} := {
       ws_bag_owner t γ |
       ∀∀ sz, ws_bag_model t γ sz
     >>>
-      ws_bag_pop t
-      @ ↑ ι
+      ws_bag_pop t @ ↑ι
     <<< ∃∃ o,
       (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_model t γ 0) ∨
       (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_model t γ sz') |
@@ -88,8 +86,7 @@ Record ws_bag `{!heapGS Σ} {unboxed : bool} := {
       ws_bag_inv t γ ι Ψ |
       ∀∀ sz, ws_bag_model t γ sz
     >>>
-      ws_bag_steal t
-      @ ↑ ι
+      ws_bag_steal t @ ↑ι
     <<< ∃∃ o,
       (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_model t γ 0) ∨
       (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_model t γ sz') |
@@ -251,8 +248,7 @@ Section ws_bag_of_ws_deque.
       Ψ v |
       ∀∀ sz, ws_bag_of_ws_deque_model t γ sz
     >>>
-      ws_bag_of_ws_deque_push t v
-      @ ↑ ι
+      ws_bag_of_ws_deque_push t v @ ↑ι
     <<<
       ws_bag_of_ws_deque_model t γ (S sz) |
       RET #(); ws_bag_of_ws_deque_owner t γ
@@ -282,8 +278,7 @@ Section ws_bag_of_ws_deque.
       ws_bag_of_ws_deque_owner t γ |
       ∀∀ sz, ws_bag_of_ws_deque_model t γ sz
     >>>
-      ws_bag_of_ws_deque_pop t
-      @ ↑ ι
+      ws_bag_of_ws_deque_pop t @ ↑ι
     <<< ∃∃ o,
       (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_of_ws_deque_model t γ 0) ∨
       (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_ws_deque_model t γ sz') |
@@ -326,8 +321,7 @@ Section ws_bag_of_ws_deque.
       ws_bag_of_ws_deque_inv t γ ι Ψ |
       ∀∀ sz, ws_bag_of_ws_deque_model t γ sz
     >>>
-      ws_bag_of_ws_deque_steal t
-      @ ↑ ι
+      ws_bag_of_ws_deque_steal t @ ↑ι
     <<< ∃∃ o,
       (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_of_ws_deque_model t γ 0) ∨
       (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_ws_deque_model t γ sz') |
@@ -497,8 +491,7 @@ Section ws_bag_of_spmc_stack.
       Ψ v |
       ∀∀ sz, ws_bag_of_spmc_stack_model t γ sz
     >>>
-      ws_bag_of_spmc_stack_push t v
-      @ ↑ ι
+      ws_bag_of_spmc_stack_push t v @ ↑ι
     <<<
       ws_bag_of_spmc_stack_model t γ (S sz) |
       RET #(); ws_bag_of_spmc_stack_owner t γ
@@ -528,8 +521,7 @@ Section ws_bag_of_spmc_stack.
       ws_bag_of_spmc_stack_owner t γ |
       ∀∀ sz, ws_bag_of_spmc_stack_model t γ sz
     >>>
-      ws_bag_of_spmc_stack_pop t
-      @ ↑ ι
+      ws_bag_of_spmc_stack_pop t @ ↑ι
     <<< ∃∃ o,
       (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_of_spmc_stack_model t γ 0) ∨
       (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_spmc_stack_model t γ sz') |
@@ -571,8 +563,7 @@ Section ws_bag_of_spmc_stack.
       ws_bag_of_spmc_stack_inv t γ ι Ψ |
       ∀∀ sz, ws_bag_of_spmc_stack_model t γ sz
     >>>
-      ws_bag_of_spmc_stack_steal t
-      @ ↑ ι
+      ws_bag_of_spmc_stack_steal t @ ↑ι
     <<< ∃∃ o,
       (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_of_spmc_stack_model t γ 0) ∨
       (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_spmc_stack_model t γ sz') |
@@ -802,8 +793,7 @@ Section ws_bag_of_spmc_queue.
       Ψ v |
       ∀∀ sz, ws_bag_of_spmc_queue_model t γ sz
     >>>
-      ws_bag_of_spmc_queue_push t v
-      @ ↑ ι
+      ws_bag_of_spmc_queue_push t v @ ↑ι
     <<<
       ws_bag_of_spmc_queue_model t γ (S sz) |
       RET #(); ws_bag_of_spmc_queue_owner t γ
@@ -833,8 +823,7 @@ Section ws_bag_of_spmc_queue.
       ws_bag_of_spmc_queue_owner t γ |
       ∀∀ sz, ws_bag_of_spmc_queue_model t γ sz
     >>>
-      ws_bag_of_spmc_queue_pop t
-      @ ↑ ι
+      ws_bag_of_spmc_queue_pop t @ ↑ι
     <<< ∃∃ o,
       (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_of_spmc_queue_model t γ 0) ∨
       (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_spmc_queue_model t γ sz') |
@@ -877,8 +866,7 @@ Section ws_bag_of_spmc_queue.
       ws_bag_of_spmc_queue_inv t γ ι Ψ |
       ∀∀ sz, ws_bag_of_spmc_queue_model t γ sz
     >>>
-      ws_bag_of_spmc_queue_steal t
-      @ ↑ ι
+      ws_bag_of_spmc_queue_steal t @ ↑ι
     <<< ∃∃ o,
       (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_of_spmc_queue_model t γ 0) ∨
       (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_spmc_queue_model t γ sz') |

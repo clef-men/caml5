@@ -41,8 +41,7 @@ Record ws_deque `{!heapGS Σ} {unboxed : bool} := {
       ws_deque_inv t γ ι ∗ ws_deque_owner t γ |
       ∀∀ vs, ws_deque_model t γ vs
     >>>
-      ws_deque_push t v
-      @ ↑ ι
+      ws_deque_push t v @ ↑ι
     <<<
       ws_deque_model t γ (vs ++ [v]) |
       RET #(); ws_deque_owner t γ
@@ -53,8 +52,7 @@ Record ws_deque `{!heapGS Σ} {unboxed : bool} := {
       ws_deque_inv t γ ι ∗ ws_deque_owner t γ |
       ∀∀ vs, ws_deque_model t γ vs
     >>>
-      ws_deque_pop t
-      @ ↑ ι
+      ws_deque_pop t @ ↑ι
     <<< ∃∃ o,
       (⌜vs = [] ∧ o = NONEV⌝ ∗ ws_deque_model t γ []) ∨
       (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ ws_deque_model t γ vs') |
@@ -66,8 +64,7 @@ Record ws_deque `{!heapGS Σ} {unboxed : bool} := {
       ws_deque_inv t γ ι |
       ∀∀ vs, ws_deque_model t γ vs
     >>>
-      ws_deque_steal t
-      @ ↑ ι
+      ws_deque_steal t @ ↑ι
     <<< ∃∃ o,
       (⌜vs = [] ∧ o = NONEV⌝ ∗ ws_deque_model t γ []) ∨
       (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ ws_deque_model t γ vs') |

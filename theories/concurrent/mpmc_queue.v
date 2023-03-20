@@ -29,14 +29,12 @@ Record mpmc_queue `{!heapGS Σ} {unboxed : bool} := {
 
   mpmc_queue_push_spec t γ ι v :
     <<< mpmc_queue_inv t γ ι | ∀∀ vs, mpmc_queue_model t γ vs >>>
-      mpmc_queue_push t v
-      @ ↑ ι
+      mpmc_queue_push t v @ ↑ι
     <<< mpmc_queue_model t γ (v :: vs) | RET #(); True >>> ;
 
   mpmc_queue_pop_spec t γ ι :
     <<< mpmc_queue_inv t γ ι | ∀∀ vs, mpmc_queue_model t γ vs >>>
-      mpmc_queue_pop t
-      @ ↑ ι
+      mpmc_queue_pop t @ ↑ι
     <<< ∃∃ o,
       (⌜vs = [] ∧ o = NONEV⌝ ∗ mpmc_queue_model t γ []) ∨
       (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ mpmc_queue_model t γ vs') |

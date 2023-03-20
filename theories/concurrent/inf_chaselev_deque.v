@@ -397,11 +397,11 @@ Section inf_chaselev_deque_G.
     iMod inf_chaselev_deque_hist_alloc as "(%γ_hist & Hhist_auth)".
     iMod inf_chaselev_deque_pub_alloc as "(%γ_pub & Hpub₁ & Hpub₂)".
     iMod inf_chaselev_deque_lock_alloc as "(%γ_lock & Hlock)".
-    iDestruct (meta_token_difference _ (↑ inf_chaselev_deque_meta_ctl) with "Hmeta") as "(Hmeta_ctl & Hmeta)"; first solve_ndisj.
-    iDestruct (meta_token_difference _ (↑ inf_chaselev_deque_meta_front) with "Hmeta") as "(Hmeta_front & Hmeta)"; first solve_ndisj.
-    iDestruct (meta_token_difference _ (↑ inf_chaselev_deque_meta_hist) with "Hmeta") as "(Hmeta_hist & Hmeta)"; first solve_ndisj.
-    iDestruct (meta_token_difference _ (↑ inf_chaselev_deque_meta_pub) with "Hmeta") as "(Hmeta_pub & Hmeta)"; first solve_ndisj.
-    iDestruct (meta_token_difference _ (↑ inf_chaselev_deque_meta_lock) with "Hmeta") as "(Hmeta_lock & Hmeta)"; first solve_ndisj.
+    iDestruct (meta_token_difference _ (↑inf_chaselev_deque_meta_ctl) with "Hmeta") as "(Hmeta_ctl & Hmeta)"; first solve_ndisj.
+    iDestruct (meta_token_difference _ (↑inf_chaselev_deque_meta_front) with "Hmeta") as "(Hmeta_front & Hmeta)"; first solve_ndisj.
+    iDestruct (meta_token_difference _ (↑inf_chaselev_deque_meta_hist) with "Hmeta") as "(Hmeta_hist & Hmeta)"; first solve_ndisj.
+    iDestruct (meta_token_difference _ (↑inf_chaselev_deque_meta_pub) with "Hmeta") as "(Hmeta_pub & Hmeta)"; first solve_ndisj.
+    iDestruct (meta_token_difference _ (↑inf_chaselev_deque_meta_lock) with "Hmeta") as "(Hmeta_lock & Hmeta)"; first solve_ndisj.
     iMod (meta_set _ _ γ_ctl with "Hmeta_ctl") as "#Hmeta_ctl"; first done.
     iMod (meta_set _ _ γ_front with "Hmeta_front") as "#Hmeta_front"; first done.
     iMod (meta_set _ _ γ_hist with "Hmeta_hist") as "#Hmeta_hist"; first done.
@@ -423,8 +423,7 @@ Section inf_chaselev_deque_G.
       inf_chaselev_deque_inv t ι ∗ inf_chaselev_deque_owner t |
       ∀∀ pub, inf_chaselev_deque_model t pub
     >>>
-      inf_chaselev_deque_push t v
-      @ ↑ ι
+      inf_chaselev_deque_push t v @ ↑ι
     <<<
       inf_chaselev_deque_model t (pub ++ [v]) |
       RET #(); inf_chaselev_deque_owner t
@@ -553,8 +552,7 @@ Section inf_chaselev_deque_G.
       inf_chaselev_deque_inv t ι |
       ∀∀ pub, inf_chaselev_deque_model t pub
     >>>
-      inf_chaselev_deque_steal t
-      @ ↑ ι
+      inf_chaselev_deque_steal t @ ↑ι
     <<<
       ∃∃ o,
       (⌜length pub ≤ 1 ∧ o = NONEV⌝ ∗ inf_chaselev_deque_model t pub) ∨
@@ -845,8 +843,7 @@ Section inf_chaselev_deque_G.
       inf_chaselev_deque_inv t ι ∗ inf_chaselev_deque_owner t |
       ∀∀ pub, inf_chaselev_deque_model t pub
     >>>
-      inf_chaselev_deque_pop t
-      @ ↑ ι
+      inf_chaselev_deque_pop t @ ↑ι
     <<<
       ∃∃ o,
       (⌜pub = [] ∧ o = NONEV⌝ ∗ inf_chaselev_deque_model t []) ∨

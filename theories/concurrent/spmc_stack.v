@@ -51,8 +51,7 @@ Record spmc_stack `{!heapGS Σ} {unboxed : bool} := {
       spmc_stack_producer t γ |
       ∀∀ vs, spmc_stack_model t γ vs
     >>>
-      spmc_stack_push t v
-      @ ↑ ι
+      spmc_stack_push t v @ ↑ι
     <<<
       spmc_stack_model t γ (v :: vs) |
       RET #(); spmc_stack_producer t γ
@@ -63,8 +62,7 @@ Record spmc_stack `{!heapGS Σ} {unboxed : bool} := {
       spmc_stack_inv t γ ι |
       ∀∀ vs, spmc_stack_model t γ vs
     >>>
-      spmc_stack_pop t
-      @ ↑ ι
+      spmc_stack_pop t @ ↑ι
     <<< ∃∃ o,
       (⌜vs = [] ∧ o = NONEV⌝ ∗ spmc_stack_model t γ []) ∨
       (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ spmc_stack_model t γ vs') |

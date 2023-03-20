@@ -280,9 +280,9 @@ Section counter_G.
     iMod (auth_nat_max_alloc 0) as "(%γ_mono & Hmono_auth & _)".
     iMod (own_alloc (● GSet ∅)) as "(%γ_token & Htoken_auth)"; first by apply auth_auth_valid.
     iMod (auth_excl_alloc 0) as "(%γ_model & Hmodel₂ & Hmodel₁)"; first done.
-    iDestruct (meta_token_difference _ (↑ counter_meta_mono) with "Hmeta") as "(Hmeta_mono & Hmeta)"; first solve_ndisj.
-    iDestruct (meta_token_difference _ (↑ counter_meta_token) with "Hmeta") as "(Hmeta_token & Hmeta)"; first solve_ndisj.
-    iDestruct (meta_token_difference _ (↑ counter_meta_model) with "Hmeta") as "(Hmeta_model & Hmeta)"; first solve_ndisj.
+    iDestruct (meta_token_difference _ (↑counter_meta_mono) with "Hmeta") as "(Hmeta_mono & Hmeta)"; first solve_ndisj.
+    iDestruct (meta_token_difference _ (↑counter_meta_token) with "Hmeta") as "(Hmeta_token & Hmeta)"; first solve_ndisj.
+    iDestruct (meta_token_difference _ (↑counter_meta_model) with "Hmeta") as "(Hmeta_model & Hmeta)"; first solve_ndisj.
     iMod (meta_set _ _ γ_mono with "Hmeta_mono") as "#Hmeta_mono"; first done.
     iMod (meta_set _ _ γ_token with "Hmeta_token") as "#Hmeta_token"; first done.
     iMod (meta_set _ _ γ_model with "Hmeta_model") as "#Hmeta_model"; first done.
@@ -294,8 +294,7 @@ Section counter_G.
 
   Lemma counter_incr_spec t ι :
     <<< counter_inv t ι | ∀∀ n, counter_model t (DfracOwn 1) n >>>
-      counter_incr t
-      @ ↑ ι
+      counter_incr t @ ↑ι
     <<< counter_model t (DfracOwn 1) (S n) ∗ counter_token t n | RET #n; True >>>.
   Proof.
     iIntros "!> %Φ (%l & %γ_model & -> & #Hmeta_model & #Hinv) HΦ".
@@ -323,8 +322,7 @@ Section counter_G.
 
   Lemma counter_get_spec t ι :
     <<< counter_inv t ι | ∀∀ dq n, counter_model t dq n >>>
-      counter_get t
-      @ ↑ ι
+      counter_get t @ ↑ι
     <<< counter_model t dq n | RET #n; True >>>.
   Proof.
     iIntros "!> %Φ (%l & %γ_model & -> & #Hmeta_model & #Hinv) HΦ".

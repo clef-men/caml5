@@ -51,8 +51,7 @@ Record spmc_queue `{!heapGS Σ} {unboxed : bool} := {
       spmc_queue_producer t γ |
       ∀∀ vs, spmc_queue_model t γ vs
     >>>
-      spmc_queue_push t v
-      @ ↑ ι
+      spmc_queue_push t v @ ↑ι
     <<<
       spmc_queue_model t γ (v :: vs) |
       RET #(); spmc_queue_producer t γ
@@ -63,8 +62,7 @@ Record spmc_queue `{!heapGS Σ} {unboxed : bool} := {
       spmc_queue_inv t γ ι |
       ∀∀ vs, spmc_queue_model t γ vs
     >>>
-      spmc_queue_pop t
-      @ ↑ ι
+      spmc_queue_pop t @ ↑ι
     <<< ∃∃ o,
       (⌜vs = [] ∧ o = NONEV⌝ ∗ spmc_queue_model t γ []) ∨
       (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ spmc_queue_model t γ vs') |
