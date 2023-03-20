@@ -21,6 +21,7 @@ theories/algebra/auth_Z_min.v
 theories/algebra/monotone.v
 theories/algebra/sts_cell.v
 
+theories/base_logic/lib/agree.v
 theories/base_logic/lib/excl.v
 theories/base_logic/lib/auth_excl.v
 theories/base_logic/lib/auth_nat_max.v
