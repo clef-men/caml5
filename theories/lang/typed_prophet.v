@@ -34,6 +34,12 @@ Section typed_prophet.
     ∃ pvs,
     ⌜prophs = typed_prophet_process pvs⌝ ∗ proph p pvs.
 
+  #[global] Instance typed_prophet_model_timeless p prophs :
+    Timeless (typed_prophet_model p prophs).
+  Proof.
+    apply _.
+  Qed.
+
   Lemma typed_prophet_model_exclusive p prophs1 prophs2 :
     typed_prophet_model p prophs1 -∗
     typed_prophet_model p prophs2 -∗
