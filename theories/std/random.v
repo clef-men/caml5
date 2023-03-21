@@ -22,11 +22,11 @@ Record random `{!heapGS Σ} {unboxed : bool} := {
       random_make #()
     {{{ t, RET t; random_inv t }}} ;
 
-  random_gen_spec t (bound : Z) :
-    (0 < bound)%Z →
+  random_gen_spec t (ub : Z) :
+    (0 < ub)%Z →
     {{{ random_inv t }}}
-      random_gen t #bound
-    {{{ n, RET #n; ⌜0 ≤ n < bound⌝%Z }}} ;
+      random_gen t #ub
+    {{{ n, RET #n; ⌜0 ≤ n < ub⌝%Z }}} ;
 
   random_unboxed :
     if unboxed then ∀ t,
