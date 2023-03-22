@@ -1,9 +1,10 @@
-From iris.algebra Require Export
-  dfrac
-  updates.
+From iris.algebra Require Import
+  proofmode_classes.
 
 From caml5 Require Import
   prelude.
+From caml5.algebra Require Export
+  base.
 From caml5.algebra Require Import
   auth_option
   Z_max.

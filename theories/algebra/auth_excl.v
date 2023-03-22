@@ -1,12 +1,11 @@
 From iris.algebra Require Import
-  auth
   excl
   proofmode_classes.
-From iris.algebra Require Export
-  dfrac.
 
 From caml5 Require Import
   prelude.
+From caml5.algebra Require Export
+  base.
 From caml5.algebra Require Import
   auth_option.
 

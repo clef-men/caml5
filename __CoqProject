@@ -6,6 +6,9 @@ theories/base.v
 theories/common/tactics.v
 theories/common/typeclasses.v
 
+theories/algebra/base.v
+theories/algebra/view.v
+theories/algebra/auth.v
 theories/algebra/nat_add.v
 theories/algebra/nat_max.v
 theories/algebra/nat_min.v

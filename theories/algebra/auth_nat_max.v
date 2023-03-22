@@ -1,12 +1,12 @@
 From iris.algebra Require Import
-  auth.
-From iris.algebra Require Export
-  dfrac
-  updates.
+  proofmode_classes.
 
 From caml5 Require Import
   prelude.
+From caml5.algebra Require Export
+  base.
 From caml5.algebra Require Import
+  auth
   nat_max.
 
 Implicit Types n m p : nat.

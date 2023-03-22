@@ -1,11 +1,10 @@
 From iris.algebra Require Import
-  auth.
-From iris.algebra Require Export
-  dfrac
-  updates.
+  proofmode_classes.
 
 From caml5 Require Import
   prelude.
+From caml5.algebra Require Export
+  base.
 From caml5.algebra Require Import
   auth_option
   nat_min.
@@ -45,7 +44,7 @@ Lemma auth_nat_min_auth_dfrac_op dq1 dq2 n :
   auth_nat_min_auth (dq1 ⋅ dq2) n ≡ auth_nat_min_auth dq1 n ⋅ auth_nat_min_auth dq2 n.
 Proof.
   rewrite /auth_nat_min_auth auth_option_auth_dfrac_op.
-  rewrite (comm _ (●{dq2} _)) -!assoc (assoc _ (◯ _)) -core_id_dup (comm _ (◯ _)) //.
+  rewrite (comm _ (●O{dq2} _)) -!assoc (assoc _ (◯O _)) -core_id_dup (comm _ (◯O _)) //.
 Qed.
 #[global] Instance auth_nat_min_auth_dfrac_is_op dq dq1 dq2 n :
   IsOp dq dq1 dq2 →
@@ -69,7 +68,7 @@ Qed.
 Lemma auth_nat_min_auth_frag_op dq n :
   auth_nat_min_auth dq n ≡ auth_nat_min_auth dq n ⋅ auth_nat_min_frag n.
 Proof.
-  rewrite -!assoc -auth_frag_op -core_id_dup //.
+  rewrite -!assoc -auth_option_frag_op -core_id_dup //.
 Qed.
 
 Lemma auth_nat_min_frag_op_le n n' :
@@ -95,11 +94,11 @@ Lemma auth_nat_min_auth_dfrac_op_valid dq1 n1 dq2 n2 :
   ✓ (auth_nat_min_auth dq1 n1 ⋅ auth_nat_min_auth dq2 n2) ↔
   ✓ (dq1 ⋅ dq2) ∧ n1 = n2.
 Proof.
-  rewrite /auth_nat_min_auth (comm _ (●{dq2} _)) -!assoc (assoc _ (◯ _)).
-  rewrite -auth_option_frag_op (comm _ (◯ _)) assoc. split.
+  rewrite /auth_nat_min_auth (comm _ (●O{dq2} _)) -!assoc (assoc _ (◯O _)).
+  rewrite -auth_option_frag_op (comm _ (◯O _)) assoc. split.
   - move => /cmra_valid_op_l /auth_option_auth_dfrac_op_valid. naive_solver.
   - intros [? ->]. rewrite -core_id_dup -auth_option_auth_dfrac_op.
-    apply auth_both_dfrac_valid_discrete. done.
+    apply auth_option_both_dfrac_valid_discrete. naive_solver.
 Qed.
 Lemma auth_nat_min_auth_op_valid n1 n2 :
   ✓ (auth_nat_min_auth (DfracOwn 1) n1 ⋅ auth_nat_min_auth (DfracOwn 1) n2) ↔

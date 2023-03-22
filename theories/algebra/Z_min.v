@@ -1,9 +1,10 @@
-From iris.algebra Require Export
-  local_updates
+From iris.algebra Require Import
   proofmode_classes.
 
 From caml5 Require Import
   prelude.
+From caml5.algebra Require Export
+  base.
 
 Record Z_min := {
   Z_min_car : Z

@@ -1,11 +1,12 @@
 From iris.algebra Require Import
-  auth.
-From iris.algebra Require Export
   proofmode_classes.
 
 From caml5 Require Import
   prelude.
+From caml5.algebra Require Export
+  base.
 From caml5.algebra Require Import
+  auth
   monotone.
 
 Section sts.
@@ -28,6 +29,18 @@ Section sts.
     ●{dq} principal steps s ⋅ ◯ principal steps s.
   Definition sts_cell_frag s :=
     ◯ principal steps s.
+
+  #[global] Instance sts_cell_auth_inj `{!AntiSymm (=) steps} :
+    Inj2 (=) (=) (≡) sts_cell_auth.
+  Proof.
+    rewrite /Inj2. setoid_rewrite auth_auth_frag_dfrac_op.
+    intros * (-> & ->%(@inj _ _ (≡) _ _ _) & _). done.
+  Qed.
+  #[global] Instance sts_cell_frag_inj `{!AntiSymm (=) steps} :
+    Inj (=) (≡) sts_cell_frag.
+  Proof.
+    intros s1 s2 ->%(inj auth_frag)%(@inj _ _ (≡) _ _ _). done.
+  Qed.
 
   #[global] Instance sts_cell_cmra_discrete :
     CmraDiscrete sts_cell_R.
