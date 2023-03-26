@@ -133,10 +133,7 @@ Qed.
 
 Section ws_bag_of_ws_deque.
   Context `{WsBagOfWsDequeG Σ} {unboxed} (ws_deque : ws_deque Σ unboxed).
-
-  Definition ws_bag_of_ws_deque_name : Type :=
-    ws_deque.(ws_deque_name) * gname.
-  Implicit Types γ : ws_bag_of_ws_deque_name.
+  Implicit Types γ : ws_deque.(ws_deque_name) * gname.
 
   Notation "γ .(base)" := γ.1
   ( at level 5
@@ -237,7 +234,7 @@ Section ws_bag_of_ws_deque.
   Proof.
     iIntros "%Φ _ HΦ".
     iApply wp_fupd.
-    wp_apply (ws_deque_make_spec with "[//]"). iIntros "%t %γ_base (#Hinv_deque & Hmodel_deque & Howner)".
+    wp_apply (ws_deque_make_spec with "[//]"). iIntros "%t %γ_base (#Hbase_inv & Hbase_model & Howner)".
     iMod (auth_excl_alloc' []) as "(%γ_extra & Hmodel₂ & Hmodel₁)".
     iApply ("HΦ" $! t (γ_base, γ_extra)). iFrame. iSplitL "Hmodel₁".
     - iFrame "#". iApply inv_alloc. iNext. iExists []. iFrame. done.
@@ -257,20 +254,20 @@ Section ws_bag_of_ws_deque.
       RET #(); ws_bag_of_ws_deque_owner t γ
     >>>.
   Proof.
-    iIntros "!> %Φ ((#Hinv_deque & #Hinv_extra) & Howner & Hv) HΦ".
-    awp_apply (ws_deque_push_spec with "[$Hinv_deque $Howner]").
-    iInv "Hinv_extra" as "(%vs & >Hmodel₁ & Hvs)".
+    iIntros "!> %Φ ((#Hbase_inv & #Hextra_inv) & Howner & Hv) HΦ".
+    awp_apply (ws_deque_push_spec with "[$Hbase_inv $Howner]").
+    iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%sz (%_vs & -> & Hmodel₂ & Hmodel_deque)".
+    iIntros "%sz (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
-    iAaccIntro with "Hmodel_deque".
-    - iIntros "Hmodel_deque !>". iSplitL "Hmodel₂ Hmodel_deque".
+    iAaccIntro with "Hbase_model".
+    - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
       { iExists vs. auto with iFrame. }
       iIntros "$ !>". iFrame. iExists vs. auto with iFrame.
     - set vs' := vs ++ [v].
-      iIntros "Hmodel_deque".
+      iIntros "Hbase_model".
       iMod (auth_excl_update' vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
-      iModIntro. iSplitL "Hmodel₂ Hmodel_deque".
+      iModIntro. iSplitL "Hmodel₂ Hbase_model".
       { iExists vs'. rewrite app_length /=. auto with iFrame lia. }
       iIntros "$ !>". iExists vs'. auto with iFrame.
   Qed.
@@ -290,26 +287,26 @@ Section ws_bag_of_ws_deque.
       from_option Ψ True o
     >>>.
   Proof.
-    iIntros "!> %Φ ((#Hinv_deque & #Hinv_extra) & Howner) HΦ".
+    iIntros "!> %Φ ((#Hbase_inv & #Hextra_inv) & Howner) HΦ".
     wp_rec.
-    awp_apply (ws_deque_pop_spec with "[$Hinv_deque $Howner]").
-    iInv "Hinv_extra" as "(%vs & >Hmodel₁ & Hvs)".
+    awp_apply (ws_deque_pop_spec with "[$Hbase_inv $Howner]").
+    iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%sz (%_vs & -> & Hmodel₂ & Hmodel_deque)".
+    iIntros "%sz (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
-    iAaccIntro with "Hmodel_deque".
-    - iIntros "Hmodel_deque !>". iSplitL "Hmodel₂ Hmodel_deque".
+    iAaccIntro with "Hbase_model".
+    - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
       { iExists vs. auto with iFrame. }
       iIntros "$ !>". iExists vs. auto with iFrame.
-    - iIntros "%o [((-> & ->) & Hmodel_deque) | (%vs' & %v & (-> & ->) & Hmodel_deque)]".
-      + iModIntro. iExists None. iSplitL "Hmodel₂ Hmodel_deque".
+    - iIntros "%o [((-> & ->) & Hbase_model) | (%vs' & %v & (-> & ->) & Hbase_model)]".
+      + iModIntro. iExists None. iSplitL "Hmodel₂ Hbase_model".
         { iLeft. iSplit; first done. iExists []. auto with iFrame. }
         iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
         { iExists []. auto. }
         iIntros "Howner". wp_pures. iApply "HΦ". auto.
       + iMod (auth_excl_update' vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct "Hvs" as "(Hvs' & Hv & _)".
-        iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hmodel_deque".
+        iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
         { iRight. iExists (length vs'), v. iSplit.
           { rewrite app_length (comm Nat.add) //. }
           iExists vs'. auto with iFrame.
@@ -332,26 +329,26 @@ Section ws_bag_of_ws_deque.
       from_option Ψ True o
     >>>.
   Proof.
-    iIntros "!> %Φ (#Hinv_deque & #Hinv_extra) HΦ".
+    iIntros "!> %Φ (#Hbase_inv & #Hextra_inv) HΦ".
     wp_rec.
-    awp_apply (ws_deque_steal_spec with "Hinv_deque").
-    iInv "Hinv_extra" as "(%vs & >Hmodel₁ & Hvs)".
+    awp_apply (ws_deque_steal_spec with "Hbase_inv").
+    iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%sz (%_vs & -> & Hmodel₂ & Hmodel_deque)".
+    iIntros "%sz (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
-    iAaccIntro with "Hmodel_deque".
-    - iIntros "Hmodel_deque !>". iSplitL "Hmodel₂ Hmodel_deque".
+    iAaccIntro with "Hbase_model".
+    - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
       { iExists vs. auto with iFrame. }
       iIntros "$ !>". iExists vs. auto with iFrame.
-    - iIntros "%o [((-> & ->) & Hmodel_deque) | (%v & %vs' & (-> & ->) & Hmodel_deque)]".
-      + iModIntro. iExists None. iSplitL "Hmodel₂ Hmodel_deque".
+    - iIntros "%o [((-> & ->) & Hbase_model) | (%v & %vs' & (-> & ->) & Hbase_model)]".
+      + iModIntro. iExists None. iSplitL "Hmodel₂ Hbase_model".
         { iLeft. iSplit; first done. iExists []. auto with iFrame. }
         iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
         { iExists []. auto. }
         iIntros "Howner". wp_pures. iApply "HΦ". auto.
       + iMod (auth_excl_update' vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct "Hvs" as "(Hv & Hvs')".
-        iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hmodel_deque".
+        iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
         { iRight. iExists (length vs'), v. iSplit; first done.
           iExists vs'. auto with iFrame.
         }
@@ -359,8 +356,29 @@ Section ws_bag_of_ws_deque.
         { iExists vs'. auto with iFrame. }
         iIntros "Howner". wp_pures. iApply "HΦ". auto with iFrame.
   Qed.
-End ws_bag_of_ws_deque.
 
+  #[local] Lemma ws_bag_of_ws_deque_unboxed :
+    if unboxed then ∀ t γ ι Ψ,
+      ws_bag_of_ws_deque_inv t γ ι Ψ -∗
+      ⌜val_is_unboxed t⌝
+    else
+      True.
+  Proof.
+    move: ws_deque.(ws_deque_unboxed).
+    refine (match unboxed with true => _ | false => _ end); last done.
+    iIntros "%Hunboxed %t %γ %ι %Ψ (#Hbase_inv & #Hextra_inv)".
+    iApply (Hunboxed with "Hbase_inv").
+  Qed.
+
+  Definition ws_bag_of_ws_deque :=
+    Build_ws_bag unboxed
+      ws_bag_of_ws_deque_owner_exclusive
+      ws_bag_of_ws_deque_make_spec
+      ws_bag_of_ws_deque_push_spec
+      ws_bag_of_ws_deque_pop_spec
+      ws_bag_of_ws_deque_steal_spec
+      ws_bag_of_ws_deque_unboxed.
+End ws_bag_of_ws_deque.
 
 Class WsBagOfSpmcStackG Σ `{!heapGS Σ} := {
   ws_bag_of_spmc_stack_G_model_G : AuthExclG Σ (listO valO) ;
@@ -379,10 +397,7 @@ Qed.
 
 Section ws_bag_of_spmc_stack.
   Context `{WsBagOfSpmcStackG Σ} {unboxed} (spmc_stack : spmc_stack Σ unboxed).
-
-  Definition ws_bag_of_spmc_stack_name : Type :=
-    spmc_stack.(spmc_stack_name) * gname.
-  Implicit Types γ : ws_bag_of_spmc_stack_name.
+  Implicit Types γ : spmc_stack.(spmc_stack_name) * gname.
 
   Notation "γ .(base)" := γ.1
   ( at level 5
@@ -483,9 +498,9 @@ Section ws_bag_of_spmc_stack.
   Proof.
     iIntros "%Φ _ HΦ".
     iApply wp_fupd.
-    wp_apply (spmc_stack_make_spec with "[//]"). iIntros "%t %γ_deque (#Hinv_deque & Hmodel_deque & Howner)".
+    wp_apply (spmc_stack_make_spec with "[//]"). iIntros "%t %γ_base (#Hbase_inv & Hbase_model & Howner)".
     iMod (auth_excl_alloc' []) as "(%γ_extra & Hmodel₂ & Hmodel₁)".
-    iApply ("HΦ" $! t (γ_deque, γ_extra)). iFrame. iSplitL "Hmodel₁".
+    iApply ("HΦ" $! t (γ_base, γ_extra)). iFrame. iSplitL "Hmodel₁".
     - iFrame "#". iApply inv_alloc. iNext. iExists []. iFrame. done.
     - iExists []. auto with iFrame.
   Qed.
@@ -503,20 +518,20 @@ Section ws_bag_of_spmc_stack.
       RET #(); ws_bag_of_spmc_stack_owner t γ
     >>>.
   Proof.
-    iIntros "!> %Φ ((#Hinv_deque & #Hinv_extra) & Howner & Hv) HΦ".
-    awp_apply (spmc_stack_push_spec with "[$Hinv_deque $Howner]").
-    iInv "Hinv_extra" as "(%vs & >Hmodel₁ & Hvs)".
+    iIntros "!> %Φ ((#Hbase_inv & #Hextra_inv) & Howner & Hv) HΦ".
+    awp_apply (spmc_stack_push_spec with "[$Hbase_inv $Howner]").
+    iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%sz (%_vs & -> & Hmodel₂ & Hmodel_deque)".
+    iIntros "%sz (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
-    iAaccIntro with "Hmodel_deque".
-    - iIntros "Hmodel_deque !>". iSplitL "Hmodel₂ Hmodel_deque".
+    iAaccIntro with "Hbase_model".
+    - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
       { iExists vs. auto with iFrame. }
       iIntros "$ !>". iFrame. iExists vs. auto with iFrame.
     - set vs' := v :: vs.
-      iIntros "Hmodel_deque".
+      iIntros "Hbase_model".
       iMod (auth_excl_update' vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
-      iModIntro. iSplitL "Hmodel₂ Hmodel_deque".
+      iModIntro. iSplitL "Hmodel₂ Hbase_model".
       { iExists vs'. auto with iFrame. }
       iIntros "$ !>". iExists vs'. auto with iFrame.
   Qed.
@@ -536,26 +551,26 @@ Section ws_bag_of_spmc_stack.
       from_option Ψ True o
     >>>.
   Proof.
-    iIntros "!> %Φ ((#Hinv_deque & #Hinv_extra) & Howner) HΦ".
+    iIntros "!> %Φ ((#Hbase_inv & #Hextra_inv) & Howner) HΦ".
     wp_rec.
-    awp_apply (spmc_stack_pop_spec with "Hinv_deque").
-    iInv "Hinv_extra" as "(%vs & >Hmodel₁ & Hvs)".
+    awp_apply (spmc_stack_pop_spec with "Hbase_inv").
+    iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%sz (%_vs & -> & Hmodel₂ & Hmodel_deque)".
+    iIntros "%sz (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
-    iAaccIntro with "Hmodel_deque".
-    - iIntros "Hmodel_deque !>". iSplitL "Hmodel₂ Hmodel_deque".
+    iAaccIntro with "Hbase_model".
+    - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
       { iExists vs. auto with iFrame. }
       iIntros "$ !>". iFrame. iExists vs. iFrame.
-    - iIntros "%o [((-> & ->) & Hmodel_deque) | (%v & %vs' & (-> & ->) & Hmodel_deque)]".
-      + iModIntro. iExists None. iSplitL "Hmodel₂ Hmodel_deque".
+    - iIntros "%o [((-> & ->) & Hbase_model) | (%v & %vs' & (-> & ->) & Hbase_model)]".
+      + iModIntro. iExists None. iSplitL "Hmodel₂ Hbase_model".
         { iLeft. iSplit; first done. iExists []. auto with iFrame. }
         iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
         { iExists []. auto. }
         iIntros "_". wp_pures. iApply "HΦ". auto with iFrame.
       + iMod (auth_excl_update' vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct "Hvs" as "(Hv & Hvs')".
-        iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hmodel_deque".
+        iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
         { iRight. iExists (length vs'), v. iSplit; first done.
           iExists vs'. auto with iFrame.
         }
@@ -577,26 +592,26 @@ Section ws_bag_of_spmc_stack.
       from_option Ψ True o
     >>>.
   Proof.
-    iIntros "!> %Φ (#Hinv_deque & #Hinv_extra) HΦ".
+    iIntros "!> %Φ (#Hbase_inv & #Hextra_inv) HΦ".
     wp_rec.
-    awp_apply (spmc_stack_pop_spec with "Hinv_deque").
-    iInv "Hinv_extra" as "(%vs & >Hmodel₁ & Hvs)".
+    awp_apply (spmc_stack_pop_spec with "Hbase_inv").
+    iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%sz (%_vs & -> & Hmodel₂ & Hmodel_deque)".
+    iIntros "%sz (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
-    iAaccIntro with "Hmodel_deque".
-    - iIntros "Hmodel_deque !>". iSplitL "Hmodel₂ Hmodel_deque".
+    iAaccIntro with "Hbase_model".
+    - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
       { iExists vs. auto with iFrame. }
       iIntros "$ !>". iExists vs. auto with iFrame.
-    - iIntros "%o [((-> & ->) & Hmodel_deque) | (%v & %vs' & (-> & ->) & Hmodel_deque)]".
-      + iModIntro. iExists None. iSplitL "Hmodel₂ Hmodel_deque".
+    - iIntros "%o [((-> & ->) & Hbase_model) | (%v & %vs' & (-> & ->) & Hbase_model)]".
+      + iModIntro. iExists None. iSplitL "Hmodel₂ Hbase_model".
         { iLeft. iSplit; first done. iExists []. auto with iFrame. }
         iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
         { iExists []. auto. }
         iIntros "_". wp_pures. iApply "HΦ". auto.
       + iMod (auth_excl_update' vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct "Hvs" as "(Hv & Hvs')".
-        iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hmodel_deque".
+        iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
         { iRight. iExists (length vs'), v. iSplit; first done.
           iExists vs'. auto with iFrame.
         }
@@ -604,45 +619,29 @@ Section ws_bag_of_spmc_stack.
         { iExists vs'. auto with iFrame. }
         iIntros "_". wp_pures. iApply "HΦ". auto with iFrame.
   Qed.
+
+  #[local] Lemma ws_bag_of_spmc_stack_unboxed :
+    if unboxed then ∀ t γ ι Ψ,
+      ws_bag_of_spmc_stack_inv t γ ι Ψ -∗
+      ⌜val_is_unboxed t⌝
+    else
+      True.
+  Proof.
+    move: spmc_stack.(spmc_stack_unboxed).
+    refine (match unboxed with true => _ | false => _ end); last done.
+    iIntros "%Hunboxed %t %γ %ι %Ψ (#Hbase_inv & #Hextra_inv)".
+    iApply (Hunboxed with "Hbase_inv").
+  Qed.
+
+  Definition ws_bag_of_spmc_stack :=
+    Build_ws_bag unboxed
+      ws_bag_of_spmc_stack_owner_exclusive
+      ws_bag_of_spmc_stack_make_spec
+      ws_bag_of_spmc_stack_push_spec
+      ws_bag_of_spmc_stack_pop_spec
+      ws_bag_of_spmc_stack_steal_spec
+      ws_bag_of_spmc_stack_unboxed.
 End ws_bag_of_spmc_stack.
-
-#[local] Lemma ws_bag_of_spmc_stack_unboxed `{WsBagOfSpmcStackG Σ} {unboxed} (spmc_stack : spmc_stack Σ unboxed) :
-  if unboxed then ∀ t γ ι Ψ,
-    ws_bag_of_spmc_stack_inv spmc_stack t γ ι Ψ -∗
-    ⌜val_is_unboxed t⌝
-  else
-    True.
-Proof.
-  destruct unboxed; last done.
-  iIntros "%t %γ %ι %Ψ (#Hinv_deque & #Hinv_extra)".
-  iApply (spmc_stack.(spmc_stack_unboxed) with "Hinv_deque").
-Qed.
-
-Definition ws_bag_of_spmc_stack `{WsBagOfSpmcStackG Σ} {unboxed} (spmc_stack : spmc_stack Σ unboxed) : ws_bag Σ unboxed := {|
-  ws_bag_make := ws_bag_of_spmc_stack_make spmc_stack ;
-  ws_bag_push := ws_bag_of_spmc_stack_push spmc_stack ;
-  ws_bag_pop := ws_bag_of_spmc_stack_pop spmc_stack ;
-  ws_bag_steal := ws_bag_of_spmc_stack_steal spmc_stack ;
-
-  ws_bag_name := ws_bag_of_spmc_stack_name spmc_stack ;
-  ws_bag_inv := ws_bag_of_spmc_stack_inv spmc_stack ;
-  ws_bag_model := ws_bag_of_spmc_stack_model spmc_stack ;
-  ws_bag_owner := ws_bag_of_spmc_stack_owner spmc_stack ;
-
-  ws_bag_inv_ne := ws_bag_of_spmc_stack_inv_ne spmc_stack ;
-  ws_bag_inv_persistent := ws_bag_of_spmc_stack_inv_persistent spmc_stack ;
-  ws_bag_model_timeless := ws_bag_of_spmc_stack_model_timeless spmc_stack ;
-  ws_bag_owner_timeless := ws_bag_of_spmc_stack_owner_timeless spmc_stack ;
-
-  ws_bag_owner_exclusive := ws_bag_of_spmc_stack_owner_exclusive spmc_stack ;
-
-  ws_bag_make_spec := ws_bag_of_spmc_stack_make_spec spmc_stack ;
-  ws_bag_push_spec := ws_bag_of_spmc_stack_push_spec spmc_stack ;
-  ws_bag_pop_spec := ws_bag_of_spmc_stack_pop_spec spmc_stack ;
-  ws_bag_steal_spec := ws_bag_of_spmc_stack_steal_spec spmc_stack ;
-
-  ws_bag_unboxed := ws_bag_of_spmc_stack_unboxed spmc_stack ;
-|}.
 
 Class WsBagOfMpmcStackG Σ `{!heapGS Σ} := {
   ws_bag_of_mpmc_stack_G_mpmc_stack_G : SpmcStackOfMpmcStackG Σ ;
@@ -684,10 +683,7 @@ Qed.
 
 Section ws_bag_of_spmc_queue.
   Context `{WsBagOfSpmcQueueG Σ} {unboxed} (spmc_queue : spmc_queue Σ unboxed).
-
-  Definition ws_bag_of_spmc_queue_name : Type :=
-    spmc_queue.(spmc_queue_name) * gname.
-  Implicit Types γ : ws_bag_of_spmc_queue_name.
+  Implicit Types γ : spmc_queue.(spmc_queue_name) * gname.
 
   Notation "γ .(base)" := γ.1
   ( at level 5
@@ -788,9 +784,9 @@ Section ws_bag_of_spmc_queue.
   Proof.
     iIntros "%Φ _ HΦ".
     iApply wp_fupd.
-    wp_apply (spmc_queue_make_spec with "[//]"). iIntros "%t %γ_deque (#Hinv_deque & Hmodel_deque & Howner)".
+    wp_apply (spmc_queue_make_spec with "[//]"). iIntros "%t %γ_base (#Hbase_inv & Hbase_model & Howner)".
     iMod (auth_excl_alloc' []) as "(%γ_extra & Hmodel₂ & Hmodel₁)".
-    iApply ("HΦ" $! t (γ_deque, γ_extra)). iFrame. iSplitL "Hmodel₁".
+    iApply ("HΦ" $! t (γ_base, γ_extra)). iFrame. iSplitL "Hmodel₁".
     - iFrame "#". iApply inv_alloc. iNext. iExists []. iFrame. done.
     - iExists []. auto with iFrame.
   Qed.
@@ -808,20 +804,20 @@ Section ws_bag_of_spmc_queue.
       RET #(); ws_bag_of_spmc_queue_owner t γ
     >>>.
   Proof.
-    iIntros "!> %Φ ((#Hinv_deque & #Hinv_extra) & Howner & Hv) HΦ".
-    awp_apply (spmc_queue_push_spec with "[$Hinv_deque $Howner]").
-    iInv "Hinv_extra" as "(%vs & >Hmodel₁ & Hvs)".
+    iIntros "!> %Φ ((#Hbase_inv & #Hextra_inv) & Howner & Hv) HΦ".
+    awp_apply (spmc_queue_push_spec with "[$Hbase_inv $Howner]").
+    iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%sz (%_vs & -> & Hmodel₂ & Hmodel_deque)".
+    iIntros "%sz (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
-    iAaccIntro with "Hmodel_deque".
-    - iIntros "Hmodel_deque !>". iSplitL "Hmodel₂ Hmodel_deque".
+    iAaccIntro with "Hbase_model".
+    - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
       { iExists vs. auto with iFrame. }
       iIntros "$ !>". iFrame. iExists vs. auto with iFrame.
     - set vs' := v :: vs.
-      iIntros "Hmodel_deque".
+      iIntros "Hbase_model".
       iMod (auth_excl_update' vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
-      iModIntro. iSplitL "Hmodel₂ Hmodel_deque".
+      iModIntro. iSplitL "Hmodel₂ Hbase_model".
       { iExists vs'. auto with iFrame. }
       iIntros "$ !>". iExists vs'. auto with iFrame.
   Qed.
@@ -841,26 +837,26 @@ Section ws_bag_of_spmc_queue.
       from_option Ψ True o
     >>>.
   Proof.
-    iIntros "!> %Φ ((#Hinv_deque & #Hinv_extra) & Howner) HΦ".
+    iIntros "!> %Φ ((#Hbase_inv & #Hextra_inv) & Howner) HΦ".
     wp_rec.
-    awp_apply (spmc_queue_pop_spec with "Hinv_deque").
-    iInv "Hinv_extra" as "(%vs & >Hmodel₁ & Hvs)".
+    awp_apply (spmc_queue_pop_spec with "Hbase_inv").
+    iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%sz (%_vs & -> & Hmodel₂ & Hmodel_deque)".
+    iIntros "%sz (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
-    iAaccIntro with "Hmodel_deque".
-    - iIntros "Hmodel_deque !>". iSplitL "Hmodel₂ Hmodel_deque".
+    iAaccIntro with "Hbase_model".
+    - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
       { iExists vs. auto with iFrame. }
       iIntros "$ !>". iFrame. iExists vs. iFrame.
-    - iIntros "%o [((-> & ->) & Hmodel_deque) | (%vs' & %v & (-> & ->) & Hmodel_deque)]".
-      + iModIntro. iExists None. iSplitL "Hmodel₂ Hmodel_deque".
+    - iIntros "%o [((-> & ->) & Hbase_model) | (%vs' & %v & (-> & ->) & Hbase_model)]".
+      + iModIntro. iExists None. iSplitL "Hmodel₂ Hbase_model".
         { iLeft. iSplit; first done. iExists []. auto with iFrame. }
         iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
         { iExists []. auto. }
         iIntros "_". wp_pures. iApply "HΦ". auto with iFrame.
       + iMod (auth_excl_update' vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct "Hvs" as "(Hvs' & Hv & _)".
-        iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hmodel_deque".
+        iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
         { iRight. iExists (length vs'), v. iSplit.
           { rewrite app_length (comm Nat.add) //. }
           iExists vs'. auto with iFrame.
@@ -883,26 +879,26 @@ Section ws_bag_of_spmc_queue.
       from_option Ψ True o
     >>>.
   Proof.
-    iIntros "!> %Φ (#Hinv_deque & #Hinv_extra) HΦ".
+    iIntros "!> %Φ (#Hbase_inv & #Hextra_inv) HΦ".
     wp_rec.
-    awp_apply (spmc_queue_pop_spec with "Hinv_deque").
-    iInv "Hinv_extra" as "(%vs & >Hmodel₁ & Hvs)".
+    awp_apply (spmc_queue_pop_spec with "Hbase_inv").
+    iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%sz (%_vs & -> & Hmodel₂ & Hmodel_deque)".
+    iIntros "%sz (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
-    iAaccIntro with "Hmodel_deque".
-    - iIntros "Hmodel_deque !>". iSplitL "Hmodel₂ Hmodel_deque".
+    iAaccIntro with "Hbase_model".
+    - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
       { iExists vs. auto with iFrame. }
       iIntros "$ !>". iExists vs. auto with iFrame.
-    - iIntros "%o [((-> & ->) & Hmodel_deque) | (%vs' & %v & (-> & ->) & Hmodel_deque)]".
-      + iModIntro. iExists None. iSplitL "Hmodel₂ Hmodel_deque".
+    - iIntros "%o [((-> & ->) & Hbase_model) | (%vs' & %v & (-> & ->) & Hbase_model)]".
+      + iModIntro. iExists None. iSplitL "Hmodel₂ Hbase_model".
         { iLeft. iSplit; first done. iExists []. auto with iFrame. }
         iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
         { iExists []. auto. }
         iIntros "_". wp_pures. iApply "HΦ". auto.
       + iMod (auth_excl_update' vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct "Hvs" as "(Hvs' & Hv & _)".
-        iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hmodel_deque".
+        iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
         { iRight. iExists (length vs'), v. iSplit.
           { rewrite app_length (comm Nat.add) //. }
           iExists vs'. auto with iFrame.
@@ -911,45 +907,29 @@ Section ws_bag_of_spmc_queue.
         { iExists vs'. auto with iFrame. }
         iIntros "_". wp_pures. iApply "HΦ". auto with iFrame.
   Qed.
+
+  #[local] Lemma ws_bag_of_spmc_queue_unboxed :
+    if unboxed then ∀ t γ ι Ψ,
+      ws_bag_of_spmc_queue_inv t γ ι Ψ -∗
+      ⌜val_is_unboxed t⌝
+    else
+      True.
+  Proof.
+    move: spmc_queue.(spmc_queue_unboxed).
+    refine (match unboxed with true => _ | false => _ end); last done.
+    iIntros "%Hunboxed %t %γ %ι %Ψ (#Hbase_inv & #Hextra_inv)".
+    iApply (Hunboxed with "Hbase_inv").
+  Qed.
+
+  Definition ws_bag_of_spmc_queue :=
+    Build_ws_bag unboxed
+      ws_bag_of_spmc_queue_owner_exclusive
+      ws_bag_of_spmc_queue_make_spec
+      ws_bag_of_spmc_queue_push_spec
+      ws_bag_of_spmc_queue_pop_spec
+      ws_bag_of_spmc_queue_steal_spec
+      ws_bag_of_spmc_queue_unboxed.
 End ws_bag_of_spmc_queue.
-
-#[local] Lemma ws_bag_of_spmc_queue_unboxed `{WsBagOfSpmcQueueG Σ} {unboxed} (spmc_queue : spmc_queue Σ unboxed) :
-  if unboxed then ∀ t γ ι Ψ,
-    ws_bag_of_spmc_queue_inv spmc_queue t γ ι Ψ -∗
-    ⌜val_is_unboxed t⌝
-  else
-    True.
-Proof.
-  destruct unboxed; last done.
-  iIntros "%t %γ %ι %Ψ (#Hinv_deque & #Hinv_extra)".
-  iApply (spmc_queue.(spmc_queue_unboxed) with "Hinv_deque").
-Qed.
-
-Definition ws_bag_of_spmc_queue `{WsBagOfSpmcQueueG Σ} {unboxed} (spmc_queue : spmc_queue Σ unboxed) : ws_bag Σ unboxed := {|
-  ws_bag_make := ws_bag_of_spmc_queue_make spmc_queue ;
-  ws_bag_push := ws_bag_of_spmc_queue_push spmc_queue ;
-  ws_bag_pop := ws_bag_of_spmc_queue_pop spmc_queue ;
-  ws_bag_steal := ws_bag_of_spmc_queue_steal spmc_queue ;
-
-  ws_bag_name := ws_bag_of_spmc_queue_name spmc_queue ;
-  ws_bag_inv := ws_bag_of_spmc_queue_inv spmc_queue ;
-  ws_bag_model := ws_bag_of_spmc_queue_model spmc_queue ;
-  ws_bag_owner := ws_bag_of_spmc_queue_owner spmc_queue ;
-
-  ws_bag_inv_ne := ws_bag_of_spmc_queue_inv_ne spmc_queue ;
-  ws_bag_inv_persistent := ws_bag_of_spmc_queue_inv_persistent spmc_queue ;
-  ws_bag_model_timeless := ws_bag_of_spmc_queue_model_timeless spmc_queue ;
-  ws_bag_owner_timeless := ws_bag_of_spmc_queue_owner_timeless spmc_queue ;
-
-  ws_bag_owner_exclusive := ws_bag_of_spmc_queue_owner_exclusive spmc_queue ;
-
-  ws_bag_make_spec := ws_bag_of_spmc_queue_make_spec spmc_queue ;
-  ws_bag_push_spec := ws_bag_of_spmc_queue_push_spec spmc_queue ;
-  ws_bag_pop_spec := ws_bag_of_spmc_queue_pop_spec spmc_queue ;
-  ws_bag_steal_spec := ws_bag_of_spmc_queue_steal_spec spmc_queue ;
-
-  ws_bag_unboxed := ws_bag_of_spmc_queue_unboxed spmc_queue ;
-|}.
 
 Class WsBagOfMpmcQueueG Σ `{!heapGS Σ} := {
   ws_bag_of_mpmc_queue_G_mpmc_queue_G : SpmcQueueOfMpmcQueueG Σ ;
