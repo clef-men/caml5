@@ -63,7 +63,8 @@ Section treiber_stack_GS.
         )
       ).
 
-  Notation treiber_stack_meta_model := (nroot .@ "model").
+  Notation treiber_stack_meta_model :=
+    (nroot .@ "model").
 
   #[local] Definition treiber_stack_model₁ γ vs : iProp Σ :=
     auth_excl_frag γ vs.

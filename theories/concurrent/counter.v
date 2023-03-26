@@ -51,9 +51,12 @@ Section counter_G.
     λ: "t",
       !"t".
 
-  Notation counter_meta_mono := (nroot .@ "mono").
-  Notation counter_meta_token := (nroot .@ "token").
-  Notation counter_meta_model := (nroot .@ "model").
+  Notation counter_meta_mono :=
+    (nroot .@ "mono").
+  Notation counter_meta_token :=
+    (nroot .@ "token").
+  Notation counter_meta_model :=
+    (nroot .@ "model").
 
   #[local] Definition counter_mono_auth γ_mono dq n :=
     auth_nat_max_auth γ_mono dq n.

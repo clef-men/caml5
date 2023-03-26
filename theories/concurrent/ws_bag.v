@@ -145,10 +145,13 @@ Section ws_bag_of_ws_deque.
   ( at level 5
   ) : stdpp_scope.
 
-  Notation ws_bag_of_ws_deque_meta_model := (nroot .@ "model").
+  Notation ws_bag_of_ws_deque_meta_model :=
+    (nroot .@ "model").
 
-  Notation ws_bag_of_ws_deque_namespace_base ι := (ι .@ "base").
-  Notation ws_bag_of_ws_deque_namespace_extra ι := (ι .@ "extra").
+  Notation ws_bag_of_ws_deque_namespace_base ι :=
+    (ι .@ "base").
+  Notation ws_bag_of_ws_deque_namespace_extra ι :=
+    (ι .@ "extra").
 
   #[local] Definition ws_bag_of_ws_deque_make :=
     ws_deque.(ws_deque_make).
@@ -388,10 +391,13 @@ Section ws_bag_of_spmc_stack.
   ( at level 5
   ) : stdpp_scope.
 
-  Notation ws_bag_of_spmc_stack_meta_model := (nroot .@ "model").
+  Notation ws_bag_of_spmc_stack_meta_model :=
+    (nroot .@ "model").
 
-  Notation ws_bag_of_spmc_stack_namespace_base ι := (ι .@ "base").
-  Notation ws_bag_of_spmc_stack_namespace_extra ι := (ι .@ "extra").
+  Notation ws_bag_of_spmc_stack_namespace_base ι :=
+    (ι .@ "base").
+  Notation ws_bag_of_spmc_stack_namespace_extra ι :=
+    (ι .@ "extra").
 
   #[local] Definition ws_bag_of_spmc_stack_make :=
     spmc_stack.(spmc_stack_make).
@@ -690,10 +696,13 @@ Section ws_bag_of_spmc_queue.
   ( at level 5
   ) : stdpp_scope.
 
-  Notation ws_bag_of_spmc_queue_meta_model := (nroot .@ "model").
+  Notation ws_bag_of_spmc_queue_meta_model :=
+    (nroot .@ "model").
 
-  Notation ws_bag_of_spmc_queue_namespace_base ι := (ι .@ "base").
-  Notation ws_bag_of_spmc_queue_namespace_extra ι := (ι .@ "extra").
+  Notation ws_bag_of_spmc_queue_namespace_base ι :=
+    (ι .@ "base").
+  Notation ws_bag_of_spmc_queue_namespace_extra ι :=
+    (ι .@ "extra").
 
   #[local] Definition ws_bag_of_spmc_queue_make :=
     spmc_queue.(spmc_queue_make).
