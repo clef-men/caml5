@@ -40,6 +40,7 @@ theories/lang/notations.v
 theories/lang/proofmode.v
 theories/lang/typed_prophet.v
 theories/lang/wise_prophet.v
+theories/lang/identifier.v
 
 theories/std/base.v
 theories/std/record2.v
