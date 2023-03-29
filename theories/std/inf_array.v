@@ -79,6 +79,11 @@ Section inf_array.
   Proof.
     solve_proper.
   Qed.
+  #[global] Instance inf_array_model'_timeless t vsₗ vsᵣ :
+    Timeless (inf_array_model' t vsₗ vsᵣ).
+  Proof.
+    apply _.
+  Qed.
 
   Lemma inf_array_get_spec' i t :
     (0 ≤ i)%Z →
@@ -162,11 +167,12 @@ Section inf_array.
   Proof.
     rewrite inf_array_model'_shift //.
   Qed.
-  Lemma inf_array_model'_shift_l t vsₗ v vsᵣ :
-    inf_array_model' t vsₗ (λ i, match i with 0 => v | S i => vsᵣ i end) -∗
-    inf_array_model' t (vsₗ ++ [v]) vsᵣ.
+  Lemma inf_array_model'_shift_l t vsₗ vsᵣ v vsᵣ' :
+    (∀ i, vsᵣ i = match i with 0 => v | S i => vsᵣ' i end) →
+    inf_array_model' t vsₗ vsᵣ -∗
+    inf_array_model' t (vsₗ ++ [v]) vsᵣ'.
   Proof.
-    rewrite inf_array_model'_shift //.
+    intros. rewrite inf_array_model'_shift inf_array_model'_proper //.
   Qed.
 End inf_array.
 
