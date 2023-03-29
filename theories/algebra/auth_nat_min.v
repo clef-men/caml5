@@ -62,7 +62,7 @@ Qed.
   IsOp (Build_nat_min n) (Build_nat_min n1) (Build_nat_min n2) →
   IsOp' (auth_nat_min_frag n) (auth_nat_min_frag n1) (auth_nat_min_frag n2).
 Proof.
-  rewrite /IsOp' /IsOp /auth_nat_min_frag => ->. done.
+  rewrite /IsOp' /IsOp /auth_nat_min_frag => -> //.
 Qed.
 
 Lemma auth_nat_min_auth_frag_op dq n :

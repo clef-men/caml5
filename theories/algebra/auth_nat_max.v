@@ -62,7 +62,7 @@ Qed.
   IsOp (Build_nat_max n) (Build_nat_max n1) (Build_nat_max n2) →
   IsOp' (auth_nat_max_frag n) (auth_nat_max_frag n1) (auth_nat_max_frag n2).
 Proof.
-  rewrite /IsOp' /IsOp /auth_nat_max_frag => ->. done.
+  rewrite /IsOp' /IsOp /auth_nat_max_frag => -> //.
 Qed.
 
 Lemma auth_nat_max_auth_frag_op dq n :

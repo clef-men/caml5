@@ -62,7 +62,7 @@ Qed.
   IsOp (Build_Z_min n) (Build_Z_min n1) (Build_Z_min n2) →
   IsOp' (auth_Z_min_frag n) (auth_Z_min_frag n1) (auth_Z_min_frag n2).
 Proof.
-  rewrite /IsOp' /IsOp /auth_Z_min_frag => ->. done.
+  rewrite /IsOp' /IsOp /auth_Z_min_frag => -> //.
 Qed.
 
 Lemma auth_Z_min_auth_frag_op dq n :
