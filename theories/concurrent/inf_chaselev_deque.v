@@ -280,7 +280,7 @@ Section inf_chaselev_deque_G.
     ⊢ |==> ∃ γ_front,
       inf_chaselev_deque_front_auth γ_front 0.
   Proof.
-    iMod (auth_nat_max_alloc 0) as "(%γ_front & Hfront_auth & _)".
+    iMod (auth_nat_max_alloc 0) as "(%γ_front & Hfront_auth)".
     iExists γ_front. done.
   Qed.
   #[local] Lemma inf_chaselev_deque_front_valid γ_front front1 front2 :

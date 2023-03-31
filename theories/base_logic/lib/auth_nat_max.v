@@ -73,10 +73,10 @@ Section auth_nat_max_G.
 
   Lemma auth_nat_max_alloc n :
     ⊢ |==> ∃ γ,
-      auth_nat_max_auth γ (DfracOwn 1) n ∗ auth_nat_max_frag γ n.
+      auth_nat_max_auth γ (DfracOwn 1) n.
   Proof.
-    iMod (own_alloc (auth_nat_max.auth_nat_max_auth (DfracOwn 1) n ⋅ auth_nat_max.auth_nat_max_frag n)) as "(% & ? & ?)".
-    { apply auth_nat_max_both_valid. done. }
+    iMod (own_alloc (auth_nat_max.auth_nat_max_auth (DfracOwn 1) n)) as "(% & ?)".
+    { apply auth_nat_max_auth_valid. }
     naive_solver.
   Qed.
 

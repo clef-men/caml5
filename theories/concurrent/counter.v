@@ -280,7 +280,7 @@ Section counter_G.
   Proof.
     iIntros "%Φ _ HΦ".
     wp_rec. iApply wp_fupd. wp_apply (wp_alloc with "[//]"). iIntros "%l (Hl & Hmeta)".
-    iMod (auth_nat_max_alloc 0) as "(%γ_mono & Hmono_auth & _)".
+    iMod (auth_nat_max_alloc 0) as "(%γ_mono & Hmono_auth)".
     iMod (own_alloc (● GSet ∅)) as "(%γ_token & Htoken_auth)"; first by apply auth_auth_valid.
     iMod (auth_excl_alloc 0) as "(%γ_model & Hmodel₂ & Hmodel₁)"; first done.
     iDestruct (meta_token_difference _ (↑counter_meta_mono) with "Hmeta") as "(Hmeta_mono & Hmeta)"; first solve_ndisj.

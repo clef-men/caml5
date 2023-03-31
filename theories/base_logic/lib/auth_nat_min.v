@@ -73,10 +73,10 @@ Section auth_nat_min_G.
 
   Lemma auth_nat_min_alloc n :
     ⊢ |==> ∃ γ,
-      auth_nat_min_auth γ (DfracOwn 1) n ∗ auth_nat_min_frag γ n.
+      auth_nat_min_auth γ (DfracOwn 1) n.
   Proof.
-    iMod (own_alloc (auth_nat_min.auth_nat_min_auth (DfracOwn 1) n ⋅ auth_nat_min.auth_nat_min_frag n)) as "(% & ? & ?)".
-    { apply auth_nat_min_both_valid. done. }
+    iMod (own_alloc (auth_nat_min.auth_nat_min_auth (DfracOwn 1) n)) as "(% & ?)".
+    { apply auth_nat_min_auth_valid. }
     naive_solver.
   Qed.
 

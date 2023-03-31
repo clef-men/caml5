@@ -53,7 +53,7 @@ Section raw_array_G.
       ⊢ |==> ∃ γ,
         raw_array_token_auth γ sz.
     Proof.
-      iMod auth_nat_max_alloc as "(%γ & H● & _)".
+      iMod auth_nat_max_alloc as "(%γ & H●)".
       iMod (auth_nat_max_auth_persist with "H●") as "H●".
       iExists γ. done.
     Qed.
@@ -663,7 +663,8 @@ Section raw_array_G.
     { apply lookup_seq. naive_solver lia. }
     iEval (rewrite loc_add_0) in "Hmeta".
     iApply "HΦ".
-    iMod (auth_nat_max_alloc (Z.to_nat sz)) as "(%γ & H● & #H◯)".
+    iMod (auth_nat_max_alloc (Z.to_nat sz)) as "(%γ & H●)".
+    iDestruct (auth_nat_max_frag_get with "H●") as "#H◯".
     iMod (auth_nat_max_auth_persist with "H●") as "#H●".
     iMod (meta_set _ _ γ raw_array_meta_token with "Hmeta") as "#Hmeta"; first done.
     iSplitR; iExists l, γ; iFrame "∗#"; first auto with lia.
