@@ -76,12 +76,12 @@ Proof.
   split; first done. f_equal. lia.
 Qed.
 
-#[global] Instance nat_min_zero_left_absorb :
+#[global] Instance nat_min_zero_l :
   LeftAbsorb (=) (Build_nat_min 0) (⋅).
 Proof.
   done.
 Qed.
-#[global] Instance nat_min_zero_right_absorb :
+#[global] Instance nat_min_zero_r :
   RightAbsorb (=) (Build_nat_min 0) (⋅).
 Proof.
   intros [x]. rewrite nat_min_op_eq Nat.min_0_r //.
