@@ -6,7 +6,7 @@ From caml5 Require Import
 From caml5 Require Export
   base.
 From caml5.algebra Require Import
-  auth_excl.
+  lib.auth_excl.
 
 Class AuthExclG Σ A := {
   auth_excl_G_inG : inG Σ (auth_excl_R A) ;

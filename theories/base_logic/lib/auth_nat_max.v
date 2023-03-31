@@ -6,7 +6,7 @@ From caml5 Require Import
 From caml5 Require Export
   base.
 From caml5.algebra Require Import
-  auth_nat_max.
+  lib.auth_nat_max.
 
 Class AuthNatMaxG Σ := {
   auth_nat_max_G_inG : inG Σ auth_nat_max_R ;

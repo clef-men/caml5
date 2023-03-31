@@ -7,7 +7,7 @@ From caml5 Require Import
 From caml5.algebra Require Export
   base.
 From caml5.algebra Require Import
-  auth_option.
+  lib.auth_option.
 
 Definition auth_excl A :=
   auth_option (exclR A).

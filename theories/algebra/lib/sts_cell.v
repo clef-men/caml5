@@ -139,7 +139,15 @@ Section sts.
     intros. apply auth_frag_mono. rewrite principal_included //.
   Qed.
 
-  Lemma sts_cell_included dq s :
+  (* Lemma sts_cell_auth_dfrac_included dq s x : *)
+  (*   sts_cell_auth dq s ≼ x ↔ *)
+  (*   ∃ dq' s', dq ≼ dq' ∧ x ≡ sts_cell_auth dq' s'. *)
+  (* Proof. *)
+  (*   rewrite /sts_cell_auth. *)
+  (*   rewrite auth_both_dfrac_included. *)
+  (* Qed. *)
+
+  Lemma sts_cell_frag_included dq s :
     sts_cell_frag s ≼ sts_cell_auth dq s.
   Proof.
     apply cmra_included_r.

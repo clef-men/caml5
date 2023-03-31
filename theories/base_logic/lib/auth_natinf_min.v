@@ -8,7 +8,7 @@ From caml5.common Require Export
 From caml5 Require Export
   base.
 From caml5.algebra Require Import
-  auth_natinf_min.
+  lib.auth_natinf_min.
 
 Class AuthNatinfMinG Σ := {
   auth_natinf_min_G_inG : inG Σ auth_natinf_min_R ;

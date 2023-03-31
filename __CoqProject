@@ -18,16 +18,16 @@ theories/algebra/natinf_min.v
 theories/algebra/Z_add.v
 theories/algebra/Z_max.v
 theories/algebra/Z_min.v
-theories/algebra/auth_option.v
-theories/algebra/auth_excl.v
-theories/algebra/auth_nat_max.v
-theories/algebra/auth_nat_min.v
-theories/algebra/auth_natinf_max.v
-theories/algebra/auth_natinf_min.v
-theories/algebra/auth_Z_max.v
-theories/algebra/auth_Z_min.v
 theories/algebra/monotone.v
-theories/algebra/sts_cell.v
+theories/algebra/lib/auth_option.v
+theories/algebra/lib/auth_excl.v
+theories/algebra/lib/auth_nat_max.v
+theories/algebra/lib/auth_nat_min.v
+theories/algebra/lib/auth_natinf_max.v
+theories/algebra/lib/auth_natinf_min.v
+theories/algebra/lib/auth_Z_max.v
+theories/algebra/lib/auth_Z_min.v
+theories/algebra/lib/sts_cell.v
 
 theories/base_logic/lib/agree.v
 theories/base_logic/lib/excl.v

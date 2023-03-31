@@ -6,7 +6,7 @@ From caml5 Require Import
 From caml5 Require Export
   base.
 From caml5.algebra Require Import
-  auth_Z_max.
+  lib.auth_Z_max.
 
 Class AuthZMaxG Σ := {
   auth_Z_max_G_inG : inG Σ auth_Z_max_R ;

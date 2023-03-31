@@ -6,8 +6,8 @@ From caml5 Require Import
 From caml5.algebra Require Export
   base.
 From caml5.algebra Require Import
-  auth_option
-  Z_min.
+  Z_min
+  lib.auth_option.
 
 Implicit Types n m p : Z.
 
