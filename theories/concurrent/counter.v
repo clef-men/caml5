@@ -267,7 +267,7 @@ Section counter_G.
     iDestruct (auth_nat_max_auth_combine with "Hlb_auth1 Hlb_auth2") as "(Hlb_auth & <-)".
     iCombine "Htoken_auth1 Htoken_auth2" as "Htoken_auth".
     iDestruct (auth_excl_auth_combine_L with "Hmodel₂1 Hmodel₂2") as "(Hmodel₂ & _)".
-    iSplitL; last done. repeat iExists _. iFrame "∗#". done.
+    iSplitL; last done. repeat iExists _. iFrame "#∗". done.
   Qed.
   Lemma counter_model_valid_2 t dq1 n1 dq2 n2 :
     counter_model t dq1 n1 -∗
@@ -319,7 +319,7 @@ Section counter_G.
     iMod (auth_nat_max_auth_persist with "Hlb_auth") as "Hlb_auth".
     iMod (own_update with "Htoken_auth") as "Htoken_auth"; first eapply auth_update_auth_persist.
     iMod (auth_excl_auth_persist with "Hmodel₂") as "Hmodel₂".
-    repeat iExists _. iFrame "∗#". done.
+    repeat iExists _. iFrame "#∗". done.
   Qed.
 
   Lemma counter_make_spec ι ub :
@@ -346,7 +346,7 @@ Section counter_G.
     iApply "HΦ". iSplitL "Hub_auth Hl Hmodel₁".
     - repeat iExists _. iFrame "#∗". iSplitR; first done.
       iApply inv_alloc. iExists 0. iFrame.
-    - repeat iExists _. iFrame "∗#". done.
+    - repeat iExists _. iFrame "#∗". done.
   Qed.
 
   Lemma counter_incr_spec t ι ub :
@@ -378,7 +378,7 @@ Section counter_G.
     iAssert (counter_token #l n) with "[Htoken_frag]" as "Htoken".
     { repeat iExists _. naive_solver. }
     iAssert (counter_model #l (DfracOwn 1) (S n)) with "[> Hlb_auth Htoken_auth Hmodel₂]" as "Hmodel".
-    { repeat iExists _. iFrame "∗#". iSplitR; first done.
+    { repeat iExists _. iFrame "#∗". iSplitR; first done.
       iDestruct (auth_natinf_max_frag_get with "Hub_auth") as "Hub_frag'".
       destruct ub as [ub |].
       - iDestruct "Hle" as %?.
@@ -411,7 +411,7 @@ Section counter_G.
     iDestruct (meta_agree with "Hmeta_model _Hmeta_model") as %<-. iClear "_Hmeta_model".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAssert (counter_model #l dq n) with "[Hlb_auth Htoken_auth Hmodel₂]" as "Hmodel".
-    { repeat iExists _. iFrame "∗#". done. }
+    { repeat iExists _. iFrame "#∗". done. }
     iMod ("HΦ" with "Hmodel []") as "$".
     { destruct ub as [ub |]; last done.
       iDestruct (auth_natinf_max_valid with "Hub_auth Hub_frag") as %?%(inj natinf_nat). done.
