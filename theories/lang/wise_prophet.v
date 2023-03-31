@@ -52,7 +52,7 @@ Section wise_prophet.
     typed_prophet_model prophet p prophs ∗
     auth_excl_frag γ_model prophs ∗
     agree_on γ_full (past ++ prophs) ∗
-    mono_list_auth_own γ_past 1 past.
+    mono_list_auth γ_past 1 past.
   Definition wise_prophet_inv p γ_model γ_full γ_past ι :=
     inv ι (wise_prophet_inv_inner p γ_model γ_full γ_past).
 
@@ -88,7 +88,7 @@ Section wise_prophet.
     iApply wp_fupd. wp_apply (typed_prophet_new_proph_spec with "[//]"). iIntros "%p %prophs Hp".
     iMod (auth_excl_alloc' prophs) as "(%γ_model & Hmodel₁ & Hmodel₂)".
     iMod (agree_alloc prophs) as "(%γ_full & #Hfull)".
-    iMod (mono_list_own_alloc []) as "(%γ_past & Hpast & _)".
+    iMod (mono_list_alloc []) as "(%γ_past & Hpast & _)".
     iApply "HΦ". iFrame. iApply inv_alloc. iNext. iExists [], prophs. auto with iFrame.
   Qed.
 
@@ -101,10 +101,10 @@ Section wise_prophet.
     WP e @ E ∖ ↑ι {{ w,
       ∀ past,
       agree_on γ_full (past ++ prophs) -∗
-      mono_list_auth_own γ_past 1 past ={E ∖ ↑ι}=∗
+      mono_list_auth γ_past 1 past ={E ∖ ↑ι}=∗
         ∃ proph,
         ⌜(w, v) = prophet.(typed_prophet_to_val) proph⌝ ∗
-        mono_list_auth_own γ_past 1 past ∗
+        mono_list_auth γ_past 1 past ∗
           ∀ prophs',
           ⌜prophs = proph :: prophs'⌝ -∗
           wise_prophet_model γ_model prophs' ={E ∖ ↑ι}=∗
@@ -120,7 +120,7 @@ Section wise_prophet.
     iMod ("HΦ" with "Hfull Hpast") as "(%proph & % & Hpast & HΦ)".
     iModIntro. iExists proph. iSplitR; first done. iIntros "%prophs' -> Hp".
     iMod (auth_excl_update' prophs' with "Hmodel₁ Hmodel₂") as "(Hmodel₁ & Hmodel₂)".
-    iMod (mono_list_auth_own_update_app [proph] with "Hpast") as "(Hpast & _)".
+    iMod (mono_list_auth_update_app [proph] with "Hpast") as "(Hpast & _)".
     iMod ("HΦ" with "[//] Hmodel₁") as "$".
     iModIntro. iNext. iExists (past ++ [proph]), prophs'. iFrame. list_simplifier. done.
   Qed.

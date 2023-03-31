@@ -146,13 +146,13 @@ Section inf_chaselev_deque_G.
     auth_nat_max_frag γ_front front.
 
   #[local] Definition inf_chaselev_deque_hist_auth γ_hist hist pub :=
-    mono_list_auth_own γ_hist 1
+    mono_list_auth γ_hist 1
       match pub with
       | [] => hist
       | v :: _ => hist ++ [v]
       end.
   #[local] Definition inf_chaselev_deque_hist_frag γ_hist i v :=
-    mono_list_idx_own γ_hist i v.
+    mono_list_mapsto γ_hist i v.
 
   #[local] Definition inf_chaselev_deque_pub₁ γ_pub pub :=
     @auth_excl_frag _ _ inf_chaselev_deque_G_pub_G γ_pub pub.
@@ -309,7 +309,7 @@ Section inf_chaselev_deque_G.
     ⊢ |==> ∃ γ_hist,
       inf_chaselev_deque_hist_auth γ_hist [] [].
   Proof.
-    iMod (mono_list_own_alloc []) as "(%γ_hist & Hhist_auth & _)".
+    iMod (mono_list_alloc []) as "(%γ_hist & Hhist_auth & _)".
     iExists γ_hist. done.
   Qed.
 
@@ -515,7 +515,7 @@ Section inf_chaselev_deque_G.
     (* update [hist] *)
     iAssert (inf_chaselev_deque_hist_auth γ_hist hist pub')%I with "[>Hhist_auth]" as "Hhist_auth".
     { destruct pub; last done.
-      iMod (mono_list_auth_own_update_app [v] with "Hhist_auth") as "($ & _)". done.
+      iMod (mono_list_auth_update_app [v] with "Hhist_auth") as "($ & _)". done.
     }
     (* we have lock, hence we are in state 1 *)
     iDestruct (inf_chaselev_deque_lock_state with "Hlock Hstate") as %(Hstate & Hpub).
@@ -686,8 +686,8 @@ Section inf_chaselev_deque_G.
     destruct pub as [| v pub]; first naive_solver lia.
     (* emit history fragment at [front1] *)
     iAssert (inf_chaselev_deque_hist_frag γ_hist front1 v) as "#Hhist_frag".
-    { iDestruct (mono_list_lb_own_get with "Hhist_auth") as "#Hhist_frag".
-      iApply (mono_list_idx_own_get with "Hhist_frag").
+    { iDestruct (mono_list_lb_get with "Hhist_auth") as "#Hhist_frag".
+      iApply (mono_list_mapsto_get with "Hhist_frag").
       rewrite lookup_app_r; last lia.
       rewrite Hhist Nat.sub_diag //.
     }
@@ -750,7 +750,7 @@ Section inf_chaselev_deque_G.
       wp_apply ("HLöb" with "HΦ").
     }
     (* from history fragment at [front1], we know the loaded value is [v] *)
-    iDestruct (mono_list_auth_idx_lookup with "Hhist_auth Hhist_frag") as %Hhist_lookup.
+    iDestruct (mono_list_auth_mapsto_lookup with "Hhist_auth Hhist_frag") as %Hhist_lookup.
     replace (if decide _ then _ else _) with v; last first.
     { destruct pub as [| w pub].
       { rewrite list_lookup_alt in Hhist_lookup. lia. }
@@ -793,7 +793,7 @@ Section inf_chaselev_deque_G.
     iDestruct (meta_agree with "Hmeta_pub _Hmeta_pub") as %<-. iClear "_Hmeta_pub".
     iDestruct (inf_chaselev_deque_pub_agree with "Hpub₁ Hpub₂") as %<-.
     (* [front] has not changed, hence [v] is still the front public value *)
-    iDestruct (mono_list_auth_idx_lookup with "Hhist_auth Hhist_frag") as %Hhist_lookup.
+    iDestruct (mono_list_auth_mapsto_lookup with "Hhist_auth Hhist_frag") as %Hhist_lookup.
     destruct pub as [| w pub].
     { rewrite list_lookup_alt in Hhist_lookup. lia. }
     rewrite lookup_app_r in Hhist_lookup; last lia.
@@ -808,7 +808,7 @@ Section inf_chaselev_deque_G.
     (* update [hist] *)
     iAssert (inf_chaselev_deque_hist_auth γ_hist (hist ++ [v]) pub) with "[> Hhist_auth]" as "Hhist_auth".
     { destruct pub as [| w pub]; first done.
-      iMod (mono_list_auth_own_update_app with "Hhist_auth") as "($ & _)". done.
+      iMod (mono_list_auth_update_app with "Hhist_auth") as "($ & _)". done.
     }
     (* update state *)
     iAssert (inf_chaselev_deque_state γ_lock (S front1) back4 pub) with "[Hstate]" as "Hstate".
@@ -974,8 +974,8 @@ Section inf_chaselev_deque_G.
       }
       (* emit history fragment at [front2] *)
       iAssert (inf_chaselev_deque_hist_frag γ_hist front2 v) as "#Hhist_frag".
-      { iDestruct (mono_list_lb_own_get with "Hhist_auth") as "#Hhist_frag".
-        iApply (mono_list_idx_own_get with "Hhist_frag").
+      { iDestruct (mono_list_lb_get with "Hhist_auth") as "#Hhist_frag".
+        iApply (mono_list_mapsto_get with "Hhist_frag").
         rewrite lookup_app_r; last lia.
         rewrite Hhist Nat.sub_diag //.
       }
@@ -1009,7 +1009,7 @@ Section inf_chaselev_deque_G.
         assert (pub = []) as ->.
         { apply length_zero_iff_nil. lia. }
         (* from history fragment at [front2], we know [hist !! front2 = Some v] *)
-        iDestruct (mono_list_auth_idx_lookup with "Hhist_auth Hhist_frag") as %Hhist_lookup.
+        iDestruct (mono_list_auth_mapsto_lookup with "Hhist_auth Hhist_frag") as %Hhist_lookup.
         (* absurd, as [length hist = front2] *)
         apply lookup_lt_Some in Hhist_lookup. lia.
 
@@ -1038,7 +1038,7 @@ Section inf_chaselev_deque_G.
         { iModIntro. iFrame. iNext. repeat iExists _. iFrame. done. }
         (* from history fragment at [front2], we know [(hist ++ pub) !! front2 = Some v] *)
         iAssert ⌜(hist ++ pub) !! front2 = Some v⌝%I as %Hlookup.
-        { iDestruct (mono_list_auth_idx_lookup with "Hhist_auth Hhist_frag") as %Hlookup.
+        { iDestruct (mono_list_auth_mapsto_lookup with "Hhist_auth Hhist_frag") as %Hlookup.
           iPureIntro. destruct pub as [| w pub].
           - list_simplifier. done.
           - rewrite cons_middle assoc. apply lookup_app_l_Some. done.
@@ -1078,7 +1078,7 @@ Section inf_chaselev_deque_G.
           assert (pub = []) as ->.
           { apply length_zero_iff_nil. lia. }
           (* from history fragment at [front2], we know [hist !! front2 = Some v] *)
-          iDestruct (mono_list_auth_idx_lookup with "Hhist_auth Hhist_frag") as %Hhist_lookup.
+          iDestruct (mono_list_auth_mapsto_lookup with "Hhist_auth Hhist_frag") as %Hhist_lookup.
           (* absurd, as [length hist = front2] *)
           apply lookup_lt_Some in Hhist_lookup. lia.
 
@@ -1087,7 +1087,7 @@ Section inf_chaselev_deque_G.
           (* from history fragment at [front2], we know [pub = [v]] *)
           iAssert ⌜pub = [v]⌝%I as %->.
           { destruct pub as [| w pub]; first done. destruct pub; last done.
-            iDestruct (mono_list_auth_idx_lookup with "Hhist_auth Hhist_frag") as %Hlookup.
+            iDestruct (mono_list_auth_mapsto_lookup with "Hhist_auth Hhist_frag") as %Hlookup.
             rewrite lookup_app_r in Hlookup; last lia.
             rewrite list_lookup_singleton_Some in Hlookup.
             naive_solver.
@@ -1403,7 +1403,7 @@ Section inf_chaselev_deque_G.
         (* update [hist] *)
         set (hist' := hist ++ [v]).
         iAssert (inf_chaselev_deque_hist_auth γ_hist hist' []) with "[> Hhist_auth]" as "Hhist_auth".
-        { iMod (mono_list_auth_own_update_app with "Hhist_auth") as "($ & _)". done. }
+        { iMod (mono_list_auth_update_app with "Hhist_auth") as "($ & _)". done. }
         (* update [priv] in control tokens *)
         iMod (inf_chaselev_deque_ctl_update front3 priv with "Hctl₁ Hctl₂") as "(Hctl₁ & Hctl₂)".
         (* close invariant *)
