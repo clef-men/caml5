@@ -6,14 +6,11 @@ From caml5.lang Require Import
   notations
   proofmode.
 
-Definition identifier :=
-  proph_id.
-Canonical identifier_O :=
-  leibnizO identifier.
+Definition identifier := proph_id.
+Canonical identifier_O := leibnizO identifier.
 Implicit Types id : identifier.
 
-Definition LitIdentifier id :=
-  LitProphecy id.
+Definition LitIdentifier id := LitProphecy id.
 Coercion LitIdentifier : identifier >-> base_lit.
 
 Notation NewId := NewProph
