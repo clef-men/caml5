@@ -23,7 +23,7 @@ Section heapGS.
   Definition identifier_model id : iProp Σ :=
     ∃ prophs, proph id prophs.
 
-  Lemma identifier_exclusive id :
+  Lemma identifier_model_exclusive id :
     identifier_model id -∗
     identifier_model id -∗
     False.
