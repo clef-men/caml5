@@ -244,3 +244,21 @@ End ofe.
 
 #[global] Opaque auth_excl_auth.
 #[global] Opaque auth_excl_frag.
+
+Definition auth_excl_URF F :=
+  auth_option_URF $ exclRF F.
+#[global] Instance auth_excl_URF_contractive F :
+  oFunctorContractive F →
+  urFunctorContractive (auth_excl_URF F).
+Proof.
+  apply _.
+Qed.
+
+Definition auth_excl_RF F :=
+  auth_option_RF $ exclRF F.
+#[global] Instance auth_excl_RF_contractive F :
+  oFunctorContractive F →
+  rFunctorContractive (auth_excl_RF F).
+Proof.
+  apply _.
+Qed.

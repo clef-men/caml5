@@ -8,24 +8,23 @@ From caml5 Require Import
 From caml5 Require Export
   base.
 
-Class ExclG Σ A := {
-  excl_G_inG : inG Σ (exclR A) ;
+Class ExclG Σ F := {
+  excl_G_inG : inG Σ (exclR $ oFunctor_apply F $ iPropO Σ) ;
 }.
 #[local] Existing Instance excl_G_inG.
 
-Definition excl_Σ A := #[
-  GFunctor (exclR A)
+Definition excl_Σ F `{!oFunctorContractive F} := #[
+  GFunctor (exclRF F)
 ].
-#[global] Instance subG_excl_Σ A Σ :
-  subG (excl_Σ A) Σ →
-  ExclG Σ A.
+#[global] Instance subG_excl_Σ Σ F `{!oFunctorContractive F} :
+  subG (excl_Σ F) Σ →
+  ExclG Σ F.
 Proof.
   solve_inG.
 Qed.
 
 Section excl_G.
-  Context `{!ExclG Σ A}.
-  Implicit Types a b : A.
+  Context `{excl_G : !ExclG Σ F}.
 
   Definition excl γ a :=
     own γ (Excl a).
@@ -43,19 +42,20 @@ Section excl_G.
     apply own_alloc. done.
   Qed.
 
+  Lemma excl_exclusive γ a1 a2 :
+    excl γ a1 -∗
+    excl γ a2 -∗
+    False.
+  Proof.
+    iIntros "H1 H2".
+    iDestruct (own_valid_2 with "H1 H2") as "H". iApply (excl_validI with "H").
+  Qed.
+
   Lemma excl_update γ a b :
     excl γ a ==∗
     excl γ b.
   Proof.
     apply own_update, cmra_update_exclusive. done.
-  Qed.
-
-  Lemma excl_exclusive `{!OfeDiscrete A} γ a1 a2 :
-    excl γ a1 -∗
-    excl γ a2 -∗
-    False.
-  Proof.
-    iIntros "H1 H2". iDestruct (own_valid_2 with "H1 H2") as %[].
   Qed.
 End excl_G.
 

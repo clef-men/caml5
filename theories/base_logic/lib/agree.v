@@ -8,23 +8,23 @@ From caml5 Require Import
 From caml5 Require Export
   base.
 
-Class AgreeG Σ A := {
-  agree_G_inG : inG Σ (agreeR A) ;
+Class AgreeG Σ F := {
+  agree_G_inG : inG Σ (agreeR $ oFunctor_apply F $ iPropO Σ) ;
 }.
 #[local] Existing Instance agree_G_inG.
 
-Definition agree_Σ A := #[
-  GFunctor (agreeR A)
+Definition agree_Σ F `{!oFunctorContractive F} := #[
+  GFunctor (agreeRF F)
 ].
-#[global] Instance subG_agree_Σ A Σ :
-  subG (agree_Σ A) Σ →
-  AgreeG Σ A.
+#[global] Instance subG_agree_Σ Σ F `{!oFunctorContractive F} :
+  subG (agree_Σ F) Σ →
+  AgreeG Σ F.
 Proof.
   solve_inG.
 Qed.
 
 Section agree_G.
-  Context `{!AgreeG Σ A}.
+  Context `{agree_G : !AgreeG Σ F}.
 
   Definition agree_on γ a :=
     own γ (to_agree a).
@@ -48,26 +48,33 @@ Section agree_G.
     apply own_alloc. done.
   Qed.
 
-  Section cmra_discrete.
-    Context `{!OfeDiscrete A}.
-
-    Lemma agree_on_agree γ a1 a2 :
+  Lemma agree_on_agree γ a1 a2 :
+    agree_on γ a1 -∗
+    agree_on γ a2 -∗
+    a1 ≡ a2.
+  Proof.
+    iIntros "H1 H2".
+    iApply to_agree_op_validI. iApply (own_valid_2 with "H1 H2").
+  Qed.
+  Section discrete.
+    Context `{!OfeDiscrete $ oFunctor_apply F $ iPropO Σ}.
+    Lemma agree_on_agree_discrete γ a1 a2 :
       agree_on γ a1 -∗
       agree_on γ a2 -∗
       ⌜a1 ≡ a2⌝.
     Proof.
       iIntros "H1 H2".
-      iDestruct (own_valid_2 with "H1 H2") as %?%to_agree_op_valid. done.
+      iDestruct (agree_on_agree with "H1 H2") as %?. done.
     Qed.
-    Lemma agree_on_agree_L `{!LeibnizEquiv A} γ a1 a2 :
+    Lemma agree_on_agree_L `{!LeibnizEquiv $ oFunctor_apply F $ iPropO Σ} γ a1 a2 :
       agree_on γ a1 -∗
       agree_on γ a2 -∗
       ⌜a1 = a2⌝.
     Proof.
       iIntros "H1 H2".
-      iDestruct (agree_on_agree with "H1 H2") as %?%leibniz_equiv. done.
+      iDestruct (agree_on_agree_discrete with "H1 H2") as %?%leibniz_equiv. done.
     Qed.
-  End cmra_discrete.
+  End discrete.
 End agree_G.
 
 #[global] Opaque agree_on.

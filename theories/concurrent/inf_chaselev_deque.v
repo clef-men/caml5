@@ -253,7 +253,7 @@ Section inf_chaselev_deque_G.
       inf_chaselev_deque_ctl₁ γ_ctl 0 (λ _, #()) ∗
       inf_chaselev_deque_ctl₂ γ_ctl 0 (λ _, #()).
   Proof.
-    iMod (auth_excl_alloc' ((0%Z, λ _, #()) : prodO ZO (nat -d> valO))) as "(%γ_ctl & Hctl₁ & Hctl₂)".
+    iMod (auth_excl_alloc' (auth_excl_G := inf_chaselev_deque_G_ctl_G) ((0%Z, λ _, #()) : prodO ZO (nat -d> valO))) as "(%γ_ctl & Hctl₁ & Hctl₂)".
     iExists γ_ctl. iFrame. done.
   Qed.
   #[local] Lemma inf_chaselev_deque_ctl_agree γ_ctl back1 priv1 back2 priv2 :
@@ -318,7 +318,7 @@ Section inf_chaselev_deque_G.
       inf_chaselev_deque_pub₁ γ_pub [] ∗
       inf_chaselev_deque_pub₂ γ_pub [].
   Proof.
-    iMod (auth_excl_alloc' []) as "(%γ_pub & Hpub₁ & Hpub₂)".
+    iMod (auth_excl_alloc' (auth_excl_G := inf_chaselev_deque_G_pub_G) []) as "(%γ_pub & Hpub₁ & Hpub₂)".
     iExists γ_pub. iFrame. done.
   Qed.
   #[local] Lemma inf_chaselev_deque_pub_agree γ_pub pub1 pub2 :

@@ -472,3 +472,21 @@ End cmra.
 
 #[global] Opaque auth_option_auth.
 #[global] Opaque auth_option_frag.
+
+Definition auth_option_URF F :=
+  authURF $ optionURF F.
+#[global] Instance auth_option_URF_contractive F :
+  rFunctorContractive F →
+  urFunctorContractive (auth_option_URF F).
+Proof.
+  apply _.
+Qed.
+
+Definition auth_option_RF F :=
+  authRF $ optionURF F.
+#[global] Instance auth_option_RF_contractive F :
+  rFunctorContractive F →
+  rFunctorContractive (auth_option_RF F).
+Proof.
+  apply _.
+Qed.

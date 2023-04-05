@@ -235,7 +235,7 @@ Section ws_bag_of_ws_deque.
     iIntros "%Φ _ HΦ".
     iApply wp_fupd.
     wp_apply (ws_deque_make_spec with "[//]"). iIntros "%t %γ_base (#Hbase_inv & Hbase_model & Howner)".
-    iMod (auth_excl_alloc' []) as "(%γ_extra & Hmodel₂ & Hmodel₁)".
+    iMod (auth_excl_alloc' (auth_excl_G := ws_bag_of_ws_deque_G_model_G) []) as "(%γ_extra & Hmodel₂ & Hmodel₁)".
     iApply ("HΦ" $! t (γ_base, γ_extra)). iFrame. iSplitL "Hmodel₁".
     - iFrame "#". iApply inv_alloc. iNext. iExists []. iFrame. done.
     - iExists []. auto with iFrame.
@@ -266,7 +266,7 @@ Section ws_bag_of_ws_deque.
       iIntros "$ !>". iFrame. iExists vs. auto with iFrame.
     - set vs' := vs ++ [v].
       iIntros "Hbase_model".
-      iMod (auth_excl_update' vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
+      iMod (auth_excl_update' (auth_excl_G := ws_bag_of_ws_deque_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
       iModIntro. iSplitL "Hmodel₂ Hbase_model".
       { iExists vs'. rewrite app_length /=. auto with iFrame lia. }
       iIntros "$ !>". iExists vs'. auto with iFrame.
@@ -304,7 +304,7 @@ Section ws_bag_of_ws_deque.
         iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
         { iExists []. auto. }
         iIntros "Howner". wp_pures. iApply "HΦ". auto.
-      + iMod (auth_excl_update' vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
+      + iMod (auth_excl_update' (auth_excl_G := ws_bag_of_ws_deque_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct "Hvs" as "(Hvs' & Hv & _)".
         iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
         { iRight. iExists (length vs'), v. iSplit.
@@ -346,7 +346,7 @@ Section ws_bag_of_ws_deque.
         iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
         { iExists []. auto. }
         iIntros "Howner". wp_pures. iApply "HΦ". auto.
-      + iMod (auth_excl_update' vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
+      + iMod (auth_excl_update' (auth_excl_G := ws_bag_of_ws_deque_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct "Hvs" as "(Hv & Hvs')".
         iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
         { iRight. iExists (length vs'), v. iSplit; first done.
@@ -499,7 +499,7 @@ Section ws_bag_of_spmc_stack.
     iIntros "%Φ _ HΦ".
     iApply wp_fupd.
     wp_apply (spmc_stack_make_spec with "[//]"). iIntros "%t %γ_base (#Hbase_inv & Hbase_model & Howner)".
-    iMod (auth_excl_alloc' []) as "(%γ_extra & Hmodel₂ & Hmodel₁)".
+    iMod (auth_excl_alloc' (auth_excl_G := ws_bag_of_spmc_stack_G_model_G) []) as "(%γ_extra & Hmodel₂ & Hmodel₁)".
     iApply ("HΦ" $! t (γ_base, γ_extra)). iFrame. iSplitL "Hmodel₁".
     - iFrame "#". iApply inv_alloc. iNext. iExists []. iFrame. done.
     - iExists []. auto with iFrame.
@@ -530,7 +530,7 @@ Section ws_bag_of_spmc_stack.
       iIntros "$ !>". iFrame. iExists vs. auto with iFrame.
     - set vs' := v :: vs.
       iIntros "Hbase_model".
-      iMod (auth_excl_update' vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
+      iMod (auth_excl_update' (auth_excl_G := ws_bag_of_spmc_stack_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
       iModIntro. iSplitL "Hmodel₂ Hbase_model".
       { iExists vs'. auto with iFrame. }
       iIntros "$ !>". iExists vs'. auto with iFrame.
@@ -568,7 +568,7 @@ Section ws_bag_of_spmc_stack.
         iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
         { iExists []. auto. }
         iIntros "_". wp_pures. iApply "HΦ". auto with iFrame.
-      + iMod (auth_excl_update' vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
+      + iMod (auth_excl_update' (auth_excl_G := ws_bag_of_spmc_stack_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct "Hvs" as "(Hv & Hvs')".
         iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
         { iRight. iExists (length vs'), v. iSplit; first done.
@@ -609,7 +609,7 @@ Section ws_bag_of_spmc_stack.
         iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
         { iExists []. auto. }
         iIntros "_". wp_pures. iApply "HΦ". auto.
-      + iMod (auth_excl_update' vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
+      + iMod (auth_excl_update' (auth_excl_G := ws_bag_of_spmc_stack_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct "Hvs" as "(Hv & Hvs')".
         iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
         { iRight. iExists (length vs'), v. iSplit; first done.
@@ -785,7 +785,7 @@ Section ws_bag_of_spmc_queue.
     iIntros "%Φ _ HΦ".
     iApply wp_fupd.
     wp_apply (spmc_queue_make_spec with "[//]"). iIntros "%t %γ_base (#Hbase_inv & Hbase_model & Howner)".
-    iMod (auth_excl_alloc' []) as "(%γ_extra & Hmodel₂ & Hmodel₁)".
+    iMod (auth_excl_alloc' (auth_excl_G := ws_bag_of_spmc_queue_G_model_G) []) as "(%γ_extra & Hmodel₂ & Hmodel₁)".
     iApply ("HΦ" $! t (γ_base, γ_extra)). iFrame. iSplitL "Hmodel₁".
     - iFrame "#". iApply inv_alloc. iNext. iExists []. iFrame. done.
     - iExists []. auto with iFrame.
@@ -816,7 +816,7 @@ Section ws_bag_of_spmc_queue.
       iIntros "$ !>". iFrame. iExists vs. auto with iFrame.
     - set vs' := v :: vs.
       iIntros "Hbase_model".
-      iMod (auth_excl_update' vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
+      iMod (auth_excl_update' (auth_excl_G := ws_bag_of_spmc_queue_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
       iModIntro. iSplitL "Hmodel₂ Hbase_model".
       { iExists vs'. auto with iFrame. }
       iIntros "$ !>". iExists vs'. auto with iFrame.
@@ -854,7 +854,7 @@ Section ws_bag_of_spmc_queue.
         iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
         { iExists []. auto. }
         iIntros "_". wp_pures. iApply "HΦ". auto with iFrame.
-      + iMod (auth_excl_update' vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
+      + iMod (auth_excl_update' (auth_excl_G := ws_bag_of_spmc_queue_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct "Hvs" as "(Hvs' & Hv & _)".
         iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
         { iRight. iExists (length vs'), v. iSplit.
@@ -896,7 +896,7 @@ Section ws_bag_of_spmc_queue.
         iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
         { iExists []. auto. }
         iIntros "_". wp_pures. iApply "HΦ". auto.
-      + iMod (auth_excl_update' vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
+      + iMod (auth_excl_update' (auth_excl_G := ws_bag_of_spmc_queue_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct "Hvs" as "(Hvs' & Hv & _)".
         iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
         { iRight. iExists (length vs'), v. iSplit.

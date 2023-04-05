@@ -120,7 +120,7 @@ Section wise_prophet.
   Proof.
     iIntros "%Φ _ HΦ".
     iApply wp_fupd. wp_apply (typed_prophet_new_proph_spec with "[//]"). iIntros "%p %prophs Hp".
-    iMod (agree_alloc prophs) as "(%γ_full & #Hfull)".
+    iMod (agree_alloc (agree_G := wise_prophet_G_full_G) prophs) as "(%γ_full & #Hfull)".
     iMod (mono_list_alloc []) as "(%γ_past & Hpast_auth & _)".
     iApply ("HΦ" $! _ (γ_full, γ_past)). iFrame "#∗". done.
   Qed.

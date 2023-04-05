@@ -8,24 +8,23 @@ From caml5 Require Export
 From caml5.algebra Require Import
   lib.auth_excl.
 
-Class AuthExclG Σ A := {
-  auth_excl_G_inG : inG Σ (auth_excl_R A) ;
+Class AuthExclG Σ F := {
+  auth_excl_G_inG : inG Σ (auth_excl_R $ oFunctor_apply F $ iPropO Σ) ;
 }.
 #[local] Existing Instance auth_excl_G_inG.
 
-Definition auth_excl_Σ A := #[
-  GFunctor (auth_excl_R A)
+Definition auth_excl_Σ F `{!oFunctorContractive F} := #[
+  GFunctor (auth_excl_RF F)
 ].
-#[global] Instance subG_auth_excl_Σ A Σ :
-  subG (auth_excl_Σ A) Σ →
-  AuthExclG Σ A.
+#[global] Instance subG_auth_excl_Σ Σ F `{!oFunctorContractive F} :
+  subG (auth_excl_Σ F) Σ →
+  AuthExclG Σ F.
 Proof.
   solve_inG.
 Qed.
 
 Section auth_excl_G.
-  Context `{!AuthExclG Σ A}.
-  Implicit Types a b : A.
+  Context `{auth_excl_G : !AuthExclG Σ F}.
 
   Definition auth_excl_auth γ dq a :=
     own γ (●E{dq} a).
@@ -104,8 +103,30 @@ Section auth_excl_G.
     iApply auth_excl_update. done.
   Qed.
 
-  Section cmra_discrete.
-    Context `{!OfeDiscrete A}.
+  (* Lemma auth_excl_auth_valid γ dq a : *)
+  (*   auth_excl_auth γ dq a -∗ *)
+  (*   ⌜✓ dq⌝. *)
+  (* Proof. *)
+  (*   iIntros "H●". *)
+  (*   iDestruct (own_valid with "H●") as "H". *)
+  (*   iDestruct (auth_auth_dfrac_validI with "H") as "($ & _)". *)
+  (* Qed. *)
+  (* Lemma auth_excl_auth_combine γ dq1 a1 dq2 a2 : *)
+  (*   auth_excl_auth γ dq1 a1 -∗ *)
+  (*   auth_excl_auth γ dq2 a2 -∗ *)
+  (*     auth_excl_auth γ (dq1 ⋅ dq2) a1 ∗ *)
+  (*     a1 ≡ a2. *)
+  (* Proof. *)
+  (*   iIntros "H●1 H●2". iCombine "H●1 H●2" as "H●". *)
+  (*   rewrite own_proper; last first. *)
+  (*   { rewrite -auth_excl_auth_dfrac_op. *)
+  (*   auth_excl_auth_dfrac_op *)
+  (*   iDestruct (own_valid with "H●") as %(? & Heq)%auth_excl_auth_dfrac_op_valid. *)
+  (*   iEval (rewrite -Heq -auth_excl_auth_dfrac_op) in "H●". *)
+  (*   naive_solver. *)
+  (* Qed. *)
+  Section discrete.
+    Context `{!OfeDiscrete $ oFunctor_apply F $ iPropO Σ}.
 
     Lemma auth_excl_auth_valid γ dq a :
       auth_excl_auth γ dq a -∗
@@ -124,7 +145,7 @@ Section auth_excl_G.
       iEval (rewrite -Heq -auth_excl_auth_dfrac_op) in "H●".
       naive_solver.
     Qed.
-    Lemma auth_excl_auth_combine_L `{!LeibnizEquiv A} γ dq1 a1 dq2 a2 :
+    Lemma auth_excl_auth_combine_L `{!LeibnizEquiv $ oFunctor_apply F $ iPropO Σ} γ dq1 a1 dq2 a2 :
       auth_excl_auth γ dq1 a1 -∗
       auth_excl_auth γ dq2 a2 -∗
         auth_excl_auth γ (dq1 ⋅ dq2) a1 ∗
@@ -143,7 +164,7 @@ Section auth_excl_G.
       iDestruct (auth_excl_auth_valid with "H●") as %?.
       done.
     Qed.
-    Lemma auth_excl_auth_valid_2_L `{!LeibnizEquiv A} γ dq1 a1 dq2 a2 :
+    Lemma auth_excl_auth_valid_2_L `{!LeibnizEquiv $ oFunctor_apply F $ iPropO Σ} γ dq1 a1 dq2 a2 :
       auth_excl_auth γ dq1 a1 -∗
       auth_excl_auth γ dq2 a2 -∗
       ⌜✓ (dq1 ⋅ dq2) ∧ a1 = a2⌝.
@@ -159,7 +180,7 @@ Section auth_excl_G.
       iIntros "H●1 H●2".
       iDestruct (auth_excl_auth_valid_2 with "H●1 H●2") as %?. naive_solver.
     Qed.
-    Lemma auth_excl_auth_agree_L `{!LeibnizEquiv A} γ dq1 a1 dq2 a2 :
+    Lemma auth_excl_auth_agree_L `{!LeibnizEquiv $ oFunctor_apply F $ iPropO Σ} γ dq1 a1 dq2 a2 :
       auth_excl_auth γ dq1 a1 -∗
       auth_excl_auth γ dq2 a2 -∗
       ⌜a1 = a2⌝.
@@ -178,7 +199,7 @@ Section auth_excl_G.
 
     Lemma auth_excl_frag_exclusive γ a1 a2 :
       auth_excl_frag γ a1 -∗
-      auth_excl_frag γ a1 -∗
+      auth_excl_frag γ a2 -∗
       False.
     Proof.
       iIntros "H◯1 H◯2".
@@ -194,7 +215,7 @@ Section auth_excl_G.
       iDestruct (own_valid_2 with "H● H◯") as %?%auth_excl_both_dfrac_valid.
       naive_solver.
     Qed.
-    Lemma auth_excl_agree_L `{!LeibnizEquiv A} γ dq a b :
+    Lemma auth_excl_agree_L `{!LeibnizEquiv $ oFunctor_apply F $ iPropO Σ} γ dq a b :
       auth_excl_auth γ dq a -∗
       auth_excl_frag γ b -∗
       ⌜a = b⌝.
@@ -202,7 +223,7 @@ Section auth_excl_G.
       iIntros "H● H◯".
       iDestruct (auth_excl_agree with "H● H◯") as %?. naive_solver.
     Qed.
-  End cmra_discrete.
+  End discrete.
 End auth_excl_G.
 
 #[global] Opaque auth_excl_auth.

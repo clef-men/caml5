@@ -334,7 +334,7 @@ Section counter_G.
     iMod auth_natinf_max_frag_0 as "#Hub_frag".
     iMod (auth_nat_max_alloc 0) as "(%γ_lb & Hlb_auth)".
     iMod (own_alloc (● GSet ∅)) as "(%γ_token & Htoken_auth)"; first by apply auth_auth_valid.
-    iMod (auth_excl_alloc 0) as "(%γ_model & Hmodel₂ & Hmodel₁)"; first done.
+    iMod (auth_excl_alloc' (auth_excl_G := counter_G_model_G) 0) as "(%γ_model & Hmodel₂ & Hmodel₁)".
     iDestruct (meta_token_difference _ (↑counter_meta_ub) with "Hmeta") as "(Hmeta_ub & Hmeta)"; first solve_ndisj.
     iDestruct (meta_token_difference _ (↑counter_meta_lb) with "Hmeta") as "(Hmeta_lb & Hmeta)"; first solve_ndisj.
     iDestruct (meta_token_difference _ (↑counter_meta_token) with "Hmeta") as "(Hmeta_token & Hmeta)"; first solve_ndisj.
@@ -374,7 +374,7 @@ Section counter_G.
       rewrite set_seq_S_end_union_L. apply gset_disj_alloc_empty_local_update.
       rewrite -{1}(Nat.add_0_l n). apply set_seq_S_end_disjoint.
     }
-    iMod (auth_excl_update' (S n) with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
+    iMod (auth_excl_update' (auth_excl_G := counter_G_model_G) (S n) with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
     iAssert (counter_token #l n) with "[Htoken_frag]" as "Htoken".
     { repeat iExists _. naive_solver. }
     iAssert (counter_model #l (DfracOwn 1) (S n)) with "[> Hlb_auth Htoken_auth Hmodel₂]" as "Hmodel".
