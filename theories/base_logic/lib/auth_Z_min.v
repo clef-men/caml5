@@ -24,7 +24,7 @@ Proof.
 Qed.
 
 Section auth_Z_min_G.
-  Context `{!AuthZMinG Σ}.
+  Context `{auth_Z_min_G : !AuthZMinG Σ}.
   Implicit Types n m p : Z.
 
   Definition auth_Z_min_auth γ dq n :=

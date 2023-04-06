@@ -1,69 +1,101 @@
-From iris.proofmode Require Import tactics.
-From iris.algebra.lib Require Import mono_list.
-From iris.bi.lib Require Import fractional.
-From iris.base_logic.lib Require Export own.
-From iris.prelude Require Import options.
+From iris.proofmode Require Import
+  tactics.
+From iris.algebra Require Import
+  lib.mono_list.
+From iris.bi Require Import
+  lib.fractional.
+From iris.base_logic Require Export
+  lib.own.
+From iris.prelude Require Import
+  options.
 
-Class mono_listG (A : Type) Σ :=
-  MonoListG { mono_list_inG : inG Σ (mono_listR (leibnizO A)) }.
-Local Existing Instance mono_list_inG.
+Class MonoListG Σ A := {
+  mono_list_G_inG : inG Σ (mono_listR $ leibnizO A) ;
+}.
+#[local] Existing Instance mono_list_G_inG.
 
-Definition mono_listΣ (A : Type) : gFunctors :=
-  #[GFunctor (mono_listR (leibnizO A))].
+Definition mono_list_Σ A := #[
+  GFunctor (mono_listR $ leibnizO A)
+].
+#[global] Instance subG_mono_list_Σ Σ A :
+  subG (mono_list_Σ A) Σ →
+  MonoListG Σ A.
+Proof.
+  solve_inG.
+Qed.
 
-Global Instance subG_mono_listΣ {A Σ} :
-  subG (mono_listΣ A) Σ → (mono_listG A) Σ.
-Proof. solve_inG. Qed.
-
-Local Definition mono_list_auth_def `{!mono_listG A Σ}
-    (γ : gname) (q : Qp) (l : list A) : iProp Σ :=
+#[local] Definition mono_list_auth_def `{!MonoListG Σ A} γ q (l : list A) :=
   own γ (●ML{#q} (l : listO (leibnizO A))).
-Local Definition mono_list_auth_aux : seal (@mono_list_auth_def).
+#[local] Definition mono_list_auth_aux :
+  seal (@mono_list_auth_def).
 Proof. by eexists. Qed.
-Definition mono_list_auth := mono_list_auth_aux.(unseal).
-Local Definition mono_list_auth_unseal :
-  @mono_list_auth = @mono_list_auth_def := mono_list_auth_aux.(seal_eq).
-Global Arguments mono_list_auth {A Σ _} γ q l.
+Definition mono_list_auth :=
+  mono_list_auth_aux.(unseal).
+#[local] Definition mono_list_auth_unseal : @mono_list_auth = @mono_list_auth_def :=
+  mono_list_auth_aux.(seal_eq).
+#[global] Arguments mono_list_auth {_ _ _} _ _ _ : assert.
 
-Local Definition mono_list_lb_def `{!mono_listG A Σ}
-    (γ : gname) (l : list A) : iProp Σ :=
+#[local] Definition mono_list_lb_def `{!MonoListG Σ A} γ (l : list A) :=
   own γ (◯ML (l : listO (leibnizO A))).
-Local Definition mono_list_lb_aux : seal (@mono_list_lb_def).
+#[local] Definition mono_list_lb_aux :
+  seal (@mono_list_lb_def).
 Proof. by eexists. Qed.
-Definition mono_list_lb := mono_list_lb_aux.(unseal).
-Local Definition mono_list_lb_unseal :
-  @mono_list_lb = @mono_list_lb_def := mono_list_lb_aux.(seal_eq).
-Global Arguments mono_list_lb {A Σ _} γ l.
+Definition mono_list_lb :=
+  mono_list_lb_aux.(unseal).
+#[local] Definition mono_list_lb_unseal : @mono_list_lb = @mono_list_lb_def :=
+  mono_list_lb_aux.(seal_eq).
+#[global] Arguments mono_list_lb {_ _ _} _ _ : assert.
 
-Definition mono_list_mapsto `{!mono_listG A Σ}
-    (γ : gname) (i : nat) (a : A) : iProp Σ :=
-  ∃ l : list A, ⌜ l !! i = Some a ⌝ ∗ mono_list_lb γ l.
+Definition mono_list_mapsto `{!MonoListG Σ A} γ i a : iProp Σ :=
+  ∃ l, ⌜l !! i = Some a⌝ ∗ mono_list_lb γ l.
 
-Local Ltac unseal := rewrite
-  /mono_list_mapsto ?mono_list_auth_unseal /mono_list_auth_def
-  ?mono_list_lb_unseal /mono_list_lb_def.
+#[local] Ltac unseal :=
+  rewrite
+    /mono_list_mapsto ?mono_list_auth_unseal /mono_list_auth_def
+    ?mono_list_lb_unseal /mono_list_lb_def.
 
-Section mono_list_own.
-  Context `{!mono_listG A Σ}.
-  Implicit Types (l : list A) (i : nat) (a : A).
+Section mono_list_G.
+  Context `{mono_list_G : !MonoListG Σ A}.
+  Implicit Types i : nat.
+  Implicit Types a : A.
+  Implicit Types l : list A.
 
-  Global Instance mono_list_auth_timeless γ q l : Timeless (mono_list_auth γ q l).
-  Proof. unseal. apply _. Qed.
-  Global Instance mono_list_lb_timeless γ l : Timeless (mono_list_lb γ l).
-  Proof. unseal. apply _. Qed.
-  Global Instance mono_list_lb_persistent γ l : Persistent (mono_list_lb γ l).
-  Proof. unseal. apply _. Qed.
-  Global Instance mono_list_mapsto_timeless γ i a :
-    Timeless (mono_list_mapsto γ i a) := _.
-  Global Instance mono_list_mapsto_persistent γ i a :
-    Persistent (mono_list_mapsto γ i a) := _.
+  #[global] Instance mono_list_auth_timeless γ q l :
+    Timeless (mono_list_auth γ q l).
+  Proof.
+    unseal. apply _.
+  Qed.
+  #[global] Instance mono_list_lb_timeless γ l :
+    Timeless (mono_list_lb γ l).
+  Proof.
+    unseal. apply _.
+  Qed.
+  #[global] Instance mono_list_lb_persistent γ l :
+    Persistent (mono_list_lb γ l).
+  Proof.
+    unseal. apply _.
+  Qed.
+  #[global] Instance mono_list_mapsto_timeless γ i a :
+    Timeless (mono_list_mapsto γ i a).
+  Proof.
+    apply _.
+  Qed.
+  #[global] Instance mono_list_mapsto_persistent γ i a :
+    Persistent (mono_list_mapsto γ i a).
+  Proof.
+    apply _.
+  Qed.
 
-  Global Instance mono_list_auth_fractional γ l :
+  #[global] Instance mono_list_auth_fractional γ l :
     Fractional (λ q, mono_list_auth γ q l).
-  Proof. unseal. intros p q. by rewrite -own_op -mono_list_auth_dfrac_op. Qed.
-  Global Instance mono_list_auth_as_fractional γ q l :
+  Proof.
+    unseal. intros p q. by rewrite -own_op -mono_list_auth_dfrac_op.
+  Qed.
+  #[global] Instance mono_list_auth_as_fractional γ q l :
     AsFractional (mono_list_auth γ q l) (λ q, mono_list_auth γ q l) q.
-  Proof. split; [auto|apply _]. Qed.
+  Proof.
+    split; [auto | apply _].
+  Qed.
 
   Lemma mono_list_auth_agree γ q1 q2 l1 l2 :
     mono_list_auth γ q1 l1 -∗
@@ -147,5 +179,8 @@ Section mono_list_own.
   Lemma mono_list_auth_update_app {γ l} l' :
     mono_list_auth γ 1 l ==∗
     mono_list_auth γ 1 (l ++ l') ∗ mono_list_lb γ (l ++ l').
-  Proof. by apply mono_list_auth_update, prefix_app_r. Qed.
-End mono_list_own.
+  Proof.
+    by apply mono_list_auth_update, prefix_app_r.
+  Qed.
+End mono_list_G.
+

@@ -25,7 +25,7 @@ Proof.
 Qed.
 
 Section raw_array_G.
-  Context `{RawArrayG Σ}.
+  Context `{raw_array_G : RawArrayG Σ}.
   Implicit Types sz i j : nat.
   Implicit Types l : loc.
   Implicit Types v t : val.

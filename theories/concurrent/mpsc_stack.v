@@ -98,7 +98,8 @@ Proof.
 Qed.
 
 Section mpsc_stack_of_mpmc_stack.
-  Context `{MpscStackOfMpmcStackG Σ} {unboxed} (mpmc_stack : mpmc_stack Σ unboxed).
+  Context `{mpsc_stack_of_mpmc_stack_G : MpscStackOfMpmcStackG Σ}.
+  Context {unboxed} (mpmc_stack : mpmc_stack Σ unboxed).
 
   Notation "γ .(base)" := γ.1
   ( at level 5

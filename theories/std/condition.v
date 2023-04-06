@@ -49,7 +49,9 @@ Record condition `{!heapGS Σ} {mutex_unboxed} {mutex : mutex Σ mutex_unboxed} 
 #[global] Existing Instance condition_inv_persistent.
 
 Section condition.
-  Context `{!heapGS Σ} {mutex_unboxed} {mutex : mutex Σ mutex_unboxed} {unboxed} (condition : condition Σ mutex unboxed).
+  Context `{!heapGS Σ}.
+  Context {mutex_unboxed} {mutex : mutex Σ mutex_unboxed}.
+  Context {unboxed} (condition : condition Σ mutex unboxed).
 
   #[local] Definition condition_wait_until_aux (cond : val) : val :=
     rec: "condition_wait_until_aux" "t" "mtx" :=

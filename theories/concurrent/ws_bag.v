@@ -132,7 +132,8 @@ Proof.
 Qed.
 
 Section ws_bag_of_ws_deque.
-  Context `{WsBagOfWsDequeG Σ} {unboxed} (ws_deque : ws_deque Σ unboxed).
+  Context `{ws_bag_of_ws_deque_G : WsBagOfWsDequeG Σ}.
+  Context {unboxed} (ws_deque : ws_deque Σ unboxed).
   Implicit Types γ : ws_deque.(ws_deque_name) * gname.
 
   Notation "γ .(base)" := γ.1
@@ -396,7 +397,8 @@ Proof.
 Qed.
 
 Section ws_bag_of_spmc_stack.
-  Context `{WsBagOfSpmcStackG Σ} {unboxed} (spmc_stack : spmc_stack Σ unboxed).
+  Context `{ws_bag_of_spmc_stack_G : WsBagOfSpmcStackG Σ}.
+  Context {unboxed} (spmc_stack : spmc_stack Σ unboxed).
   Implicit Types γ : spmc_stack.(spmc_stack_name) * gname.
 
   Notation "γ .(base)" := γ.1
@@ -663,7 +665,7 @@ Proof.
   solve_inG.
 Qed.
 
-Definition ws_bag_of_mpmc_stack `{WsBagOfMpmcStackG Σ} {unboxed} (mpmc_stack : mpmc_stack Σ unboxed) :=
+Definition ws_bag_of_mpmc_stack `{ws_bag_of_mpmc_stack_G : WsBagOfMpmcStackG Σ} {unboxed} (mpmc_stack : mpmc_stack Σ unboxed) :=
   ws_bag_of_spmc_stack (spmc_stack_of_mpmc_stack mpmc_stack).
 
 Class WsBagOfSpmcQueueG Σ `{!heapGS Σ} := {
@@ -682,7 +684,8 @@ Proof.
 Qed.
 
 Section ws_bag_of_spmc_queue.
-  Context `{WsBagOfSpmcQueueG Σ} {unboxed} (spmc_queue : spmc_queue Σ unboxed).
+  Context `{ws_bag_of_spmc_queue_G : WsBagOfSpmcQueueG Σ}.
+  Context {unboxed} (spmc_queue : spmc_queue Σ unboxed).
   Implicit Types γ : spmc_queue.(spmc_queue_name) * gname.
 
   Notation "γ .(base)" := γ.1
@@ -951,5 +954,5 @@ Proof.
   solve_inG.
 Qed.
 
-Definition ws_bag_of_mpmc_queue `{WsBagOfMpmcQueueG Σ} {unboxed} (mpmc_queue : mpmc_queue Σ unboxed) :=
+Definition ws_bag_of_mpmc_queue `{ws_bag_of_mpmc_queue_G : WsBagOfMpmcQueueG Σ} {unboxed} (mpmc_queue : mpmc_queue Σ unboxed) :=
   ws_bag_of_spmc_queue (spmc_queue_of_mpmc_queue mpmc_queue).

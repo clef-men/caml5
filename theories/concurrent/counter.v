@@ -38,7 +38,7 @@ Proof.
 Qed.
 
 Section counter_G.
-  Context `{CounterG Σ}.
+  Context `{counter_G : CounterG Σ}.
   Implicit Types n m lb : nat.
   Implicit Types l : loc.
   Implicit Types t : val.

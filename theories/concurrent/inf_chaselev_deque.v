@@ -24,7 +24,7 @@ From caml5.concurrent Require Export
 Class InfChaselevDequeG Σ `{!heapGS Σ} (array : inf_array Σ false) := {
   inf_chaselev_deque_G_ctl_G : AuthExclG Σ (prodO ZO (nat -d> valO)) ;
   inf_chaselev_deque_G_front_G : AuthNatMaxG Σ ;
-  inf_chaselev_deque_G_hist_G : mono_listG val Σ ;
+  inf_chaselev_deque_G_hist_G : MonoListG Σ val ;
   inf_chaselev_deque_G_pub_G : AuthExclG Σ (listO valO) ;
   inf_chaselev_deque_G_lock_G : ExclG Σ unitO ;
 }.
@@ -37,7 +37,7 @@ Class InfChaselevDequeG Σ `{!heapGS Σ} (array : inf_array Σ false) := {
 Definition inf_chaselev_deque_Σ := #[
   auth_excl_Σ (prodO ZO (nat -d> valO)) ;
   auth_nat_max_Σ ;
-  mono_listΣ val ;
+  mono_list_Σ val ;
   auth_excl_Σ (listO valO) ;
   excl_Σ unitO
 ].
@@ -49,7 +49,7 @@ Proof.
 Qed.
 
 Section inf_chaselev_deque_G.
-  Context `{!heapGS Σ} {array} `{!InfChaselevDequeG Σ array}.
+  Context `{!heapGS Σ} {array} `{inf_chaselev_deque_G : !InfChaselevDequeG Σ array}.
   Implicit Types front : nat.
   Implicit Types back : Z.
   Implicit Types l : loc.
@@ -136,9 +136,9 @@ Section inf_chaselev_deque_G.
   Notation inf_chaselev_deque_meta_lock := (nroot .@ "lock").
 
   #[local] Definition inf_chaselev_deque_ctl₁ γ_ctl back priv :=
-    @auth_excl_auth _ _ inf_chaselev_deque_G_ctl_G γ_ctl (DfracOwn 1) (back, priv).
+    auth_excl_auth (auth_excl_G := inf_chaselev_deque_G_ctl_G) γ_ctl (DfracOwn 1) (back, priv).
   #[local] Definition inf_chaselev_deque_ctl₂ γ_ctl back priv :=
-    @auth_excl_frag _ _ inf_chaselev_deque_G_ctl_G γ_ctl (back, priv).
+    auth_excl_frag (auth_excl_G := inf_chaselev_deque_G_ctl_G) γ_ctl (back, priv).
 
   #[local] Definition inf_chaselev_deque_front_auth γ_front front :=
     auth_nat_max_auth γ_front (DfracOwn 1) front.
@@ -155,9 +155,9 @@ Section inf_chaselev_deque_G.
     mono_list_mapsto γ_hist i v.
 
   #[local] Definition inf_chaselev_deque_pub₁ γ_pub pub :=
-    @auth_excl_frag _ _ inf_chaselev_deque_G_pub_G γ_pub pub.
+    auth_excl_frag (auth_excl_G := inf_chaselev_deque_G_pub_G) γ_pub pub.
   #[local] Definition inf_chaselev_deque_pub₂ γ_pub pub :=
-    @auth_excl_auth _ _ inf_chaselev_deque_G_pub_G γ_pub (DfracOwn 1) pub.
+    auth_excl_auth (auth_excl_G := inf_chaselev_deque_G_pub_G) γ_pub (DfracOwn 1) pub.
 
   #[local] Definition inf_chaselev_deque_lock γ_lock :=
     excl γ_lock ().

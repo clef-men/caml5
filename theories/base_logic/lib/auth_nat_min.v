@@ -24,7 +24,7 @@ Proof.
 Qed.
 
 Section auth_nat_min_G.
-  Context `{!AuthNatMinG Σ}.
+  Context `{auth_nat_min_G : !AuthNatMinG Σ}.
   Implicit Types n m p : nat.
 
   Definition auth_nat_min_auth γ dq n :=

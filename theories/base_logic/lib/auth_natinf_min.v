@@ -26,7 +26,7 @@ Proof.
 Qed.
 
 Section auth_natinf_min_G.
-  Context `{!AuthNatinfMinG Σ}.
+  Context `{auth_natinf_min_G : !AuthNatinfMinG Σ}.
   Implicit Types n m : natinf.
 
   Definition auth_natinf_min_auth γ dq n :=

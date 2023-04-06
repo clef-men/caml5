@@ -26,7 +26,7 @@ Proof.
 Qed.
 
 Section auth_natinf_max_G.
-  Context `{!AuthNatinfMaxG Σ}.
+  Context `{auth_natinf_max_G : !AuthNatinfMaxG Σ}.
   Implicit Types n m : natinf.
 
   Definition auth_natinf_max_auth γ dq n :=

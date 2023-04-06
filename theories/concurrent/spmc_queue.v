@@ -98,7 +98,8 @@ Proof.
 Qed.
 
 Section spmc_queue_of_mpmc_queue.
-  Context `{SpmcQueueOfMpmcQueueG Σ} {unboxed} (mpmc_queue : mpmc_queue Σ unboxed).
+  Context `{spmc_queue_of_mpmc_queue_G : SpmcQueueOfMpmcQueueG Σ}.
+  Context {unboxed} (mpmc_queue : mpmc_queue Σ unboxed).
 
   Notation "γ .(base)" := γ.1
   ( at level 5

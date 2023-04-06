@@ -11,14 +11,14 @@ From caml5.lang Require Export
 
 Class WiseProphetG Σ `{!heapGS Σ} prophet := {
   wise_prophet_G_full_G : AgreeG Σ $ leibnizO (list prophet.(typed_prophet_type)) ;
-  wise_prophet_G_past_G : mono_listG prophet.(typed_prophet_type) Σ ;
+  wise_prophet_G_past_G : MonoListG Σ prophet.(typed_prophet_type) ;
 }.
 #[local] Existing Instance wise_prophet_G_full_G.
 #[local] Existing Instance wise_prophet_G_past_G.
 
 Definition wise_prophet_Σ prophet := #[
   agree_Σ $ leibnizO (list prophet.(typed_prophet_type)) ;
-  mono_listΣ prophet.(typed_prophet_type)
+  mono_list_Σ prophet.(typed_prophet_type)
 ].
 Lemma subG_wise_prophet_Σ Σ `{!heapGS Σ} prophet :
   subG (wise_prophet_Σ prophet) Σ →
@@ -27,8 +27,8 @@ Proof.
   solve_inG.
 Qed.
 
-Section wise_prophet.
-  Context `{!heapGS Σ} prophet `{!WiseProphetG Σ prophet}.
+Section wise_prophet_G.
+  Context `{!heapGS Σ} prophet `{wise_prophet_G : !WiseProphetG Σ prophet}.
 
   Definition wise_prophet_name : Type := gname * gname.
 
@@ -148,7 +148,7 @@ Section wise_prophet.
     iIntros "!> %prophs' -> Hp".
     iApply ("HΦ" with "[//]"). iFrame. list_simplifier. done.
   Qed.
-End wise_prophet.
+End wise_prophet_G.
 
 #[global] Opaque wise_prophet_name.
 #[global] Opaque wise_prophet_model.

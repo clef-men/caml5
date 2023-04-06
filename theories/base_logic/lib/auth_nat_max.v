@@ -24,7 +24,7 @@ Proof.
 Qed.
 
 Section auth_nat_max_G.
-  Context `{!AuthNatMaxG Σ}.
+  Context `{auth_nat_max_G : !AuthNatMaxG Σ}.
   Implicit Types n m p : nat.
 
   Definition auth_nat_max_auth γ dq n :=

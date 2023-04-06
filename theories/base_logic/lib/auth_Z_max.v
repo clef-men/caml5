@@ -24,7 +24,7 @@ Proof.
 Qed.
 
 Section auth_Z_max_G.
-  Context `{!AuthZMaxG Σ}.
+  Context `{auth_Z_max_G : !AuthZMaxG Σ}.
   Implicit Types n m p : Z.
 
   Definition auth_Z_max_auth γ dq n :=

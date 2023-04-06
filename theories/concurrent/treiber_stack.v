@@ -30,8 +30,8 @@ Proof.
   solve_inG.
 Qed.
 
-Section treiber_stack_GS.
-  Context `{TreiberG Σ}.
+Section treiber_stack_G.
+  Context `{treiber_G : TreiberG Σ}.
   Implicit Types l : loc.
   Implicit Types v t lst : val.
 
@@ -266,7 +266,7 @@ Section treiber_stack_GS.
   Next Obligation.
     simpl. intros. iApply treiber_stack_unboxed.
   Qed.
-End treiber_stack_GS.
+End treiber_stack_G.
 
 #[global] Opaque treiber_stack_make.
 #[global] Opaque treiber_stack_push.

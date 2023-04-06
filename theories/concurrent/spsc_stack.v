@@ -110,7 +110,8 @@ Proof.
 Qed.
 
 Section spsc_stack_of_spmc_stack.
-  Context `{SpscStackOfSpmcStackG Σ} {unboxed} (spmc_stack : spmc_stack Σ unboxed).
+  Context `{spsc_stack_of_spmc_stack_G : SpscStackOfSpmcStackG Σ}.
+  Context {unboxed} (spmc_stack : spmc_stack Σ unboxed).
 
   Notation "γ .(base)" := γ.1
   ( at level 5
@@ -180,7 +181,8 @@ Proof.
 Qed.
 
 Section spsc_stack_of_mpsc_stack.
-  Context `{SpscStackOfMpscStackG Σ} {unboxed} (mpsc_stack : mpsc_stack Σ unboxed).
+  Context `{spsc_stack_of_mpsc_stack_G : SpscStackOfMpscStackG Σ}.
+  Context {unboxed} (mpsc_stack : mpsc_stack Σ unboxed).
 
   Notation "γ .(base)" := γ.1
   ( at level 5
@@ -254,5 +256,5 @@ Proof.
   solve_inG.
 Qed.
 
-Definition spsc_stack_of_mpmc_stack `{SpscStackOfMpmcStackG Σ} {unboxed} {mpmc_stack : mpmc_stack Σ unboxed} :=
+Definition spsc_stack_of_mpmc_stack `{spsc_stack_of_mpmc_stack_G : SpscStackOfMpmcStackG Σ} {unboxed} {mpmc_stack : mpmc_stack Σ unboxed} :=
   spsc_stack_of_spmc_stack (spmc_stack_of_mpmc_stack mpmc_stack).

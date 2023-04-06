@@ -110,7 +110,8 @@ Proof.
 Qed.
 
 Section spsc_queue_of_spmc_queue.
-  Context `{SpscQueueOfSpmcQueueG Σ} {unboxed} (spmc_queue : spmc_queue Σ unboxed).
+  Context `{spsc_queue_of_spmc_queue_G : SpscQueueOfSpmcQueueG Σ}.
+  Context {unboxed} (spmc_queue : spmc_queue Σ unboxed).
 
   Notation "γ .(base)" := γ.1
   ( at level 5
@@ -180,7 +181,8 @@ Proof.
 Qed.
 
 Section spsc_queue_of_mpsc_queue.
-  Context `{SpscQueueOfMpscQueueG Σ} {unboxed} (mpsc_queue : mpsc_queue Σ unboxed).
+  Context `{spsc_queue_of_mpsc_queue_G : SpscQueueOfMpscQueueG Σ}.
+  Context {unboxed} (mpsc_queue : mpsc_queue Σ unboxed).
 
   Notation "γ .(base)" := γ.1
   ( at level 5
@@ -254,5 +256,5 @@ Proof.
   solve_inG.
 Qed.
 
-Definition spsc_queue_of_mpmc_queue `{SpscQueueOfMpmcQueueG Σ} {unboxed} {mpmc_queue : mpmc_queue Σ unboxed} :=
+Definition spsc_queue_of_mpmc_queue `{spsc_queue_of_mpmc_queue_G : SpscQueueOfMpmcQueueG Σ} {unboxed} {mpmc_queue : mpmc_queue Σ unboxed} :=
   spsc_queue_of_spmc_queue (spmc_queue_of_mpmc_queue mpmc_queue).
