@@ -199,6 +199,13 @@ Section ws_bag_of_ws_deque.
   Proof.
     intros Ψ1 Ψ2 HΨ. f_equiv. intros v. apply dist_dist_later. done.
   Qed.
+  #[local] Instance ws_bag_of_ws_deque_inv_proper t γ ι :
+    Proper (pointwise_relation val (≡) ==> (≡)) (ws_bag_of_ws_deque_inv t γ ι).
+  Proof.
+    intros Ψ1 Ψ2 HΨ. rewrite equiv_dist. intros n. f_equiv.
+    intros v. revert n. rewrite -equiv_dist //.
+  Qed.
+
   #[local] Instance ws_bag_of_ws_deque_inv_persistent t γ ι Ψ :
     Persistent (ws_bag_of_ws_deque_inv t γ ι Ψ).
   Proof.
@@ -464,6 +471,13 @@ Section ws_bag_of_spmc_stack.
   Proof.
     intros Ψ1 Ψ2 HΨ. f_equiv. intros v. apply dist_dist_later. done.
   Qed.
+  #[local] Instance ws_bag_of_spmc_stack_inv_proper t γ ι :
+    Proper (pointwise_relation val (≡) ==> (≡)) (ws_bag_of_spmc_stack_inv t γ ι).
+  Proof.
+    intros Ψ1 Ψ2 HΨ. rewrite equiv_dist. intros n. f_equiv.
+    intros v. revert n. rewrite -equiv_dist //.
+  Qed.
+
   #[local] Instance ws_bag_of_spmc_stack_inv_persistent t γ ι Ψ :
     Persistent (ws_bag_of_spmc_stack_inv t γ ι Ψ).
   Proof.
@@ -751,6 +765,13 @@ Section ws_bag_of_spmc_queue.
   Proof.
     intros Ψ1 Ψ2 HΨ. f_equiv. intros v. apply dist_dist_later. done.
   Qed.
+  #[local] Instance ws_bag_of_spmc_queue_inv_proper t γ ι :
+    Proper (pointwise_relation val (≡) ==> (≡)) (ws_bag_of_spmc_queue_inv t γ ι).
+  Proof.
+    intros Ψ1 Ψ2 HΨ. rewrite equiv_dist. intros n. f_equiv.
+    intros v. revert n. rewrite -equiv_dist //.
+  Qed.
+
   #[local] Instance ws_bag_of_spmc_queue_inv_persistent t γ ι Ψ :
     Persistent (ws_bag_of_spmc_queue_inv t γ ι Ψ).
   Proof.
