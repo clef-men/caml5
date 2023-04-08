@@ -141,9 +141,8 @@ Section inf_chaselev_deque_G.
       let: "front" := !"t".(front) in
       let: "back" := !"t".(back) in
       if: "front" < "back" then (
-        let: "v" := array.(inf_array_get) !"t".(data) "front" in
         if: Snd $ Resolve (CmpXchg "t".(front) "front" ("front" + #1)) !"t".(prophecy) ("front", "id") then (
-          SOME "v"
+          SOME (array.(inf_array_get) !"t".(data) "front")
         ) else (
           "inf_chaselev_deque_steal" "t"
         )
@@ -771,25 +770,7 @@ Section inf_chaselev_deque_G.
       iApply "HΦ". repeat iExists _. iFrame "#∗". done.
   Qed.
 
-  #[local] Lemma inf_chaselev_deque_get_weak l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner ι data p (i : nat) :
-    {{{
-      inv ι (inf_chaselev_deque_inv_inner l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner ι data p) ∗
-      l.(data) ↦□ data
-    }}}
-      array.(inf_array_get) !#l.(data) #i
-    {{{ v, RET v; True }}}.
-  Proof.
-    iIntros "%Φ (#Hinv & #Hdata) HΦ".
-    wp_load.
-    awp_apply (inf_array_get_spec with "[//]") without "HΦ"; first lia.
-    iInv "Hinv" as "(%front & %back & %hist & %pub & %priv & %past & %prophs & Hfront & Hback & Hctl₁ & Hfront_auth & >Hdata_model & Hpub₁ & >%Hpub & Hprophet_model & >%Hpast & Hstate)".
-    iAaccIntro with "Hdata_model"; iIntros "Hdata_model".
-    { iModIntro. rewrite right_id. repeat iExists _. iFrame. done. }
-    iModIntro. iSplitL.
-    { repeat iExists _. iFrame. done. }
-    iIntros "_ HΦ". iApply ("HΦ" with "[//]").
-  Qed.
-  #[local] Lemma inf_chaselev_deque_get_strong l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner ι data p i v :
+  #[local] Lemma inf_chaselev_deque_get l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner ι data p i v :
     {{{
       inv ι (inf_chaselev_deque_inv_inner l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner ι data p) ∗
       l.(data) ↦□ data ∗
@@ -907,11 +888,6 @@ Section inf_chaselev_deque_G.
 
       wp_pures.
 
-      (* → [array.(inf_array_get) !#l.(data) #front1] *)
-      wp_apply (inf_chaselev_deque_get_weak with "[$Hinv $Hdata]"). iIntros "%v _".
-
-      wp_pures.
-
       (* → [!#l.(prophecy)] *)
       wp_load.
 
@@ -981,11 +957,6 @@ Section inf_chaselev_deque_G.
 
       wp_pures.
 
-      (* → [array.(inf_array_get) !#l.(data) #front1] *)
-      wp_apply (inf_chaselev_deque_get_strong with "[$Hinv $Hdata $Hhist_frag]"). iIntros "_".
-
-      wp_pures.
-
       (* → [!#l.(prophecy)] *)
       wp_load.
 
@@ -1021,11 +992,6 @@ Section inf_chaselev_deque_G.
 
       (* → [if: #(bool_decide (front1 < back2))] *)
       rewrite bool_decide_eq_true_2; last done.
-
-      wp_pures.
-
-      (* → [array.(inf_array_get) !#l.(data) #front1] *)
-      wp_apply (inf_chaselev_deque_get_strong with "[$Hinv $Hdata $Hhist_frag]"). iIntros "_".
 
       wp_pures.
 
@@ -1110,11 +1076,6 @@ Section inf_chaselev_deque_G.
 
     wp_pures.
 
-    (* → [array.(inf_array_get) !#l.(data) #front1] *)
-    wp_apply (inf_chaselev_deque_get_strong with "[$Hinv $Hdata $Hhist_frag]"). iIntros "_".
-
-    wp_pures.
-
     (* → [!#l.(prophecy)] *)
     wp_load.
 
@@ -1181,6 +1142,11 @@ Section inf_chaselev_deque_G.
 
       wp_pures.
 
+      (* → [array.(inf_array_get) !#l.(data) #front1] *)
+      wp_apply (inf_chaselev_deque_get with "[$Hinv $Hdata $Hhist_frag]"). iIntros "_".
+
+      wp_pures.
+
       iRewrite- "HΦ". done.
 
     - (* CmpXchg must succeed as we are the next winner *)
@@ -1209,6 +1175,11 @@ Section inf_chaselev_deque_G.
         repeat iExists _. iFrame.
       }
       clear- Hbranch1 Hbranch2.
+
+      wp_pures.
+
+      (* → [array.(inf_array_get) !#l.(data) #front1] *)
+      wp_apply (inf_chaselev_deque_get with "[$Hinv $Hdata $Hhist_frag]"). iIntros "_".
 
       wp_pures.
 
