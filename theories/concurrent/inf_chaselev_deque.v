@@ -422,6 +422,22 @@ Section inf_chaselev_deque_G.
   Proof.
     iApply auth_nat_max_frag_get.
   Qed.
+  #[local] Lemma inf_chaselev_deque_front_state₃₂ γ_front γ_hist γ_pub γ_lock γ_winner ι front front' hist pub prophs :
+    inf_chaselev_deque_front_auth γ_front front' -∗
+    inf_chaselev_deque_front_frag γ_front front -∗
+    inf_chaselev_deque_state γ_hist γ_pub γ_lock γ_winner ι front' (front - 1) hist pub prophs -∗
+      ⌜front' = front⌝ ∗
+      inf_chaselev_deque_front_auth γ_front front ∗
+      inf_chaselev_deque_lock γ_lock ∗
+      inf_chaselev_deque_state₃₂ γ_hist γ_winner front (front - 1) hist.
+  Proof.
+    iIntros "Hfront_auth #Hfront_frag Hstate".
+    iDestruct (inf_chaselev_deque_front_valid with "Hfront_auth Hfront_frag") as %Hle.
+    iDestruct "Hstate" as "[Hstate | [Hstate | (Hlock & [Hstate | Hstate])]]";
+      iDestruct "Hstate" as "(%Hstate & Hhist_auth & %Hhist & Hstate)";
+      [lia.. |].
+    assert (front' = front) as -> by lia. auto with iFrame.
+  Qed.
 
   #[local] Lemma inf_chaselev_deque_hist_alloc :
     ⊢ |==> ∃ γ_hist,
@@ -580,6 +596,111 @@ Section inf_chaselev_deque_G.
     iIntros "(%l & %γ_ctl & %γ_lock & %back & %priv & -> & #Hmeta_ctl & #Hmeta_lock & Hctl₂1 & Hlock1) (%_l & %_γ_ctl & %_γ_lock & %_back & %_priv & %Heq & #_Hmeta_ctl & #_Hmeta_lock & Hctl₂2 & Hlock2)". injection Heq as <-.
     iDestruct (meta_agree with "Hmeta_lock _Hmeta_lock") as %->.
     iApply (inf_chaselev_deque_lock_exclusive with "Hlock1 Hlock2").
+  Qed.
+
+  #[local] Lemma inf_chaselev_deque_get_hist l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner ι data p i v :
+    {{{
+      inv ι (inf_chaselev_deque_inv_inner l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner ι data p) ∗
+      l.(data) ↦□ data ∗
+      inf_chaselev_deque_hist_frag γ_hist i v
+    }}}
+      array.(inf_array_get) !#l.(data) #i
+    {{{
+      RET v; True
+    }}}.
+  Proof.
+    iIntros "%Φ (#Hinv & #Hdata & #Hhist_frag) HΦ".
+
+    (* → [!#l.(data)] *)
+    wp_load.
+
+    (* → [array.(inf_array_get) data #i] *)
+    awp_apply (inf_array_get_spec with "[//]") without "HΦ"; first lia.
+    (* open invariant *)
+    iInv "Hinv" as "(%front & %back & %hist & %pub & %priv & %past & %prophs & Hfront & Hback & Hctl₁ & Hfront_auth & >Hdata_model & Hpub₁ & >%Hpub & Hprophet_model & >%Hpast & Hstate)".
+    (* we have [(hist ++ pub) !! i = Some v] *)
+    iAssert (◇ ⌜(hist ++ pub) !! i = Some v⌝)%I as "#>%Hlookup".
+    { iDestruct "Hstate" as "[Hstate | [Hstate | (_ & [Hstate | Hstate])]]";
+        iDestruct "Hstate" as "(>%Hstate & >Hhist_auth & >%Hhist & _)";
+        iModIntro;
+        iDestruct (inf_chaselev_deque_hist_agree with "Hhist_auth Hhist_frag") as %?;
+        iPureIntro.
+      - erewrite lookup_app_l_Some; done.
+      - destruct pub as [| w pub]; simpl in *; first lia.
+        rewrite (assoc (++) hist [w]). erewrite lookup_app_l_Some; done.
+      - rewrite (nil_length_inv pub); last lia. list_simplifier. done.
+      - rewrite (nil_length_inv pub); last lia. erewrite lookup_app_l_Some; done.
+    }
+    iAaccIntro with "Hdata_model"; iIntros "Hdata_model".
+    { iModIntro. rewrite right_id. repeat iExists _. iFrame. done. }
+    (* close invariant *)
+    iModIntro. iSplitL.
+    { repeat iExists _. iFrame. done. }
+    iIntros "_ HΦ".
+    clear- Hlookup.
+
+    rewrite Nat2Z.id decide_True; last eauto using lookup_lt_Some.
+    erewrite list_lookup_total_correct; last done.
+    iApply ("HΦ" with "[//]").
+  Qed.
+  #[local] Lemma inf_chaselev_deque_get_priv l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner ι data p back priv i :
+    (back ≤ i)%Z →
+    {{{
+      inv ι (inf_chaselev_deque_inv_inner l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner ι data p) ∗
+      l.(data) ↦□ data ∗
+      inf_chaselev_deque_ctl₂ γ_ctl back priv ∗
+      inf_chaselev_deque_lock γ_lock
+    }}}
+      array.(inf_array_get) !#l.(data) #i
+    {{{
+      RET priv (Z.to_nat (i - back));
+      inf_chaselev_deque_ctl₂ γ_ctl back priv ∗
+      inf_chaselev_deque_lock γ_lock
+    }}}.
+  Proof.
+    iIntros "%Hi %Φ (#Hinv & #Hdata & Hctl₂ & Hlock) HΦ".
+
+    (* → [!#l.(data)] *)
+    wp_load.
+
+    (* open invariant *)
+    iApply fupd_wp. iMod (inv_acc with "Hinv") as "((%front & %_back & %hist & %pub & %_priv & %past & %prophs & Hfront & Hback & >Hctl₁ & Hfront_auth & Hdata_model & Hpub₁ & >%Hpub & Hprophet_model & >%Hpast & Hstate) & Hclose)"; first done.
+    iDestruct (inf_chaselev_deque_ctl_agree with "Hctl₁ Hctl₂") as %(-> & ->).
+    (* we have [0 ≤ back] *)
+    iAssert (◇ ⌜0 ≤ back⌝)%I%Z as "#>%Hback".
+    { (* we have lock, hence we are in state 1 or in state 2 *)
+      iDestruct (inf_chaselev_deque_lock_state with "Hlock Hstate") as "(Hlock & [Hstate | Hstate])";
+        iDestruct "Hstate" as "(>%Hstate & _)"; auto with lia.
+    }
+    (* close invariant *)
+    iMod ("Hclose" with "[- Hctl₂ Hlock HΦ]") as "_".
+    { repeat iExists _. iFrame. done. }
+    iModIntro.
+    clear- Hi Hback.
+
+    (* → [array.(inf_array_get) data #i] *)
+    awp_apply (inf_array_get_spec' with "[//]"); first lia.
+    (* open invariant *)
+    iInv "Hinv" as "(%front & %_back & %hist & %pub & %_priv & %past & %prophs & Hfront & Hback & >Hctl₁ & Hfront_auth & >Hdata_model & Hpub₁ & >%Hpub & Hprophet_model & >%Hpast & Hstate)".
+    iDestruct (inf_chaselev_deque_ctl_agree with "Hctl₁ Hctl₂") as %(-> & ->).
+    (* we have [back = length (hist ++ pub)] *)
+    iAssert (◇ ⌜back = length (hist ++ pub)⌝)%I%Z as "#>%Hback'".
+    { (* we have lock, hence we are in state 1 or in state 2 *)
+      iDestruct (inf_chaselev_deque_lock_state with "Hlock Hstate") as "(Hlock & [Hstate | Hstate])";
+        iDestruct "Hstate" as "(>%Hstate & _ & >%Hhist & _)";
+        iPureIntro; rewrite app_length; lia.
+    }
+    iAaccIntro with "Hdata_model"; iIntros "Hdata_model".
+    { iModIntro. iFrame. repeat iExists _. iFrame. done. }
+    (* close invariant *)
+    iModIntro. iSplitR "Hctl₂ Hlock HΦ".
+    { repeat iExists _. iFrame. done. }
+    iIntros "_".
+    clear- Hi Hback Hback'.
+
+    rewrite decide_False; last lia.
+    assert (Z.to_nat i - length (hist ++ pub) = Z.to_nat (i - back)) as -> by lia.
+    iApply "HΦ". iFrame.
   Qed.
 
   Lemma inf_chaselev_deque_make_spec ι :
@@ -770,39 +891,6 @@ Section inf_chaselev_deque_G.
       iApply "HΦ". repeat iExists _. iFrame "#∗". done.
   Qed.
 
-  #[local] Lemma inf_chaselev_deque_get l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner ι data p i v :
-    {{{
-      inv ι (inf_chaselev_deque_inv_inner l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner ι data p) ∗
-      l.(data) ↦□ data ∗
-      inf_chaselev_deque_hist_frag γ_hist i v
-    }}}
-      array.(inf_array_get) !#l.(data) #i
-    {{{ RET v; True }}}.
-  Proof.
-    iIntros "%Φ (#Hinv & #Hdata & #Hhist_frag) HΦ".
-    wp_load.
-    awp_apply (inf_array_get_spec with "[//]") without "HΦ"; first lia.
-    iInv "Hinv" as "(%front & %back & %hist & %pub & %priv & %past & %prophs & Hfront & Hback & Hctl₁ & Hfront_auth & >Hdata_model & Hpub₁ & >%Hpub & Hprophet_model & >%Hpast & Hstate)".
-    iAssert (◇ ⌜(hist ++ pub) !! i = Some v⌝)%I as "#>%Hlookup".
-    { iDestruct "Hstate" as "[(>%Hstate & >Hhist_auth & >%Hhist & _) | [(>%Hstate & >Hhist_auth & >%Hhist & _) | (_ & [(>%Hstate & >Hhist_auth & >%Hhist & _) | (>%Hstate & >Hhist_auth & >%Hhist & _)])]]";
-        iModIntro;
-        iDestruct (inf_chaselev_deque_hist_agree with "Hhist_auth Hhist_frag") as %?;
-        iPureIntro.
-      - erewrite lookup_app_l_Some; done.
-      - destruct pub as [| w pub]; simpl in *; first lia.
-        rewrite (assoc (++) hist [w]). erewrite lookup_app_l_Some; done.
-      - rewrite (nil_length_inv pub); last lia. list_simplifier. done.
-      - rewrite (nil_length_inv pub); last lia. erewrite lookup_app_l_Some; done.
-    }
-    iAaccIntro with "Hdata_model"; iIntros "Hdata_model".
-    { iModIntro. rewrite right_id. repeat iExists _. iFrame. done. }
-    iModIntro. iSplitL.
-    { repeat iExists _. iFrame. done. }
-    iIntros "_ HΦ".
-    rewrite Nat2Z.id decide_True; last eauto using lookup_lt_Some.
-    erewrite list_lookup_total_correct; last done.
-    iApply ("HΦ" with "[//]").
-  Qed.
   Lemma inf_chaselev_deque_steal_spec t ι :
     <<<
       inf_chaselev_deque_inv t ι |
@@ -830,6 +918,7 @@ Section inf_chaselev_deque_G.
     wp_bind (!#l.(front))%E.
     (* open invariant *)
     iInv "Hinv" as "(%front1 & %back1 & %hist & %pub & %priv & %past1 & %prophs1 & Hfront & Hback & Hctl₁ & Hfront_auth & Hdata_model & Hpub₁ & >%Hpub & Hprophet_model & >%Hpast & Hstate)".
+    (* do load front *)
     wp_load.
     (* emit front fragment at [front1] *)
     iDestruct (inf_chaselev_deque_front_frag_get with "Hfront_auth") as "#Hfront_frag".
@@ -844,6 +933,7 @@ Section inf_chaselev_deque_G.
     wp_bind (!#l.(back))%E.
     (* open invariant *)
     iInv "Hinv" as "(%front2 & %back2 & %hist & %pub & %priv & %past2 & %prophs2 & Hfront & Hback & Hctl₁ & Hfront_auth & Hdata_model & Hpub₁ & >%Hpub & Hprophet_model & >%Hpast & Hstate)".
+    (* do load back *)
     wp_load.
     (* we have [front1 ≤ front2] *)
     iDestruct (inf_chaselev_deque_front_valid with "Hfront_auth Hfront_frag") as %Hfront2.
@@ -1143,7 +1233,7 @@ Section inf_chaselev_deque_G.
       wp_pures.
 
       (* → [array.(inf_array_get) !#l.(data) #front1] *)
-      wp_apply (inf_chaselev_deque_get with "[$Hinv $Hdata $Hhist_frag]"). iIntros "_".
+      wp_apply (inf_chaselev_deque_get_hist with "[$Hinv $Hdata $Hhist_frag]"). iIntros "_".
 
       wp_pures.
 
@@ -1154,7 +1244,7 @@ Section inf_chaselev_deque_G.
           iDestruct (inf_chaselev_deque_winner₂_state_inner₃₁ (SOMEV v) with "Hwinner₂ Hstate") as "(%id' & %Φ' & %Heq & HΦ & Hwinner₁ & Hwinner₂ & _ & HΦ')";
         [clear Heq | naive_solver].
       iModIntro. iExists (front1, true, front1, id). iSplit; first done. iIntros "%prophs3' -> Hprophet_model".
-      (* we know there is no public values and [hist !!! front1 = v] *)
+      (* we know there is no public value and [hist !!! front1 = v] *)
       destruct (nil_or_length_pos pub) as [-> |]; last lia.
       iAssert ⌜hist !!! front1 = v⌝%I as %->.
       { iDestruct (inf_chaselev_deque_hist_agree with "Hhist_auth Hhist_frag") as %Hlookup.
@@ -1179,7 +1269,7 @@ Section inf_chaselev_deque_G.
       wp_pures.
 
       (* → [array.(inf_array_get) !#l.(data) #front1] *)
-      wp_apply (inf_chaselev_deque_get with "[$Hinv $Hdata $Hhist_frag]"). iIntros "_".
+      wp_apply (inf_chaselev_deque_get_hist with "[$Hinv $Hdata $Hhist_frag]"). iIntros "_".
 
       wp_pures.
 
@@ -1200,6 +1290,290 @@ Section inf_chaselev_deque_G.
       RET o; inf_chaselev_deque_owner t
     >>>.
   Proof.
+    iIntros "!> %Φ ((%l & %γ_ctl & %γ_front & %γ_hist & %γ_pub & %γ_lock & %γ_prophet & %γ_winner & %data & %p & -> & #Hmeta_ctl & #Hmeta_front & #Hmeta_hist & #Hmeta_pub & #Hmeta_lock & #Hmeta_prophet & #Hmeta_winner & #Hdata & #Hp & #Hinv) & (%l' & %_γ_ctl & %_γ_lock & %back & %priv & %Heq & #_Hmeta_ctl & #_Hmeta_lock & Hctl₂ & Hlock)) HΦ". injection Heq as <-.
+    iDestruct (meta_agree with "Hmeta_ctl _Hmeta_ctl") as %<-. iClear "_Hmeta_ctl".
+    iDestruct (meta_agree with "Hmeta_lock _Hmeta_lock") as %<-. iClear "_Hmeta_lock".
+
+    wp_rec.
+
+    (* → [NewId] *)
+    wp_apply (wp_new_id with "[//]"). iIntros "%id Hid".
+
+    wp_pures.
+
+    (* → [!#l.(back)] *)
+    wp_bind (!#l.(back))%E.
+    (* open invariant *)
+    iInv "Hinv" as "(%front1 & %_back & %hist & %pub & %_priv & %past1 & %prophs1 & Hfront & Hback & >Hctl₁ & Hfront_auth & Hdata_model & Hpub₁ & >%Hpub & Hprophet_model & >%Hpast1 & Hstate)".
+    iDestruct (inf_chaselev_deque_ctl_agree with "Hctl₁ Hctl₂") as %(-> & ->).
+    (* do load back *)
+    wp_load.
+    (* close invariant *)
+    iModIntro. iSplitR "Hctl₂ Hlock HΦ".
+    { repeat iExists _. iFrame. done. }
+    clear.
+
+    wp_pures.
+
+    (* → [#l.(back) <- #(back - 1)] *)
+    wp_bind (#l.(back) <- #(back - 1))%E.
+    (* open invariant *)
+    iInv "Hinv" as "(%front2 & %_back & %hist & %pub & %_priv & %past2 & %prophs2 & Hfront & Hback & >Hctl₁ & Hfront_auth & Hdata_model & Hpub₁ & >%Hpub & Hprophet_model & >%Hpast2 & Hstate)".
+    iDestruct (inf_chaselev_deque_ctl_agree with "Hctl₁ Hctl₂") as %(-> & ->).
+    (* do decrement back *)
+    wp_store.
+    (* update back in control tokens *)
+    iMod (inf_chaselev_deque_ctl_update (back - 1) priv with "Hctl₁ Hctl₂") as "(Hctl₁ & Hctl₂)".
+    (* branching 1 *)
+    (* we have lock, hence we are in state 1 or in state 2 *)
+    (* if we are in state 2, there is either one public value or strictly more than one public value *)
+    iDestruct (inf_chaselev_deque_lock_state with "Hlock Hstate") as "(Hlock & [Hstate | Hstate])";
+      iDestruct "Hstate" as "(%Hstate & Hhist_auth & %Hhist & Hstate)";
+      last (destruct (Z.lt_total (S front2) back) as [Hstate' | [Hstate' |]]; last lia).
+
+    (* branch 1.1: [front2 = back]; empty deque *)
+    - subst back.
+      (* emit front fragment at [front2] *)
+      iDestruct (inf_chaselev_deque_front_frag_get with "Hfront_auth") as "#Hfront_frag".
+      (* close invariant *)
+      iModIntro. iSplitR "Hctl₂ HΦ".
+      { iExists front2, (front2 - 1)%Z, hist, pub, priv, past2, prophs2. iFrame.
+        iSplit; first auto with lia.
+        iSplit; first done.
+        do 2 iRight. iFrame. iRight. iSplit; first auto with lia. naive_solver.
+      }
+      clear.
+
+      wp_pures.
+
+      (* → [!#l.(front)] *)
+      wp_bind (!#l.(front))%E.
+      (* open invariant *)
+      iInv "Hinv" as "(%front3 & %_back & %hist & %pub & %_priv & %past3 & %prophs3 & Hfront & Hback & >Hctl₁ & Hfront_auth & Hdata_model & Hpub₁ & >%Hpub & Hprophet_model & >%Hpast3 & Hstate)".
+      iDestruct (inf_chaselev_deque_ctl_agree with "Hctl₁ Hctl₂") as %(-> & ->).
+      (* do load front *)
+      wp_load.
+      (* we are in state 3.2 *)
+      iDestruct (inf_chaselev_deque_front_state₃₂ with "Hfront_auth Hfront_frag Hstate") as "(-> & Hfront_auth & Hlock & Hstate)".
+      (* close invariant *)
+      iModIntro. iSplitR "Hctl₂ HΦ".
+      { iExists front2, (front2 - 1)%Z, hist, pub, priv, past3, prophs3. iFrame.
+        iSplit; first auto with lia.
+        iSplit; first done.
+        do 2 iRight. iFrame.
+      }
+      clear.
+
+      wp_pures.
+
+      (* → [if: #(bool_decide (back - 1 < back))] *)
+      rewrite bool_decide_eq_true_2; last lia.
+
+      wp_pures.
+
+      (* → [#l.(back) <- #front2] *)
+      wp_bind (#l.(back) <- #front2)%E.
+      (* open invariant *)
+      iInv "Hinv" as "(%front4 & %_back & %hist & %pub & %_priv & %past4 & %prophs4 & Hfront & Hback & >Hctl₁ & Hfront_auth & Hdata_model & Hpub₁ & >%Hpub & Hprophet_model & >%Hpast4 & Hstate)".
+      iDestruct (inf_chaselev_deque_ctl_agree with "Hctl₁ Hctl₂") as %(-> & ->).
+      (* do increment back *)
+      wp_store.
+      (* update back in control tokens *)
+      iMod (inf_chaselev_deque_ctl_update front2 priv with "Hctl₁ Hctl₂") as "(Hctl₁ & Hctl₂)".
+      (* we are in state 3.2 *)
+      iDestruct (inf_chaselev_deque_front_state₃₂ with "Hfront_auth Hfront_frag Hstate") as "(-> & Hfront_auth & Hlock & (%state & Hhist_auth & %Hhist & Hstate))".
+      (* hence there is no public value *)
+      destruct (nil_or_length_pos pub) as [-> |]; last lia.
+      (* begin transaction *)
+      iMod "HΦ" as "(%_pub & (%_l & %_γ_pub & %Heq & #_Hmeta_pub & Hpub₂) & _ & HΦ)". injection Heq as <-.
+      iDestruct (meta_agree with "Hmeta_pub _Hmeta_pub") as %<-.
+      iDestruct (inf_chaselev_deque_pub_agree with "Hpub₁ Hpub₂") as %<-.
+      (* end transaction *)
+      iMod ("HΦ" $! NONEV with "[Hpub₂]") as "HΦ".
+      { iLeft. iSplit; first done. repeat iExists _. naive_solver. }
+      (* close invariant *)
+      iModIntro. iSplitR "Hctl₂ Hlock HΦ".
+      { iExists front2, front2, hist, [], priv, past4, prophs4. iFrame.
+        iSplit; first auto with lia.
+        iSplit; first done.
+        iLeft. iFrame. done.
+      }
+      clear.
+
+      wp_pures.
+
+      iApply "HΦ". repeat iExists _. iFrame "∗#". done.
+
+    (* branch 1.2: front2 + 1 < back; no conflict *)
+    - (* there is stricly more than one public value *)
+      generalize dependent pub. refine (rev_ind _ _ _); simpl; [lia | intros v pub _ Hpub].
+      destruct pub as [| w pub]; rewrite app_length /= in Hpub; first lia.
+      (* update data model *)
+      iEval (rewrite assoc) in "Hdata_model".
+      iDestruct (inf_array_model'_shift_r with "Hdata_model") as "Hdata_model".
+      (* update private values in control tokens *)
+      set (priv' := λ i, match i with 0 => v | S i => priv i end).
+      iMod (inf_chaselev_deque_ctl_update (back - 1) priv' with "Hctl₁ Hctl₂") as "(Hctl₁ & Hctl₂)".
+      (* begin transaction *)
+      iMod "HΦ" as "(%_pub & (%_l & %_γ_pub & %Heq & #_Hmeta_pub & Hpub₂) & (_ & HΦ))". injection Heq as <-.
+      iDestruct (meta_agree with "Hmeta_pub _Hmeta_pub") as %<-. iClear "_Hmeta_pub".
+      iDestruct (inf_chaselev_deque_pub_agree with "Hpub₁ Hpub₂") as %<-.
+      (* update public values *)
+      iMod (inf_chaselev_deque_pub_update (w :: pub) with "Hpub₁ Hpub₂") as "(Hpub₁ & Hpub₂)".
+      (* end transaction *)
+      iMod ("HΦ" with "[Hpub₂]") as "HΦ".
+      { iRight. repeat iExists _. iSplit; first done. repeat iExists _. naive_solver. }
+      (* close invariant *)
+      iModIntro. iSplitR "Hctl₂ Hlock HΦ".
+      { iExists front2, (back - 1)%Z, hist, (w :: pub), priv', past2, prophs2. iFrame.
+        iSplit. { iPureIntro. simpl. lia. }
+        iSplit; first done.
+        iRight. iLeft. iFrame. iSplit; auto with lia.
+      }
+      clear.
+
+      wp_pures.
+
+      (* → [!#l.(front)] *)
+      wp_bind (!#l.(front))%E.
+      (* open invariant *)
+      iInv "Hinv" as "(%front3 & %_back & %hist & %pub & %_priv & %past3 & %prophs3 & Hfront & Hback & >Hctl₁ & Hfront_auth & Hdata_model & Hpub₁ & >%Hpub & Hprophet_model & >%Hpast3 & Hstate)".
+      iDestruct (inf_chaselev_deque_ctl_agree with "Hctl₁ Hctl₂") as %(-> & ->).
+      (* do load front *)
+      wp_load.
+      (* we have lock, hence we are in state 1 or in state 2, hence [front3 ≤ back - 1] *)
+      iAssert ⌜front3 ≤ back - 1⌝%I%Z as %Hfront3.
+      { iDestruct (inf_chaselev_deque_lock_state with "Hlock Hstate") as "(Hlock & [Hstate | Hstate])";
+          iDestruct "Hstate" as "(%Hstate & _)"; auto with lia.
+      }
+      (* emit front fragment at [front3] *)
+      iDestruct (inf_chaselev_deque_front_frag_get with "Hfront_auth") as "#Hfront_frag".
+      (* close invariant *)
+      iModIntro. iSplitR "Hctl₂ Hlock HΦ".
+      { repeat iExists _. iFrame. done. }
+      clear- Hfront3.
+
+      wp_pures.
+
+      (* → [if: #(bool_decide (back - 1 < front3))] *)
+      rewrite bool_decide_eq_false_2; last lia.
+
+      wp_pures.
+
+      (* branching 2 *)
+      (* we may or may not have seen an empty deque *)
+      rewrite Z.le_lteq in Hfront3. destruct Hfront3 as [Hfront3 | <-].
+
+      (* branch 2.1: [front3 < back - 1] *)
+      + (* → [if: #(bool_decide (back - 1 < front3))] *)
+        rewrite bool_decide_eq_true_2; last lia.
+
+        wp_pures.
+
+        (* → [array.(inf_array_get) !#l.(data) #(back - 1)] *)
+        wp_apply (inf_chaselev_deque_get_priv with "[$Hinv $Hdata $Hctl₂ $Hlock]"); first done. iIntros "(Hctl₂ & Hlock)".
+
+        wp_pures.
+
+        rewrite Z.sub_diag /=.
+        iApply "HΦ". repeat iExists _. iFrame "#∗". done.
+
+      (* branch 2.2: [front3 = back - 1] *)
+      + (* → [if: #(bool_decide (front3 < front3))] *)
+        rewrite bool_decide_eq_false_2; last lia.
+
+        wp_pures.
+
+        (* → [!#l.(prophecy)] *)
+        wp_load.
+
+        wp_pures.
+
+        (* → [Resolve (CmpXchg #l.(front) #front3 #(front3 + 1)) #p (#front3, #id)] *)
+        wp_bind (Resolve (CmpXchg #l.(front) #front3 #(front3 + 1)) #p (#front3, #id)%V).
+        (* open invariant *)
+        iInv "Hinv" as "(%front4 & %_back & %hist & %pub & %_priv & %past4 & %prophs4 & Hfront & Hback & >Hctl₁ & >Hfront_auth & Hdata_model & Hpub₁ & >%Hpub & >Hprophet_model & >%Hpast & Hstate)".
+        iDestruct (inf_chaselev_deque_ctl_agree with "Hctl₁ Hctl₂") as %(-> & ->).
+        (* we have lock, hence we are in state 1 or in state 2 *)
+        iDestruct (inf_chaselev_deque_lock_state with "Hlock Hstate") as "(Hlock & [Hstate | Hstate])";
+          iDestruct "Hstate" as "(>%Hstate & Hhist_auth & >%Hhist & Hstate)";
+          last first.
+        { (* state 2 is actually impossible *)
+          iDestruct (inf_chaselev_deque_front_valid with "Hfront_auth Hfront_frag") as %?.
+          lia.
+        }
+        apply (inj _) in Hstate as ->.
+        (* do resolve *)
+        wp_apply (wise_prophet_resolve_spec with "Hprophet_model"); first done.
+        (* CmpXchg must succeed *)
+        wp_cmpxchg_suc.
+        iModIntro. iExists (front3, true, front3, id). iSplit; first done. iIntros "%prophs4' -> Hprophet_model".
+        (* update front authority *)
+        iMod (inf_chaselev_deque_front_auth_update (S front3) with "Hfront_auth") as "Hfront_auth"; first lia.
+        (* emit front fragment at [front3 + 1] *)
+        iClear "Hfront_frag".
+        iDestruct (inf_chaselev_deque_front_frag_get with "Hfront_auth") as "#Hfront_frag".
+        (* we know there is no public value *)
+        assert (length pub = 0) as ->%length_zero_iff_nil by lia. clear Hpub.
+        (* update history values *)
+        set (hist' := hist ++ [v]).
+        iMod (inf_chaselev_deque_hist_update v with "Hhist_auth") as "Hhist_auth".
+        (* emit history fragment at [front3] *)
+        iDestruct (inf_chaselev_deque_hist_frag_get front3 v with "Hhist_auth") as "#Hhist_frag".
+        { rewrite lookup_app_r; last lia. rewrite Hhist Nat.sub_diag //. }
+        (* update private values in control tokens *)
+        iMod (inf_chaselev_deque_ctl_update front3 priv with "Hctl₁ Hctl₂") as "(Hctl₁ & Hctl₂)".
+        (* update data model *)
+        iDestruct (inf_array_model'_shift_l with "Hdata_model") as "Hdata_model"; first by intros [].
+        (* close invariant *)
+        iModIntro. iSplitR "Hctl₂ HΦ".
+        { iExists (S front3), front3, (hist ++ [v]), [], priv, (past4 ++ [_]), prophs4'. iFrame.
+          iSplitL "Hfront". { assert (front3 + 1 = S front3)%Z as -> by lia. done. }
+          iSplitL "Hdata_model"; first rewrite !right_id //.
+          iSplit. { iPureIntro. simpl. lia. }
+          iSplit.
+          { iPureIntro. rewrite Forall_app Forall_singleton. split; last lia.
+            eapply Forall_impl; first done. intros (((? & ?) & ?) & ?) ?. lia.
+          }
+          do 2 iRight. iFrame. iRight. iFrame. iSplit; first auto with lia.
+          iPureIntro. rewrite app_length /=. lia.
+        }
+        clear.
+
+        wp_pures.
+
+        (* → [#l.(back) <- #(front3 + 1)] *)
+        wp_bind (#l.(back) <- #(front3 + 1))%E.
+        (* open invariant *)
+        iInv "Hinv" as "(%front5 & %_back & %hist & %pub & %_priv & %past5 & %prophs5 & Hfront & Hback & >Hctl₁ & Hfront_auth & Hdata_model & Hpub₁ & >%Hpub & Hprophet_model & >%Hpast2 & Hstate)".
+        iDestruct (inf_chaselev_deque_ctl_agree with "Hctl₁ Hctl₂") as %(-> & ->).
+        (* do increment back *)
+        wp_store.
+        (* update [back] in control tokens *)
+        iMod (inf_chaselev_deque_ctl_update (front3 + 1) priv with "Hctl₁ Hctl₂") as "(Hctl₁ & Hctl₂)".
+        (* we are in state 3.2 *)
+        iEval (assert (S front3 - 1 = front3)%Z as <- by lia) in "Hstate".
+        iDestruct (inf_chaselev_deque_front_state₃₂ with "Hfront_auth Hfront_frag Hstate") as "(-> & Hfront_auth & Hlock & (%Hstate & Hhist_auth & %Hhist & Hstate))".
+        (* close invariant *)
+        iModIntro. iSplitR "Hctl₂ Hlock HΦ".
+        { iExists (S front3), (front3 + 1)%Z, hist, pub, priv, past5, prophs5. iFrame.
+          iSplit; first auto with lia.
+          iSplit; first done.
+          iLeft. iFrame. iSplit; first auto with lia. done.
+        }
+        clear.
+
+        wp_pures.
+
+        (* → [array.(inf_array_get) !#l.(data) #front3] *)
+        wp_apply (inf_chaselev_deque_get_hist with "[$Hinv $Hdata $Hhist_frag]"). iIntros "_".
+
+        wp_pures.
+
+        iApply "HΦ". repeat iExists _. iFrame "#∗". done.
+
+    (* branch 1.3: [front2 + 1 = back]; potential conflict *)
+    - admit.
   Admitted.
 
   Lemma inf_chaselev_deque_unboxed t ι :
