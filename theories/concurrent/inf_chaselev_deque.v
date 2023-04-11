@@ -306,7 +306,7 @@ Section inf_chaselev_deque_G.
     ⌜length hist = front⌝ ∗
     (* inner state *)
     inf_chaselev_deque_state_inner₃₂ γ_winner.
-  #[local] Definition inf_chaselev_deque_state₃ γ_hist γ_lock γ_winner front back hist pub prophs : iProp Σ :=
+  #[local] Definition inf_chaselev_deque_state₃ γ_hist γ_lock γ_winner front back hist prophs : iProp Σ :=
     inf_chaselev_deque_lock γ_lock ∗
     ( inf_chaselev_deque_state₃₁ γ_hist γ_winner front back hist prophs
     ∨ inf_chaselev_deque_state₃₂ γ_hist γ_winner front back hist
@@ -314,12 +314,13 @@ Section inf_chaselev_deque_G.
   #[local] Definition inf_chaselev_deque_state γ_hist γ_pub γ_lock γ_winner ι front back hist pub prophs : iProp Σ :=
       inf_chaselev_deque_state₁ γ_hist γ_winner front back hist
     ∨ inf_chaselev_deque_state₂ γ_hist γ_pub γ_winner ι front back hist pub prophs
-    ∨ inf_chaselev_deque_state₃ γ_hist γ_lock γ_winner front back hist pub prophs.
+    ∨ inf_chaselev_deque_state₃ γ_hist γ_lock γ_winner front back hist prophs.
 
   #[local] Definition inf_chaselev_deque_inv_inner l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner ι data p : iProp Σ :=
     ∃ front back hist pub priv past prophs,
     (* mutable physical fields *)
-    l.(front) ↦ #front ∗ l.(back) ↦ #back ∗
+    l.(front) ↦ #front ∗
+    l.(back) ↦ #back ∗
     (* control token *)
     inf_chaselev_deque_ctl₁ γ_ctl back priv ∗
     (* front authority *)
@@ -526,13 +527,17 @@ Section inf_chaselev_deque_G.
     ⊢ |==> ∃ γ_winner,
       inf_chaselev_deque_winner γ_winner.
   Proof.
-  Admitted.
+    iMod (auth_excl_alloc' (auth_excl_G := inf_chaselev_deque_G_winner_G) (inhabitant, λ _, Next inhabitant)) as "(%γ_winner & Hwinner₁ & Hwinner₂)".
+    repeat iExists _. iFrame. done.
+  Qed.
   #[local] Lemma inf_chaselev_deque_winner₂_exclusive γ_winner front Φ :
     inf_chaselev_deque_winner₂ γ_winner front Φ -∗
     inf_chaselev_deque_winner γ_winner -∗
     False.
   Proof.
-  Admitted.
+    iIntros "Hwinner₂ (%front' & %Φ1 & %Φ2 & Hwinner₁ & Hwinner₂')".
+    iApply (auth_excl_auth_exclusive with "Hwinner₂ Hwinner₂'").
+  Qed.
   #[local] Lemma inf_chaselev_deque_winner_agree {γ_winner front1 Φ1 front2 Φ2} v :
     inf_chaselev_deque_winner₁ γ_winner front1 Φ1 -∗
     inf_chaselev_deque_winner₂ γ_winner front2 Φ2 -∗
@@ -541,14 +546,22 @@ Section inf_chaselev_deque_G.
       inf_chaselev_deque_winner₁ γ_winner front1 Φ1 ∗
       inf_chaselev_deque_winner₂ γ_winner front1 Φ2.
   Proof.
-  Admitted.
+    iIntros "Hwinner₁ Hwinner₂".
+    iDestruct (auth_excl_agree with "Hwinner₂ Hwinner₁") as "#HΦ".
+    rewrite prod_equivI /=. iDestruct "HΦ" as "(% & HΦ)". simplify.
+    iFrame. iSplit; first done.
+    rewrite discrete_fun_equivI. iDestruct ("HΦ" $! v) as "HΦv". rewrite later_equivI.
+    iNext. iRewrite "HΦv". done.
+  Qed.
   #[local] Lemma inf_chaselev_deque_winner_update {γ_winner front1 Φ1 front2 Φ2} front Φ :
     inf_chaselev_deque_winner₁ γ_winner front1 Φ1 -∗
     inf_chaselev_deque_winner₂ γ_winner front2 Φ2 ==∗
       inf_chaselev_deque_winner₁ γ_winner front Φ ∗
       inf_chaselev_deque_winner₂ γ_winner front Φ.
   Proof.
-  Admitted.
+    iIntros "Hwinner₁ Hwinner₂".
+    iMod (auth_excl_update (auth_excl_G := inf_chaselev_deque_G_winner_G) (front, Next ∘ Φ) with "Hwinner₂ Hwinner₁") as "($ & $)"; done.
+  Qed.
   #[local] Lemma inf_chaselev_deque_winner₂_state_inner₂ {γ_winner γ_pub ι front1 front2 prophs Φ} v :
     inf_chaselev_deque_winner₂ γ_winner front1 Φ -∗
     inf_chaselev_deque_state_inner₂ γ_pub γ_winner ι front2 prophs -∗
@@ -1237,7 +1250,7 @@ Section inf_chaselev_deque_G.
 
       wp_pures.
 
-      iRewrite- "HΦ". done.
+      iRewrite -"HΦ". done.
 
     - (* CmpXchg must succeed as we are the next winner *)
       wp_cmpxchg as [= ->%(inj _)] | Hbranch4;
@@ -1273,7 +1286,7 @@ Section inf_chaselev_deque_G.
 
       wp_pures.
 
-      iRewrite- "HΦ". done.
+      iRewrite -"HΦ". done.
   Qed.
 
   Lemma inf_chaselev_deque_pop_spec t ι :

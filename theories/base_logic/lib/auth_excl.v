@@ -7,6 +7,8 @@ From caml5 Require Export
   base.
 From caml5.algebra Require Import
   lib.auth_excl.
+From caml5.base_logic Require Import
+  algebra.auth_excl.
 
 Class AuthExclG Σ F := {
   auth_excl_G_inG : inG Σ (auth_excl_R $ oFunctor_apply F $ iPropO Σ) ;
@@ -103,127 +105,139 @@ Section auth_excl_G.
     iApply auth_excl_update. done.
   Qed.
 
-  (* Lemma auth_excl_auth_valid γ dq a : *)
-  (*   auth_excl_auth γ dq a -∗ *)
-  (*   ⌜✓ dq⌝. *)
-  (* Proof. *)
-  (*   iIntros "H●". *)
-  (*   iDestruct (own_valid with "H●") as "H". *)
-  (*   iDestruct (auth_auth_dfrac_validI with "H") as "($ & _)". *)
-  (* Qed. *)
-  (* Lemma auth_excl_auth_combine γ dq1 a1 dq2 a2 : *)
-  (*   auth_excl_auth γ dq1 a1 -∗ *)
-  (*   auth_excl_auth γ dq2 a2 -∗ *)
-  (*     auth_excl_auth γ (dq1 ⋅ dq2) a1 ∗ *)
-  (*     a1 ≡ a2. *)
-  (* Proof. *)
-  (*   iIntros "H●1 H●2". iCombine "H●1 H●2" as "H●". *)
-  (*   rewrite own_proper; last first. *)
-  (*   { rewrite -auth_excl_auth_dfrac_op. *)
-  (*   auth_excl_auth_dfrac_op *)
-  (*   iDestruct (own_valid with "H●") as %(? & Heq)%auth_excl_auth_dfrac_op_valid. *)
-  (*   iEval (rewrite -Heq -auth_excl_auth_dfrac_op) in "H●". *)
-  (*   naive_solver. *)
-  (* Qed. *)
-  Section discrete.
+  Lemma auth_excl_auth_valid γ dq a :
+    auth_excl_auth γ dq a -∗
+    ⌜✓ dq⌝.
+  Proof.
+    iIntros "H●".
+    iApply auth_excl_auth_dfrac_validI. iApply (own_valid with "H●").
+  Qed.
+  Lemma auth_excl_auth_combine γ dq1 a1 dq2 a2 :
+    auth_excl_auth γ dq1 a1 -∗
+    auth_excl_auth γ dq2 a2 -∗
+      auth_excl_auth γ (dq1 ⋅ dq2) a1 ∗
+      a1 ≡ a2.
+  Proof.
+    iIntros "H●1 H●2". iCombine "H●1 H●2" as "H●".
+    iDestruct (own_valid with "H●") as "#Hvalid".
+    iDestruct (auth_excl_auth_dfrac_op_validI with "Hvalid") as "(% & Hequiv)".
+    iRewrite -"Hequiv" in "H●". rewrite -auth_excl_auth_dfrac_op.
+    naive_solver.
+  Qed.
+  Lemma auth_excl_auth_valid_2 γ dq1 a1 dq2 a2 :
+    auth_excl_auth γ dq1 a1 -∗
+    auth_excl_auth γ dq2 a2 -∗
+    ⌜✓ (dq1 ⋅ dq2)⌝ ∧ a1 ≡ a2.
+  Proof.
+    iIntros "H●1 H●2".
+    iDestruct (auth_excl_auth_combine with "H●1 H●2") as "(H● & $)".
+    iDestruct (auth_excl_auth_valid with "H●") as "$".
+  Qed.
+  Lemma auth_excl_auth_agree γ dq1 a1 dq2 a2 :
+    auth_excl_auth γ dq1 a1 -∗
+    auth_excl_auth γ dq2 a2 -∗
+    a1 ≡ a2.
+  Proof.
+    iIntros "H●1 H●2".
+    iDestruct (auth_excl_auth_valid_2 with "H●1 H●2") as "(_ & $)".
+  Qed.
+  Lemma auth_excl_auth_exclusive γ a1 a2 :
+    auth_excl_auth γ (DfracOwn 1) a1 -∗
+    auth_excl_auth γ (DfracOwn 1) a2 -∗
+    False.
+  Proof.
+    iIntros "H●1 H●2".
+    iDestruct (auth_excl_auth_valid_2 with "H●1 H●2") as "(% & _)". done.
+  Qed.
+
+  Lemma auth_excl_frag_exclusive γ a1 a2 :
+    auth_excl_frag γ a1 -∗
+    auth_excl_frag γ a2 -∗
+    False.
+  Proof.
+    iIntros "H◯1 H◯2".
+    iApply auth_excl_frag_op_validI. iApply (own_valid_2 with "H◯1 H◯2").
+  Qed.
+
+  Lemma auth_excl_agree γ dq a b :
+    auth_excl_auth γ dq a -∗
+    auth_excl_frag γ b -∗
+    a ≡ b.
+  Proof.
+    iIntros "H● H◯".
+    iDestruct (own_valid_2 with "H● H◯") as "Hvalid".
+    iDestruct (auth_excl_both_dfrac_validI with "Hvalid") as "(_ & $)".
+  Qed.
+
+  Section ofe_discrete.
     Context `{!OfeDiscrete $ oFunctor_apply F $ iPropO Σ}.
 
-    Lemma auth_excl_auth_valid γ dq a :
-      auth_excl_auth γ dq a -∗
-      ⌜✓ dq⌝.
-    Proof.
-      iIntros. iDestruct (own_valid with "[$]") as %?%auth_excl_auth_dfrac_valid. done.
-    Qed.
-    Lemma auth_excl_auth_combine γ dq1 a1 dq2 a2 :
+    Lemma auth_excl_auth_combine_discrete γ dq1 a1 dq2 a2 :
       auth_excl_auth γ dq1 a1 -∗
       auth_excl_auth γ dq2 a2 -∗
         auth_excl_auth γ (dq1 ⋅ dq2) a1 ∗
         ⌜a1 ≡ a2⌝.
     Proof.
-      iIntros "H●1 H●2". iCombine "H●1 H●2" as "H●".
-      iDestruct (own_valid with "H●") as %(? & Heq)%auth_excl_auth_dfrac_op_valid.
-      iEval (rewrite -Heq -auth_excl_auth_dfrac_op) in "H●".
-      naive_solver.
+      rewrite -discrete_eq auth_excl_auth_combine //.
     Qed.
-    Lemma auth_excl_auth_combine_L `{!LeibnizEquiv $ oFunctor_apply F $ iPropO Σ} γ dq1 a1 dq2 a2 :
-      auth_excl_auth γ dq1 a1 -∗
-      auth_excl_auth γ dq2 a2 -∗
-        auth_excl_auth γ (dq1 ⋅ dq2) a1 ∗
-        ⌜a1 = a2⌝.
-    Proof.
-      iIntros "H●1 H●2".
-      iDestruct (auth_excl_auth_combine with "H●1 H●2") as "($ & %)". naive_solver.
-    Qed.
-    Lemma auth_excl_auth_valid_2 γ dq1 a1 dq2 a2 :
+    Lemma auth_excl_auth_valid_2_discrete γ dq1 a1 dq2 a2 :
       auth_excl_auth γ dq1 a1 -∗
       auth_excl_auth γ dq2 a2 -∗
       ⌜✓ (dq1 ⋅ dq2) ∧ a1 ≡ a2⌝.
     Proof.
-      iIntros "H●1 H●2".
-      iDestruct (auth_excl_auth_combine with "H●1 H●2") as "(H● & %)".
-      iDestruct (auth_excl_auth_valid with "H●") as %?.
-      done.
+      rewrite bi.pure_and -discrete_eq auth_excl_auth_valid_2 //.
     Qed.
-    Lemma auth_excl_auth_valid_2_L `{!LeibnizEquiv $ oFunctor_apply F $ iPropO Σ} γ dq1 a1 dq2 a2 :
-      auth_excl_auth γ dq1 a1 -∗
-      auth_excl_auth γ dq2 a2 -∗
-      ⌜✓ (dq1 ⋅ dq2) ∧ a1 = a2⌝.
-    Proof.
-      iIntros "H●1 H●2".
-      iDestruct (auth_excl_auth_valid_2 with "H●1 H●2") as %?. naive_solver.
-    Qed.
-    Lemma auth_excl_auth_agree γ dq1 a1 dq2 a2 :
+    Lemma auth_excl_auth_agree_discrete γ dq1 a1 dq2 a2 :
       auth_excl_auth γ dq1 a1 -∗
       auth_excl_auth γ dq2 a2 -∗
       ⌜a1 ≡ a2⌝.
     Proof.
-      iIntros "H●1 H●2".
-      iDestruct (auth_excl_auth_valid_2 with "H●1 H●2") as %?. naive_solver.
-    Qed.
-    Lemma auth_excl_auth_agree_L `{!LeibnizEquiv $ oFunctor_apply F $ iPropO Σ} γ dq1 a1 dq2 a2 :
-      auth_excl_auth γ dq1 a1 -∗
-      auth_excl_auth γ dq2 a2 -∗
-      ⌜a1 = a2⌝.
-    Proof.
-      iIntros "H●1 H●2".
-      iDestruct (auth_excl_auth_agree with "H●1 H●2") as %?. naive_solver.
-    Qed.
-    Lemma auth_excl_auth_exclusive γ a1 a2 :
-      auth_excl_auth γ (DfracOwn 1) a1 -∗
-      auth_excl_auth γ (DfracOwn 1) a2 -∗
-      False.
-    Proof.
-      iIntros "H●1 H●2".
-      iDestruct (auth_excl_auth_valid_2 with "H●1 H●2") as %(? & _). done.
+      rewrite -discrete_eq auth_excl_auth_agree //.
     Qed.
 
-    Lemma auth_excl_frag_exclusive γ a1 a2 :
-      auth_excl_frag γ a1 -∗
-      auth_excl_frag γ a2 -∗
-      False.
-    Proof.
-      iIntros "H◯1 H◯2".
-      iDestruct (own_valid_2 with "H◯1 H◯2") as %[]%auth_excl_frag_op_valid.
-    Qed.
-
-    Lemma auth_excl_agree γ dq a b :
+    Lemma auth_excl_agree_discrete γ dq a b :
       auth_excl_auth γ dq a -∗
       auth_excl_frag γ b -∗
       ⌜a ≡ b⌝.
     Proof.
-      iIntros "H● H◯".
-      iDestruct (own_valid_2 with "H● H◯") as %?%auth_excl_both_dfrac_valid.
-      naive_solver.
+      rewrite -discrete_eq auth_excl_agree //.
     Qed.
-    Lemma auth_excl_agree_L `{!LeibnizEquiv $ oFunctor_apply F $ iPropO Σ} γ dq a b :
-      auth_excl_auth γ dq a -∗
-      auth_excl_frag γ b -∗
-      ⌜a = b⌝.
-    Proof.
-      iIntros "H● H◯".
-      iDestruct (auth_excl_agree with "H● H◯") as %?. naive_solver.
-    Qed.
-  End discrete.
+
+    Section leibniz_equiv.
+      Context `{!LeibnizEquiv $ oFunctor_apply F $ iPropO Σ}.
+
+      Lemma auth_excl_auth_combine_L γ dq1 a1 dq2 a2 :
+        auth_excl_auth γ dq1 a1 -∗
+        auth_excl_auth γ dq2 a2 -∗
+          auth_excl_auth γ (dq1 ⋅ dq2) a1 ∗
+          ⌜a1 = a2⌝.
+      Proof.
+        rewrite -leibniz_equiv_iff auth_excl_auth_combine_discrete //.
+      Qed.
+      Lemma auth_excl_auth_valid_2_L γ dq1 a1 dq2 a2 :
+        auth_excl_auth γ dq1 a1 -∗
+        auth_excl_auth γ dq2 a2 -∗
+        ⌜✓ (dq1 ⋅ dq2) ∧ a1 = a2⌝.
+      Proof.
+        rewrite -leibniz_equiv_iff auth_excl_auth_valid_2_discrete //.
+      Qed.
+      Lemma auth_excl_auth_agree_L γ dq1 a1 dq2 a2 :
+        auth_excl_auth γ dq1 a1 -∗
+        auth_excl_auth γ dq2 a2 -∗
+        ⌜a1 = a2⌝.
+      Proof.
+        rewrite -leibniz_equiv_iff auth_excl_auth_agree_discrete //.
+      Qed.
+
+      Lemma auth_excl_agree_L γ dq a b :
+        auth_excl_auth γ dq a -∗
+        auth_excl_frag γ b -∗
+        ⌜a = b⌝.
+      Proof.
+        rewrite -leibniz_equiv_iff auth_excl_agree_discrete //.
+      Qed.
+    End leibniz_equiv.
+  End ofe_discrete.
 End auth_excl_G.
 
 #[global] Opaque auth_excl_auth.

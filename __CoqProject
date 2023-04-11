@@ -29,6 +29,7 @@ theories/algebra/lib/auth_Z_max.v
 theories/algebra/lib/auth_Z_min.v
 theories/algebra/lib/mono_state.v
 
+theories/base_logic/algebra/auth_excl.v
 theories/base_logic/lib/agree.v
 theories/base_logic/lib/excl.v
 theories/base_logic/lib/auth_excl.v
