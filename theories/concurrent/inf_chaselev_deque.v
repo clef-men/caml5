@@ -423,16 +423,17 @@ Section inf_chaselev_deque_G.
   Proof.
     iApply auth_nat_max_frag_get.
   Qed.
-  #[local] Lemma inf_chaselev_deque_front_state₃₂ γ_front γ_hist γ_pub γ_lock γ_winner ι front front' hist pub prophs :
-    inf_chaselev_deque_front_auth γ_front front' -∗
-    inf_chaselev_deque_front_frag γ_front front -∗
-    inf_chaselev_deque_state γ_hist γ_pub γ_lock γ_winner ι front' (front - 1) hist pub prophs -∗
-      ⌜front' = front⌝ ∗
-      inf_chaselev_deque_front_auth γ_front front ∗
+  #[local] Lemma inf_chaselev_deque_front_state₃₂ γ_front γ_hist γ_pub γ_lock γ_winner ι front front' back hist pub prophs :
+    back = (front' - 1)%Z →
+    inf_chaselev_deque_front_auth γ_front front -∗
+    inf_chaselev_deque_front_frag γ_front front' -∗
+    inf_chaselev_deque_state γ_hist γ_pub γ_lock γ_winner ι front back hist pub prophs -∗
+      ⌜front = front'⌝ ∗
+      inf_chaselev_deque_front_auth γ_front front' ∗
       inf_chaselev_deque_lock γ_lock ∗
-      inf_chaselev_deque_state₃₂ γ_hist γ_winner front (front - 1) hist.
+      inf_chaselev_deque_state₃₂ γ_hist γ_winner front' back hist.
   Proof.
-    iIntros "Hfront_auth #Hfront_frag Hstate".
+    iIntros (->) "Hfront_auth #Hfront_frag Hstate".
     iDestruct (inf_chaselev_deque_front_valid with "Hfront_auth Hfront_frag") as %Hle.
     iDestruct "Hstate" as "[Hstate | [Hstate | (Hlock & [Hstate | Hstate])]]";
       iDestruct "Hstate" as "(%Hstate & Hhist_auth & %Hhist & Hstate)";
@@ -1367,7 +1368,7 @@ Section inf_chaselev_deque_G.
       (* do load front *)
       wp_load.
       (* we are in state 3.2 *)
-      iDestruct (inf_chaselev_deque_front_state₃₂ with "Hfront_auth Hfront_frag Hstate") as "(-> & Hfront_auth & Hlock & Hstate)".
+      iDestruct (inf_chaselev_deque_front_state₃₂ with "Hfront_auth Hfront_frag Hstate") as "(-> & Hfront_auth & Hlock & Hstate)"; first done.
       (* close invariant *)
       iModIntro. iSplitR "Hctl₂ HΦ".
       { iExists front2, (front2 - 1)%Z, hist, pub, priv, past3, prophs3. iFrame.
@@ -1394,7 +1395,7 @@ Section inf_chaselev_deque_G.
       (* update back in control tokens *)
       iMod (inf_chaselev_deque_ctl_update front2 priv with "Hctl₁ Hctl₂") as "(Hctl₁ & Hctl₂)".
       (* we are in state 3.2 *)
-      iDestruct (inf_chaselev_deque_front_state₃₂ with "Hfront_auth Hfront_frag Hstate") as "(-> & Hfront_auth & Hlock & (%state & Hhist_auth & %Hhist & Hstate))".
+      iDestruct (inf_chaselev_deque_front_state₃₂ with "Hfront_auth Hfront_frag Hstate") as "(-> & Hfront_auth & Hlock & (%state & Hhist_auth & %Hhist & Hstate))"; first done.
       (* hence there is no public value *)
       destruct (nil_or_length_pos pub) as [-> |]; last lia.
       (* begin transaction *)
@@ -1565,8 +1566,7 @@ Section inf_chaselev_deque_G.
         (* update [back] in control tokens *)
         iMod (inf_chaselev_deque_ctl_update (front3 + 1) priv with "Hctl₁ Hctl₂") as "(Hctl₁ & Hctl₂)".
         (* we are in state 3.2 *)
-        iEval (assert (S front3 - 1 = front3)%Z as <- by lia) in "Hstate".
-        iDestruct (inf_chaselev_deque_front_state₃₂ with "Hfront_auth Hfront_frag Hstate") as "(-> & Hfront_auth & Hlock & (%Hstate & Hhist_auth & %Hhist & Hstate))".
+        iDestruct (inf_chaselev_deque_front_state₃₂ with "Hfront_auth Hfront_frag Hstate") as "(-> & Hfront_auth & Hlock & (%Hstate & Hhist_auth & %Hhist & Hstate))"; first lia.
         (* close invariant *)
         iModIntro. iSplitR "Hctl₂ Hlock HΦ".
         { iExists (S front3), (front3 + 1)%Z, hist, pub, priv, past5, prophs5. iFrame.
