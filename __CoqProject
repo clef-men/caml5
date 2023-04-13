@@ -27,7 +27,7 @@ theories/algebra/lib/auth_natinf_max.v
 theories/algebra/lib/auth_natinf_min.v
 theories/algebra/lib/auth_Z_max.v
 theories/algebra/lib/auth_Z_min.v
-theories/algebra/lib/mono_state.v
+theories/algebra/lib/sts_cell.v
 
 theories/base_logic/algebra/auth_excl.v
 theories/base_logic/lib/agree.v
