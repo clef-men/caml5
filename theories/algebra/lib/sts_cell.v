@@ -139,18 +139,30 @@ Section sts.
     intros. apply auth_frag_mono. rewrite principal_included //.
   Qed.
 
-  (* Lemma sts_cell_auth_dfrac_included dq s x : *)
-  (*   sts_cell_auth dq s ≼ x ↔ *)
-  (*   ∃ dq' s', dq ≼ dq' ∧ x ≡ sts_cell_auth dq' s'. *)
-  (* Proof. *)
-  (*   rewrite /sts_cell_auth. *)
-  (*   rewrite auth_both_dfrac_included. *)
-  (* Qed. *)
+  Lemma sts_cell_auth_dfrac_included `{!AntiSymm (=) steps} dq1 s1 dq2 s2 :
+    sts_cell_auth dq1 s1 ≼ sts_cell_auth dq2 s2 ↔
+    (dq1 ≼ dq2 ∨ dq1 = dq2) ∧ s1 = s2.
+  Proof.
+    rewrite auth_both_dfrac_included principal_included. split; last naive_solver.
+    intros (? & ->%(@inj _ _ (≡) _ _ _) & ?). done.
+  Qed.
+  Lemma sts_cell_auth_included `{!AntiSymm (=) steps} s1 s2 :
+    sts_cell_auth (DfracOwn 1) s1 ≼ sts_cell_auth (DfracOwn 1) s2 ↔
+    s1 = s2.
+  Proof.
+    rewrite sts_cell_auth_dfrac_included. naive_solver.
+  Qed.
 
-  Lemma sts_cell_frag_included dq s :
+  Lemma sts_cell_frag_included s1 dq s2 :
+    sts_cell_frag s1 ≼ sts_cell_auth dq s2 ↔
+    steps s1 s2.
+  Proof.
+    rewrite auth_frag_included principal_included //.
+  Qed.
+  Lemma sts_cell_frag_included' s dq :
     sts_cell_frag s ≼ sts_cell_auth dq s.
   Proof.
-    apply cmra_included_r.
+    rewrite sts_cell_frag_included //.
   Qed.
 
   Lemma sts_cell_auth_persist dq s :
@@ -164,6 +176,17 @@ Section sts.
     sts_cell_auth (DfracOwn 1) s ~~> sts_cell_auth (DfracOwn 1) s'.
   Proof.
     intros. apply auth_update, mra_local_update_grow. done.
+  Qed.
+
+  Lemma sts_cell_auth_local_update s s' :
+    steps s s' →
+    (sts_cell_auth (DfracOwn 1) s, sts_cell_auth (DfracOwn 1) s) ~l~>
+    (sts_cell_auth (DfracOwn 1) s', sts_cell_auth (DfracOwn 1) s').
+  Proof.
+    intros. apply auth_local_update.
+    - apply mra_local_update_grow. done.
+    - rewrite principal_included //.
+    - done.
   Qed.
 End sts.
 
