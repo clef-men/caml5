@@ -64,13 +64,6 @@ Section auth_Z_max_G.
     split; [done | apply _].
   Qed.
 
-  Lemma auth_Z_max_auth_persist γ dq n :
-    auth_Z_max_auth γ dq n ==∗
-    auth_Z_max_auth γ DfracDiscarded n.
-  Proof.
-    iApply own_update. apply auth_Z_max_auth_persist.
-  Qed.
-
   Lemma auth_Z_max_alloc n :
     ⊢ |==> ∃ γ,
       auth_Z_max_auth γ (DfracOwn 1) n.
@@ -145,6 +138,13 @@ Section auth_Z_max_G.
     iIntros "H●1 H●2".
     iDestruct (own_valid_2 with "H●1 H●2") as %?%auth_Z_max_both_dfrac_valid.
     naive_solver.
+  Qed.
+
+  Lemma auth_Z_max_auth_persist γ dq n :
+    auth_Z_max_auth γ dq n ==∗
+    auth_Z_max_auth γ DfracDiscarded n.
+  Proof.
+    iApply own_update. apply auth_Z_max_auth_persist.
   Qed.
 
   Lemma auth_Z_max_update {γ n} n' :

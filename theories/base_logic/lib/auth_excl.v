@@ -62,13 +62,6 @@ Section auth_excl_G.
     split; [done | apply _].
   Qed.
 
-  Lemma auth_excl_auth_persist γ dq a :
-    auth_excl_auth γ dq a ==∗
-    auth_excl_auth γ DfracDiscarded a.
-  Proof.
-    iApply own_update. apply auth_excl_auth_persist.
-  Qed.
-
   Lemma auth_excl_alloc a b :
     a ≡ b →
     ⊢ |==> ∃ γ,
@@ -83,26 +76,6 @@ Section auth_excl_G.
       auth_excl_auth γ (DfracOwn 1) a ∗ auth_excl_frag γ a.
   Proof.
     iApply auth_excl_alloc. done.
-  Qed.
-
-  Lemma auth_excl_update {γ a b} a' b' :
-    a' ≡ b' →
-    auth_excl_auth γ (DfracOwn 1) a -∗
-    auth_excl_frag γ b ==∗
-      auth_excl_auth γ (DfracOwn 1) a' ∗
-      auth_excl_frag γ b'.
-  Proof.
-    iIntros "% H● H◯".
-    iMod (own_update_2 with "H● H◯") as "(? & ?)"; first by apply auth_excl_both_update.
-    iFrame. done.
-  Qed.
-  Lemma auth_excl_update' {γ a b} a' :
-    auth_excl_auth γ (DfracOwn 1) a -∗
-    auth_excl_frag γ b ==∗
-      auth_excl_auth γ (DfracOwn 1) a' ∗
-      auth_excl_frag γ a'.
-  Proof.
-    iApply auth_excl_update. done.
   Qed.
 
   Lemma auth_excl_auth_valid γ dq a :
@@ -238,6 +211,33 @@ Section auth_excl_G.
       Qed.
     End leibniz_equiv.
   End ofe_discrete.
+
+  Lemma auth_excl_auth_persist γ dq a :
+    auth_excl_auth γ dq a ==∗
+    auth_excl_auth γ DfracDiscarded a.
+  Proof.
+    iApply own_update. apply auth_excl_auth_persist.
+  Qed.
+
+  Lemma auth_excl_update {γ a b} a' b' :
+    a' ≡ b' →
+    auth_excl_auth γ (DfracOwn 1) a -∗
+    auth_excl_frag γ b ==∗
+      auth_excl_auth γ (DfracOwn 1) a' ∗
+      auth_excl_frag γ b'.
+  Proof.
+    iIntros "% H● H◯".
+    iMod (own_update_2 with "H● H◯") as "(? & ?)"; first by apply auth_excl_both_update.
+    iFrame. done.
+  Qed.
+  Lemma auth_excl_update' {γ a b} a' :
+    auth_excl_auth γ (DfracOwn 1) a -∗
+    auth_excl_frag γ b ==∗
+      auth_excl_auth γ (DfracOwn 1) a' ∗
+      auth_excl_frag γ a'.
+  Proof.
+    iApply auth_excl_update. done.
+  Qed.
 End auth_excl_G.
 
 #[global] Opaque auth_excl_auth.
