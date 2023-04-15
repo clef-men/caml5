@@ -27,7 +27,7 @@ Section sts.
 
   Definition sts_cell_auth dq s :=
     ●{dq} principal steps s ⋅ ◯ principal steps s.
-  Definition sts_cell_frag s :=
+  Definition sts_cell_lb s :=
     ◯ principal steps s.
 
   #[global] Instance sts_cell_auth_inj `{!AntiSymm (=) steps} :
@@ -36,8 +36,8 @@ Section sts.
     rewrite /Inj2. setoid_rewrite auth_auth_frag_dfrac_op.
     intros * (-> & ->%(@inj _ _ (≡) _ _ _) & _). done.
   Qed.
-  #[global] Instance sts_cell_frag_inj `{!AntiSymm (=) steps} :
-    Inj (=) (≡) sts_cell_frag.
+  #[global] Instance sts_cell_lb_inj `{!AntiSymm (=) steps} :
+    Inj (=) (≡) sts_cell_lb.
   Proof.
     intros s1 s2 ->%(inj auth_frag)%(@inj _ _ (≡) _ _ _). done.
   Qed.
@@ -53,8 +53,8 @@ Section sts.
   Proof.
     apply _.
   Qed.
-  #[global] Instance sts_cell_frag_core_id s :
-    CoreId (sts_cell_frag s).
+  #[global] Instance sts_cell_lb_core_id s :
+    CoreId (sts_cell_lb s).
   Proof.
     apply _.
   Qed.
@@ -72,17 +72,17 @@ Section sts.
     rewrite /IsOp' /IsOp => ->. rewrite sts_cell_auth_dfrac_op //.
   Qed.
 
-  Lemma sts_cell_frag_op s s' :
+  Lemma sts_cell_lb_op s s' :
     steps s s' →
-    sts_cell_frag s' ≡ sts_cell_frag s ⋅ sts_cell_frag s'.
+    sts_cell_lb s' ≡ sts_cell_lb s ⋅ sts_cell_lb s'.
   Proof.
     intros. rewrite -auth_frag_op principal_R_op //.
   Qed.
 
   Lemma sts_cell_auth_frag_op dq s :
-    sts_cell_auth dq s ≡ sts_cell_auth dq s ⋅ sts_cell_frag s.
+    sts_cell_auth dq s ≡ sts_cell_auth dq s ⋅ sts_cell_lb s.
   Proof.
-    rewrite /sts_cell_auth /sts_cell_frag.
+    rewrite /sts_cell_auth /sts_cell_lb.
     rewrite -!assoc -auth_frag_op -core_id_dup //.
   Qed.
 
@@ -117,7 +117,7 @@ Section sts.
   Qed.
 
   Lemma sts_cell_both_dfrac_valid dq s t :
-    ✓ (sts_cell_auth dq s ⋅ sts_cell_frag t) ↔
+    ✓ (sts_cell_auth dq s ⋅ sts_cell_lb t) ↔
     ✓ dq ∧ steps t s.
   Proof.
     rewrite -assoc -auth_frag_op auth_both_dfrac_valid_discrete. split.
@@ -126,15 +126,15 @@ Section sts.
     - intros. rewrite (comm op) principal_R_op; naive_solver.
   Qed.
   Lemma sts_cell_both_valid s t :
-    ✓ (sts_cell_auth (DfracOwn 1) s ⋅ sts_cell_frag t) ↔
+    ✓ (sts_cell_auth (DfracOwn 1) s ⋅ sts_cell_lb t) ↔
     steps t s.
   Proof.
     rewrite sts_cell_both_dfrac_valid dfrac_valid_own. naive_solver.
   Qed.
 
-  Lemma sts_cell_frag_mono s1 s2 :
+  Lemma sts_cell_lb_mono s1 s2 :
     steps s1 s2 →
-    sts_cell_frag s1 ≼ sts_cell_frag s2.
+    sts_cell_lb s1 ≼ sts_cell_lb s2.
   Proof.
     intros. apply auth_frag_mono. rewrite principal_included //.
   Qed.
@@ -153,16 +153,16 @@ Section sts.
     rewrite sts_cell_auth_dfrac_included. naive_solver.
   Qed.
 
-  Lemma sts_cell_frag_included s1 dq s2 :
-    sts_cell_frag s1 ≼ sts_cell_auth dq s2 ↔
+  Lemma sts_cell_lb_included s1 dq s2 :
+    sts_cell_lb s1 ≼ sts_cell_auth dq s2 ↔
     steps s1 s2.
   Proof.
     rewrite auth_frag_included principal_included //.
   Qed.
-  Lemma sts_cell_frag_included' s dq :
-    sts_cell_frag s ≼ sts_cell_auth dq s.
+  Lemma sts_cell_lb_included' s dq :
+    sts_cell_lb s ≼ sts_cell_auth dq s.
   Proof.
-    rewrite sts_cell_frag_included //.
+    rewrite sts_cell_lb_included //.
   Qed.
 
   Lemma sts_cell_auth_persist dq s :
@@ -191,4 +191,4 @@ Section sts.
 End sts.
 
 #[global] Opaque sts_cell_auth.
-#[global] Opaque sts_cell_frag.
+#[global] Opaque sts_cell_lb.

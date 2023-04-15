@@ -39,7 +39,7 @@ Section sts.
   Definition sts_cells_mapsto k q s : sts_cells_UR key step :=
     ◯ {[k := sts_cell_auth step (DfracOwn q) s]}.
   Definition sts_cells_lb k s : sts_cells_UR key step :=
-    ◯ {[k := sts_cell_frag step s]}.
+    ◯ {[k := sts_cell_lb step s]}.
 
   #[global] Instance sts_cells_cmra_discrete :
     CmraDiscrete (sts_cells_R key step).
@@ -184,11 +184,11 @@ Section sts.
     setoid_rewrite Some_included_total.
     split.
     - intros (Hdq & ((? & (? & (s' & <- & Hlookup) & <-) & Hincluded) & _)).
-      rewrite sts_cell_frag_included in Hincluded. naive_solver.
+      rewrite sts_cell_lb_included in Hincluded. naive_solver.
     - intros (Hdq & (s' & Hsteps & Hlookup)).
       split; first done. split.
       + exists (sts_cell_auth step (DfracOwn 1) s'). split; first naive_solver.
-        rewrite sts_cell_frag_included //.
+        rewrite sts_cell_lb_included //.
       + clear. intros k. rewrite lookup_fmap.
         destruct (ss !! k); [apply sts_cell_auth_valid | done].
   Qed.
@@ -217,14 +217,14 @@ Section sts.
     sts_cells_lb k s1 ≼ sts_cells_lb k s2.
   Proof.
     intros. apply auth_frag_mono, singleton_included.
-    right. apply sts_cell_frag_mono. done.
+    right. apply sts_cell_lb_mono. done.
   Qed.
 
   Lemma sts_cells_lb_included k dq s :
     sts_cells_lb k s ≼ sts_cells_mapsto k dq s.
   Proof.
     apply auth_frag_mono, singleton_included.
-    right. apply sts_cell_frag_included'.
+    right. apply sts_cell_lb_included'.
   Qed.
 
   Lemma sts_cells_auth_persist dq ss :
