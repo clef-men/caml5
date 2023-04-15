@@ -63,7 +63,7 @@ Section auth_natinf_min_G.
   #[global] Instance auth_natinf_min_auth_as_fractional γ q n :
     AsFractional (auth_natinf_min_auth γ (DfracOwn q) n) (λ q, auth_natinf_min_auth γ (DfracOwn q) n) q.
   Proof.
-    split; done || apply _.
+    split; [done | apply _].
   Qed.
 
   Lemma auth_natinf_min_auth_persist γ dq n :

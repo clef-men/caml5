@@ -59,7 +59,7 @@ Section auth_excl_G.
   #[global] Instance auth_excl_auth_as_fractional γ q a :
     AsFractional (auth_excl_auth γ (DfracOwn q) a) (λ q, auth_excl_auth γ (DfracOwn q) a) q.
   Proof.
-    split; done || apply _.
+    split; [done | apply _].
   Qed.
 
   Lemma auth_excl_auth_persist γ dq a :
