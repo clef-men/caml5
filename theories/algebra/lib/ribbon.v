@@ -14,7 +14,7 @@ From caml5.algebra Require Import
   lib.sts_cells.
 
 Section sts.
-  Context {state} (step : relation state).
+  Context `(step : relation state).
   Implicit Types i : nat.
   Implicit Types s : state.
   Implicit Types rib : list state.

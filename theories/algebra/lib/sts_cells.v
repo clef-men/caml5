@@ -12,7 +12,7 @@ From caml5.algebra Require Import
 
 Section sts.
   Context key `{Countable key}.
-  Context {state} (step : relation state).
+  Context `(step : relation state).
 
   Definition sts_cells :=
     auth (gmapUR key (sts_cell_UR step)).
@@ -24,7 +24,7 @@ End sts.
 
 Section sts.
   Context `{Countable key}.
-  Context {state} (step : relation state).
+  Context `(step : relation state).
   Implicit Types k : key.
   Implicit Types s : state.
   Implicit Types ss : gmap key state.

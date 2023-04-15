@@ -10,7 +10,7 @@ From caml5.algebra Require Import
   monotone.
 
 Section sts.
-  Context {state} (step : relation state).
+  Context `(step : relation state).
   Implicit Types s t : state.
 
   Let state_O := leibnizO state.
