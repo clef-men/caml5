@@ -143,9 +143,6 @@ Section ws_bag_of_ws_deque.
   ( at level 5
   ) : stdpp_scope.
 
-  Notation ws_bag_of_ws_deque_meta_model :=
-    (nroot .@ "model").
-
   Notation ws_bag_of_ws_deque_namespace_base ι :=
     (ι .@ "base").
   Notation ws_bag_of_ws_deque_namespace_extra ι :=
@@ -414,9 +411,6 @@ Section ws_bag_of_spmc_stack.
   Notation "γ .(extra)" := γ.2
   ( at level 5
   ) : stdpp_scope.
-
-  Notation ws_bag_of_spmc_stack_meta_model :=
-    (nroot .@ "model").
 
   Notation ws_bag_of_spmc_stack_namespace_base ι :=
     (ι .@ "base").
@@ -708,9 +702,6 @@ Section ws_bag_of_spmc_queue.
   Notation "γ .(extra)" := γ.2
   ( at level 5
   ) : stdpp_scope.
-
-  Notation ws_bag_of_spmc_queue_meta_model :=
-    (nroot .@ "model").
 
   Notation ws_bag_of_spmc_queue_namespace_base ι :=
     (ι .@ "base").

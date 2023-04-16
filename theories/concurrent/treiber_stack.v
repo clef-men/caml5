@@ -63,8 +63,8 @@ Section treiber_stack_G.
         )
       ).
 
-  Notation treiber_stack_meta_model :=
-    (nroot .@ "model").
+  #[local] Definition treiber_name := gname.
+  Implicit Types γ : treiber_name.
 
   #[local] Definition treiber_stack_model₁ γ vs : iProp Σ :=
     auth_excl_frag γ vs.
@@ -77,13 +77,13 @@ Section treiber_stack_G.
   Definition treiber_stack_inv t ι : iProp Σ :=
     ∃ l γ,
     ⌜t = #l⌝ ∗
-    meta l treiber_stack_meta_model γ ∗
+    meta l nroot γ ∗
     inv ι (treiber_stack_inv_inner t l γ).
 
   Definition treiber_stack_model t vs : iProp Σ :=
     ∃ l γ,
     ⌜t = #l⌝ ∗
-    meta l treiber_stack_meta_model γ ∗
+    meta l nroot γ ∗
     treiber_stack_model₂ γ vs.
 
   #[global] Instance treiber_stack_inv_persistent t ι :
@@ -107,7 +107,7 @@ Section treiber_stack_G.
     iApply wp_fupd. wp_apply (wp_alloc with "[//]"). iIntros "%l (Hl & Hmeta)".
     iApply "HΦ".
     iMod (auth_excl_alloc' (auth_excl_G := treiber_stack_G_model_G) []) as "(%γ & Hmodel₂ & Hmodel₁)".
-    iMod (meta_set _ _ γ treiber_stack_meta_model with "Hmeta") as "#Hmeta"; first done.
+    iMod (meta_set _ _ γ with "Hmeta") as "#Hmeta"; first done.
     iSplitR "Hmodel₂"; iExists l, γ; iFrame "∗#"; last done.
     iSplitR; first done. iApply inv_alloc. iNext. iExists mlst_nil, []. iFrame "∗#".
     iApply mlst_nil_spec.

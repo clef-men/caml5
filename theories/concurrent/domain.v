@@ -42,13 +42,13 @@ Section domain_G.
       | SOME "v" => "v"
       end.
 
-  Notation domain_meta_model :=
-    (nroot .@ "model").
+  #[local] Definition domain_name := gname.
+  Implicit Types γ : domain_name.
 
   Definition domain_model t : iProp Σ :=
     ∃ l γ,
     ⌜t = #l⌝ ∗
-    meta l domain_meta_model γ ∗
+    meta l nroot γ ∗
     excl γ ().
 
   #[local] Definition domain_inv_inner l γ Ψ : iProp Σ :=
@@ -58,7 +58,7 @@ Section domain_G.
   Definition domain_inv t ι Ψ : iProp Σ :=
     ∃ l γ,
     ⌜t = #l⌝ ∗
-    meta l domain_meta_model γ ∗
+    meta l nroot γ ∗
     inv ι (domain_inv_inner l γ Ψ).
 
   #[global] Instance domain_inv_contractive t ι n :
@@ -99,8 +99,7 @@ Section domain_G.
     wp_apply (wp_alloc with "[//]"). iIntros "%l (Hl & Hmeta)".
     wp_pures.
     iMod (excl_alloc (excl_G := domain_G_model_G) ()) as "(%γ & Hmodel)".
-    iDestruct (meta_token_difference _ (↑domain_meta_model) with "Hmeta") as "(Hmeta_model & _)"; first solve_ndisj.
-    iMod (meta_set _ _ γ domain_meta_model with "Hmeta_model") as "#Hmeta_model"; first done.
+    iMod (meta_set _ _ γ with "Hmeta") as "#Hmeta"; first done.
     iMod (inv_alloc ι _ (domain_inv_inner l γ Ψ) with "[Hl]") as "#Hinv".
     { iExists NONEV. auto with iFrame. }
     wp_apply (wp_fork with "[HΨ]").
@@ -120,8 +119,8 @@ Section domain_G.
       domain_join t
     {{{ v, RET v; Ψ v }}}.
   Proof.
-    iIntros "%Φ ((%l & %γ & -> & #Hmeta_model & #Hinv) & (%_l & %_γ & %Heq & #_Hmeta_model & Hmodel)) HΦ". injection Heq as <-.
-    iDestruct (meta_agree with "Hmeta_model _Hmeta_model") as %<-. iClear "_Hmeta_model".
+    iIntros "%Φ ((%l & %γ & -> & #Hmeta & #Hinv) & (%_l & %_γ & %Heq & #_Hmeta & Hmodel)) HΦ". injection Heq as <-.
+    iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
     iLöb as "IH".
     wp_rec.
     wp_bind (!_)%E.

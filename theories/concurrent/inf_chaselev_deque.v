@@ -173,184 +173,217 @@ Section inf_chaselev_deque_G.
         )
       ).
 
-  Notation inf_chaselev_deque_meta_ctl :=
-    (nroot .@ "ctl").
-  Notation inf_chaselev_deque_meta_front :=
-    (nroot .@ "front").
-  Notation inf_chaselev_deque_meta_hist :=
-    (nroot .@ "hist").
-  Notation inf_chaselev_deque_meta_pub :=
-    (nroot .@ "pub").
-  Notation inf_chaselev_deque_meta_lock :=
-    (nroot .@ "lock").
-  Notation inf_chaselev_deque_meta_prophet :=
-    (nroot .@ "prophet").
-  Notation inf_chaselev_deque_meta_winner :=
-    (nroot .@ "winner").
+  Record inf_chaselev_deque_name := {
+    inf_chaselev_deque_name_ctl : gname ;
+    inf_chaselev_deque_name_front : gname ;
+    inf_chaselev_deque_name_hist : gname ;
+    inf_chaselev_deque_name_pub : gname ;
+    inf_chaselev_deque_name_lock : gname ;
+    inf_chaselev_deque_name_prophet : wise_prophet_name ;
+    inf_chaselev_deque_name_winner : gname ;
+  }.
+  Implicit Types γ : inf_chaselev_deque_name.
 
-  #[local] Definition inf_chaselev_deque_ctl₁ γ_ctl back priv :=
+  #[local] Instance inf_chaselev_deque_name_eq_dec :
+    EqDecision inf_chaselev_deque_name.
+  Proof.
+    solve_decision.
+  Qed.
+  #[local] Instance inf_chaselev_deque_name_countable :
+    Countable inf_chaselev_deque_name.
+  Proof.
+    pose encode γ := (
+      γ.(inf_chaselev_deque_name_ctl),
+      γ.(inf_chaselev_deque_name_front),
+      γ.(inf_chaselev_deque_name_hist),
+      γ.(inf_chaselev_deque_name_pub),
+      γ.(inf_chaselev_deque_name_lock),
+      γ.(inf_chaselev_deque_name_prophet),
+      γ.(inf_chaselev_deque_name_winner)
+    ).
+    pose decode := λ '(γ_ctl, γ_front, γ_hist, γ_pub, γ_lock, γ_prophet, γ_winner),
+      Build_inf_chaselev_deque_name γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner.
+    refine (inj_countable' encode decode _). intros []. done.
+  Qed.
+
+  #[local] Definition inf_chaselev_deque_ctl₁' γ_ctl back priv :=
     auth_excl_auth (auth_excl_G := inf_chaselev_deque_G_ctl_G) γ_ctl (DfracOwn 1) (back, priv).
-  #[local] Definition inf_chaselev_deque_ctl₂ γ_ctl back priv :=
+  #[local] Definition inf_chaselev_deque_ctl₁ γ back priv :=
+    inf_chaselev_deque_ctl₁' γ.(inf_chaselev_deque_name_ctl) back priv.
+  #[local] Definition inf_chaselev_deque_ctl₂' γ_ctl back priv :=
     auth_excl_frag (auth_excl_G := inf_chaselev_deque_G_ctl_G) γ_ctl (back, priv).
+  #[local] Definition inf_chaselev_deque_ctl₂ γ back priv :=
+    inf_chaselev_deque_ctl₂' γ.(inf_chaselev_deque_name_ctl) back priv.
 
-  #[local] Definition inf_chaselev_deque_front_auth γ_front front :=
+  #[local] Definition inf_chaselev_deque_front_auth' γ_front front :=
     auth_nat_max_auth γ_front (DfracOwn 1) front.
-  #[local] Definition inf_chaselev_deque_front_frag γ_front front :=
-    auth_nat_max_frag γ_front front.
+  #[local] Definition inf_chaselev_deque_front_auth γ front :=
+    inf_chaselev_deque_front_auth' γ.(inf_chaselev_deque_name_front) front.
+  #[local] Definition inf_chaselev_deque_front_frag γ front :=
+    auth_nat_max_frag γ.(inf_chaselev_deque_name_front) front.
 
-  #[local] Definition inf_chaselev_deque_hist_auth γ_hist hist :=
+  #[local] Definition inf_chaselev_deque_hist_auth' γ_hist hist :=
     mono_list_auth γ_hist 1 hist.
-  #[local] Definition inf_chaselev_deque_hist_frag γ_hist i v :=
-    mono_list_mapsto γ_hist i v.
+  #[local] Definition inf_chaselev_deque_hist_auth γ hist :=
+    inf_chaselev_deque_hist_auth' γ.(inf_chaselev_deque_name_hist) hist.
+  #[local] Definition inf_chaselev_deque_hist_frag γ i v :=
+    mono_list_mapsto γ.(inf_chaselev_deque_name_hist) i v.
 
-  #[local] Definition inf_chaselev_deque_pub₁ γ_pub pub :=
+  #[local] Definition inf_chaselev_deque_pub₁' γ_pub pub :=
     auth_excl_frag (auth_excl_G := inf_chaselev_deque_G_pub_G) γ_pub pub.
-  #[local] Definition inf_chaselev_deque_pub₂ γ_pub pub :=
+  #[local] Definition inf_chaselev_deque_pub₁ γ pub :=
+    inf_chaselev_deque_pub₁' γ.(inf_chaselev_deque_name_pub) pub.
+  #[local] Definition inf_chaselev_deque_pub₂' γ_pub pub :=
     auth_excl_auth (auth_excl_G := inf_chaselev_deque_G_pub_G) γ_pub (DfracOwn 1) pub.
+  #[local] Definition inf_chaselev_deque_pub₂ γ pub :=
+    inf_chaselev_deque_pub₂' γ.(inf_chaselev_deque_name_pub) pub.
 
-  #[local] Definition inf_chaselev_deque_lock γ_lock :=
+  #[local] Definition inf_chaselev_deque_lock' γ_lock :=
     excl γ_lock ().
+  #[local] Definition inf_chaselev_deque_lock γ :=
+    inf_chaselev_deque_lock' γ.(inf_chaselev_deque_name_lock).
 
-  #[local] Definition inf_chaselev_deque_winner₁ γ_winner front Φ :=
+  #[local] Definition inf_chaselev_deque_winner₁' γ_winner front Φ :=
     auth_excl_frag (auth_excl_G := inf_chaselev_deque_G_winner_G) γ_winner (front, Next ∘ Φ).
-  #[local] Definition inf_chaselev_deque_winner₂ γ_winner front Φ :=
+  #[local] Definition inf_chaselev_deque_winner₁ γ front Φ :=
+    inf_chaselev_deque_winner₁' γ.(inf_chaselev_deque_name_winner) front Φ.
+  #[local] Definition inf_chaselev_deque_winner₂' γ_winner front Φ :=
     auth_excl_auth (auth_excl_G := inf_chaselev_deque_G_winner_G) γ_winner (DfracOwn 1) (front, Next ∘ Φ).
-  #[local] Definition inf_chaselev_deque_winner γ_winner : iProp Σ :=
+  #[local] Definition inf_chaselev_deque_winner₂ γ front Φ :=
+    inf_chaselev_deque_winner₂' γ.(inf_chaselev_deque_name_winner) front Φ.
+  #[local] Definition inf_chaselev_deque_winner' γ_winner : iProp Σ :=
     ∃ front Φ1 Φ2,
-    inf_chaselev_deque_winner₁ γ_winner front Φ1 ∗
-    inf_chaselev_deque_winner₂ γ_winner front Φ2.
+    inf_chaselev_deque_winner₁' γ_winner front Φ1 ∗
+    inf_chaselev_deque_winner₂' γ_winner front Φ2.
+  #[local] Definition inf_chaselev_deque_winner γ : iProp Σ :=
+    ∃ front Φ1 Φ2,
+    inf_chaselev_deque_winner₁ γ front Φ1 ∗
+    inf_chaselev_deque_winner₂ γ front Φ2.
 
   Definition inf_chaselev_deque_model t pub : iProp Σ :=
-    ∃ l γ_pub,
+    ∃ l γ,
     ⌜t = #l⌝ ∗
-    (* metas *)
-    meta l inf_chaselev_deque_meta_pub γ_pub ∗
+    (* metadata *)
+    meta l nroot γ ∗
     (* public values *)
-    inf_chaselev_deque_pub₂ γ_pub pub.
+    inf_chaselev_deque_pub₂ γ pub.
 
   Definition inf_chaselev_deque_owner t : iProp Σ :=
-    ∃ l γ_ctl γ_lock back priv,
+    ∃ l γ back priv,
     ⌜t = #l⌝ ∗
-    (* metas *)
-    meta l inf_chaselev_deque_meta_ctl γ_ctl ∗
-    meta l inf_chaselev_deque_meta_lock γ_lock ∗
+    (* metadata *)
+    meta l nroot γ ∗
     (* control token *)
-    inf_chaselev_deque_ctl₂ γ_ctl back priv ∗
+    inf_chaselev_deque_ctl₂ γ back priv ∗
     (* lock *)
-    inf_chaselev_deque_lock γ_lock.
+    inf_chaselev_deque_lock γ.
 
-  #[local] Definition inf_chaselev_deque_atomic_update γ_pub ι Φ : iProp Σ :=
+  #[local] Definition inf_chaselev_deque_atomic_update γ ι Φ : iProp Σ :=
     AU << ∃∃ pub,
-      inf_chaselev_deque_pub₂ γ_pub pub
+      inf_chaselev_deque_pub₂ γ pub
     >>
       @ ⊤ ∖ ↑ι, ∅
     << ∀∀ v pub',
-      ⌜pub = v :: pub'⌝ ∗ inf_chaselev_deque_pub₂ γ_pub pub',
+      ⌜pub = v :: pub'⌝ ∗ inf_chaselev_deque_pub₂ γ pub',
       COMM Φ (SOMEV v)
     >>.
-  #[local] Definition inf_chaselev_deque_state_inner₁ γ_winner :=
-    inf_chaselev_deque_winner γ_winner.
-  #[local] Definition inf_chaselev_deque_state₁ γ_hist γ_winner front back hist : iProp Σ :=
+  #[local] Definition inf_chaselev_deque_state_inner₁ γ :=
+    inf_chaselev_deque_winner γ.
+  #[local] Definition inf_chaselev_deque_state₁ γ front back hist : iProp Σ :=
     (* physical configuration *)
     ⌜Z.of_nat front = back⌝ ∗
     (* history values *)
-    inf_chaselev_deque_hist_auth γ_hist hist ∗
+    inf_chaselev_deque_hist_auth γ hist ∗
     ⌜length hist = front⌝ ∗
     (* inner state *)
-    inf_chaselev_deque_state_inner₁ γ_winner.
-  #[local] Definition inf_chaselev_deque_state_inner₂ γ_pub γ_winner ι front prophs : iProp Σ :=
+    inf_chaselev_deque_state_inner₁ γ.
+  #[local] Definition inf_chaselev_deque_state_inner₂ γ ι front prophs : iProp Σ :=
     match filter (λ '(_, _, front', _), front' = front) prophs with
     | [] =>
-        inf_chaselev_deque_winner γ_winner
+        inf_chaselev_deque_winner γ
     | (_, _, _, id) :: _ =>
-          inf_chaselev_deque_winner γ_winner
+          inf_chaselev_deque_winner γ
         ∨ identifier_model id ∗
           ∃ Φ,
-          inf_chaselev_deque_winner₁ γ_winner front Φ ∗
-          inf_chaselev_deque_atomic_update γ_pub ι Φ
+          inf_chaselev_deque_winner₁ γ front Φ ∗
+          inf_chaselev_deque_atomic_update γ ι Φ
     end.
-  #[local] Definition inf_chaselev_deque_state₂ γ_hist γ_pub γ_winner ι front back hist pub prophs : iProp Σ :=
+  #[local] Definition inf_chaselev_deque_state₂ γ ι front back hist pub prophs : iProp Σ :=
     (* physical configuration *)
     ⌜(front < back)%Z⌝ ∗
     (* history values *)
-    inf_chaselev_deque_hist_auth γ_hist (hist ++ [pub !!! 0]) ∗
+    inf_chaselev_deque_hist_auth γ (hist ++ [pub !!! 0]) ∗
     ⌜length hist = front⌝ ∗
     (* inner state *)
-    inf_chaselev_deque_state_inner₂ γ_pub γ_winner ι front prophs.
-  #[local] Definition inf_chaselev_deque_state_inner₃₁ γ_winner front hist prophs : iProp Σ :=
+    inf_chaselev_deque_state_inner₂ γ ι front prophs.
+  #[local] Definition inf_chaselev_deque_state_inner₃₁ γ front hist prophs : iProp Σ :=
     match filter (λ '(_, _, front', _), front' = front) prophs with
     | [] =>
-        inf_chaselev_deque_winner γ_winner
+        inf_chaselev_deque_winner γ
     | (_, _, _, id) :: _ =>
-          inf_chaselev_deque_winner γ_winner
+          inf_chaselev_deque_winner γ
         ∨ identifier_model id ∗
           ∃ Φ,
-          inf_chaselev_deque_winner₁ γ_winner front Φ ∗
+          inf_chaselev_deque_winner₁ γ front Φ ∗
           Φ (SOMEV (hist !!! front))
     end.
-  #[local] Definition inf_chaselev_deque_state₃₁ γ_hist γ_winner front back hist prophs : iProp Σ :=
+  #[local] Definition inf_chaselev_deque_state₃₁ γ front back hist prophs : iProp Σ :=
     (* physical configuration *)
     ⌜Z.of_nat front = back⌝ ∗
     (* history values *)
-    inf_chaselev_deque_hist_auth γ_hist hist ∗
+    inf_chaselev_deque_hist_auth γ hist ∗
     ⌜length hist = S front⌝ ∗
     (* inner state *)
-    inf_chaselev_deque_state_inner₃₁ γ_winner front hist prophs.
-  #[local] Definition inf_chaselev_deque_state_inner₃₂ γ_winner :=
-    inf_chaselev_deque_winner γ_winner.
-  #[local] Definition inf_chaselev_deque_state₃₂ γ_hist γ_winner front back hist : iProp Σ :=
+    inf_chaselev_deque_state_inner₃₁ γ front hist prophs.
+  #[local] Definition inf_chaselev_deque_state_inner₃₂ γ :=
+    inf_chaselev_deque_winner γ.
+  #[local] Definition inf_chaselev_deque_state₃₂ γ front back hist : iProp Σ :=
     (* physical configuration *)
     ⌜Z.of_nat front = (back + 1)%Z⌝ ∗
     (* history values *)
-    inf_chaselev_deque_hist_auth γ_hist hist ∗
+    inf_chaselev_deque_hist_auth γ hist ∗
     ⌜length hist = front⌝ ∗
     (* inner state *)
-    inf_chaselev_deque_state_inner₃₂ γ_winner.
-  #[local] Definition inf_chaselev_deque_state₃ γ_hist γ_lock γ_winner front back hist prophs : iProp Σ :=
-    inf_chaselev_deque_lock γ_lock ∗
-    ( inf_chaselev_deque_state₃₁ γ_hist γ_winner front back hist prophs
-    ∨ inf_chaselev_deque_state₃₂ γ_hist γ_winner front back hist
+    inf_chaselev_deque_state_inner₃₂ γ.
+  #[local] Definition inf_chaselev_deque_state₃ γ front back hist prophs : iProp Σ :=
+    inf_chaselev_deque_lock γ ∗
+    ( inf_chaselev_deque_state₃₁ γ front back hist prophs
+    ∨ inf_chaselev_deque_state₃₂ γ front back hist
     ).
-  #[local] Definition inf_chaselev_deque_state γ_hist γ_pub γ_lock γ_winner ι front back hist pub prophs : iProp Σ :=
-      inf_chaselev_deque_state₁ γ_hist γ_winner front back hist
-    ∨ inf_chaselev_deque_state₂ γ_hist γ_pub γ_winner ι front back hist pub prophs
-    ∨ inf_chaselev_deque_state₃ γ_hist γ_lock γ_winner front back hist prophs.
+  #[local] Definition inf_chaselev_deque_state γ ι front back hist pub prophs : iProp Σ :=
+      inf_chaselev_deque_state₁ γ front back hist
+    ∨ inf_chaselev_deque_state₂ γ ι front back hist pub prophs
+    ∨ inf_chaselev_deque_state₃ γ front back hist prophs.
 
-  #[local] Definition inf_chaselev_deque_inv_inner l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner ι data p : iProp Σ :=
+  #[local] Definition inf_chaselev_deque_inv_inner l γ ι data p : iProp Σ :=
     ∃ front back hist pub priv past prophs,
     (* mutable physical fields *)
     l.(front) ↦ #front ∗
     l.(back) ↦ #back ∗
     (* control token *)
-    inf_chaselev_deque_ctl₁ γ_ctl back priv ∗
+    inf_chaselev_deque_ctl₁ γ back priv ∗
     (* front authority *)
-    inf_chaselev_deque_front_auth γ_front front ∗
+    inf_chaselev_deque_front_auth γ front ∗
     (* data model *)
     array.(inf_array_model') data (hist ++ pub) priv ∗
     (* public values *)
-    inf_chaselev_deque_pub₁ γ_pub pub ∗
+    inf_chaselev_deque_pub₁ γ pub ∗
     ⌜length pub = Z.to_nat (back - front)⌝ ∗
     (* prophet model *)
-    wise_prophet_model inf_chaselev_deque_prophet p γ_prophet past prophs ∗
+    wise_prophet_model inf_chaselev_deque_prophet p γ.(inf_chaselev_deque_name_prophet) past prophs ∗
     ⌜Forall (λ '(_, _, front', _), front' < front) past⌝ ∗
     (* state *)
-    inf_chaselev_deque_state γ_hist γ_pub γ_lock γ_winner ι front back hist pub prophs.
+    inf_chaselev_deque_state γ ι front back hist pub prophs.
   Definition inf_chaselev_deque_inv t ι : iProp Σ :=
-    ∃ l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner data p,
+    ∃ l γ data p,
     ⌜t = #l⌝ ∗
-    (* metas *)
-    meta l inf_chaselev_deque_meta_ctl γ_ctl ∗
-    meta l inf_chaselev_deque_meta_front γ_front ∗
-    meta l inf_chaselev_deque_meta_hist γ_hist ∗
-    meta l inf_chaselev_deque_meta_pub γ_pub ∗
-    meta l inf_chaselev_deque_meta_lock γ_lock ∗
-    meta l inf_chaselev_deque_meta_prophet γ_prophet ∗
-    meta l inf_chaselev_deque_meta_winner γ_winner ∗
+    (* metadata *)
+    meta l nroot γ ∗
     (* immutable physical fields *)
     l.(data) ↦□ data ∗
     l.(prophecy) ↦□ #p ∗
     (* main invariant *)
-    inv ι (inf_chaselev_deque_inv_inner l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner ι data p).
+    inv ι (inf_chaselev_deque_inv_inner l γ ι data p).
 
   #[global] Instance inf_chaselev_deque_model_timeless t pub :
     Timeless (inf_chaselev_deque_model t pub).
@@ -370,26 +403,26 @@ Section inf_chaselev_deque_G.
 
   #[local] Lemma inf_chaselev_deque_ctl_alloc :
     ⊢ |==> ∃ γ_ctl,
-      inf_chaselev_deque_ctl₁ γ_ctl 0 (λ _, #()) ∗
-      inf_chaselev_deque_ctl₂ γ_ctl 0 (λ _, #()).
+      inf_chaselev_deque_ctl₁' γ_ctl 0 (λ _, #()) ∗
+      inf_chaselev_deque_ctl₂' γ_ctl 0 (λ _, #()).
   Proof.
     iMod (auth_excl_alloc' (auth_excl_G := inf_chaselev_deque_G_ctl_G) (0%Z, λ _, #())) as "(%γ_ctl & Hctl₁ & Hctl₂)".
     iExists γ_ctl. iFrame. done.
   Qed.
-  #[local] Lemma inf_chaselev_deque_ctl_agree γ_ctl back1 priv1 back2 priv2 :
-    inf_chaselev_deque_ctl₁ γ_ctl back1 priv1 -∗
-    inf_chaselev_deque_ctl₂ γ_ctl back2 priv2 -∗
+  #[local] Lemma inf_chaselev_deque_ctl_agree γ back1 priv1 back2 priv2 :
+    inf_chaselev_deque_ctl₁ γ back1 priv1 -∗
+    inf_chaselev_deque_ctl₂ γ back2 priv2 -∗
     ⌜back1 = back2 ∧ priv1 = priv2⌝.
   Proof.
     iIntros "Hctl₁ Hctl₂".
     iDestruct (auth_excl_agree with "Hctl₁ Hctl₂") as %(? & ?%functional_extensionality).
     done.
   Qed.
-  #[local] Lemma inf_chaselev_deque_ctl_update {γ_ctl back1 priv1 back2 priv2} back priv :
-    inf_chaselev_deque_ctl₁ γ_ctl back1 priv1 -∗
-    inf_chaselev_deque_ctl₂ γ_ctl back2 priv2 ==∗
-      inf_chaselev_deque_ctl₁ γ_ctl back priv ∗
-      inf_chaselev_deque_ctl₂ γ_ctl back priv.
+  #[local] Lemma inf_chaselev_deque_ctl_update {γ back1 priv1 back2 priv2} back priv :
+    inf_chaselev_deque_ctl₁ γ back1 priv1 -∗
+    inf_chaselev_deque_ctl₂ γ back2 priv2 ==∗
+      inf_chaselev_deque_ctl₁ γ back priv ∗
+      inf_chaselev_deque_ctl₂ γ back priv.
   Proof.
     iIntros "Hctl₁ Hctl₂".
     iMod (auth_excl_update' with "Hctl₁ Hctl₂") as "(Hctl₁ & Hctl2)".
@@ -398,40 +431,40 @@ Section inf_chaselev_deque_G.
 
   #[local] Lemma inf_chaselev_deque_front_alloc :
     ⊢ |==> ∃ γ_front,
-      inf_chaselev_deque_front_auth γ_front 0.
+      inf_chaselev_deque_front_auth' γ_front 0.
   Proof.
     iMod (auth_nat_max_alloc 0) as "(%γ_front & Hfront_auth)".
     iExists γ_front. done.
   Qed.
-  #[local] Lemma inf_chaselev_deque_front_valid γ_front front1 front2 :
-    inf_chaselev_deque_front_auth γ_front front1 -∗
-    inf_chaselev_deque_front_frag γ_front front2 -∗
+  #[local] Lemma inf_chaselev_deque_front_valid γ front1 front2 :
+    inf_chaselev_deque_front_auth γ front1 -∗
+    inf_chaselev_deque_front_frag γ front2 -∗
     ⌜front2 ≤ front1⌝.
   Proof.
     iApply auth_nat_max_valid.
   Qed.
-  #[local] Lemma inf_chaselev_deque_front_auth_update {γ_front front} front' :
+  #[local] Lemma inf_chaselev_deque_front_auth_update {γ front} front' :
     front ≤ front' →
-    inf_chaselev_deque_front_auth γ_front front ==∗
-    inf_chaselev_deque_front_auth γ_front front'.
+    inf_chaselev_deque_front_auth γ front ==∗
+    inf_chaselev_deque_front_auth γ front'.
   Proof.
     intros. iApply auth_nat_max_update. done.
   Qed.
-  #[local] Lemma inf_chaselev_deque_front_frag_get γ_front front :
-    inf_chaselev_deque_front_auth γ_front front -∗
-    inf_chaselev_deque_front_frag γ_front front.
+  #[local] Lemma inf_chaselev_deque_front_frag_get γ front :
+    inf_chaselev_deque_front_auth γ front -∗
+    inf_chaselev_deque_front_frag γ front.
   Proof.
     iApply auth_nat_max_frag_get.
   Qed.
-  #[local] Lemma inf_chaselev_deque_front_state₃₂ γ_front γ_hist γ_pub γ_lock γ_winner ι front front' back hist pub prophs :
+  #[local] Lemma inf_chaselev_deque_front_state₃₂ γ ι front front' back hist pub prophs :
     back = (front' - 1)%Z →
-    inf_chaselev_deque_front_auth γ_front front -∗
-    inf_chaselev_deque_front_frag γ_front front' -∗
-    inf_chaselev_deque_state γ_hist γ_pub γ_lock γ_winner ι front back hist pub prophs -∗
+    inf_chaselev_deque_front_auth γ front -∗
+    inf_chaselev_deque_front_frag γ front' -∗
+    inf_chaselev_deque_state γ ι front back hist pub prophs -∗
       ⌜front = front'⌝ ∗
-      inf_chaselev_deque_front_auth γ_front front' ∗
-      inf_chaselev_deque_lock γ_lock ∗
-      inf_chaselev_deque_state₃₂ γ_hist γ_winner front' back hist.
+      inf_chaselev_deque_front_auth γ front' ∗
+      inf_chaselev_deque_lock γ ∗
+      inf_chaselev_deque_state₃₂ γ front' back hist.
   Proof.
     iIntros (->) "Hfront_auth #Hfront_frag Hstate".
     iDestruct (inf_chaselev_deque_front_valid with "Hfront_auth Hfront_frag") as %Hle.
@@ -443,30 +476,30 @@ Section inf_chaselev_deque_G.
 
   #[local] Lemma inf_chaselev_deque_hist_alloc :
     ⊢ |==> ∃ γ_hist,
-      inf_chaselev_deque_hist_auth γ_hist [].
+      inf_chaselev_deque_hist_auth' γ_hist [].
   Proof.
     iMod (mono_list_alloc []) as "(%γ_hist & Hhist_auth & _)".
     iExists γ_hist. done.
   Qed.
-  #[local] Lemma inf_chaselev_deque_hist_frag_get {γ_hist hist} i v :
+  #[local] Lemma inf_chaselev_deque_hist_frag_get {γ hist} i v :
     hist !! i = Some v →
-    inf_chaselev_deque_hist_auth γ_hist hist -∗
-    inf_chaselev_deque_hist_frag γ_hist i v.
+    inf_chaselev_deque_hist_auth γ hist -∗
+    inf_chaselev_deque_hist_frag γ i v.
   Proof.
     iIntros "% Hhist_auth".
     iDestruct (mono_list_lb_get with "Hhist_auth") as "#Hhist_frag".
     iApply (mono_list_mapsto_get with "Hhist_frag"). done.
   Qed.
-  #[local] Lemma inf_chaselev_deque_hist_agree γ_hist hist i v :
-    inf_chaselev_deque_hist_auth γ_hist hist -∗
-    inf_chaselev_deque_hist_frag γ_hist i v -∗
+  #[local] Lemma inf_chaselev_deque_hist_agree γ hist i v :
+    inf_chaselev_deque_hist_auth γ hist -∗
+    inf_chaselev_deque_hist_frag γ i v -∗
     ⌜hist !! i = Some v⌝.
   Proof.
     apply mono_list_auth_mapsto_lookup.
   Qed.
-  #[local] Lemma inf_chaselev_deque_hist_update {γ_hist hist} v :
-    inf_chaselev_deque_hist_auth γ_hist hist ==∗
-    inf_chaselev_deque_hist_auth γ_hist (hist ++ [v]).
+  #[local] Lemma inf_chaselev_deque_hist_update {γ hist} v :
+    inf_chaselev_deque_hist_auth γ hist ==∗
+    inf_chaselev_deque_hist_auth γ (hist ++ [v]).
   Proof.
     iIntros "Hhist_auth".
     iMod (mono_list_auth_update_app [v] with "Hhist_auth") as "($ & _)". done.
@@ -474,25 +507,25 @@ Section inf_chaselev_deque_G.
 
   #[local] Lemma inf_chaselev_deque_pub_alloc :
     ⊢ |==> ∃ γ_pub,
-      inf_chaselev_deque_pub₁ γ_pub [] ∗
-      inf_chaselev_deque_pub₂ γ_pub [].
+      inf_chaselev_deque_pub₁' γ_pub [] ∗
+      inf_chaselev_deque_pub₂' γ_pub [].
   Proof.
     iMod (auth_excl_alloc' (auth_excl_G := inf_chaselev_deque_G_pub_G) []) as "(%γ_pub & Hpub₁ & Hpub₂)".
     iExists γ_pub. iFrame. done.
   Qed.
-  #[local] Lemma inf_chaselev_deque_pub_agree γ_pub pub1 pub2 :
-    inf_chaselev_deque_pub₁ γ_pub pub1 -∗
-    inf_chaselev_deque_pub₂ γ_pub pub2 -∗
+  #[local] Lemma inf_chaselev_deque_pub_agree γ pub1 pub2 :
+    inf_chaselev_deque_pub₁ γ pub1 -∗
+    inf_chaselev_deque_pub₂ γ pub2 -∗
     ⌜pub1 = pub2⌝.
   Proof.
     iIntros "Hpub₁ Hpub₂".
     iDestruct (auth_excl_agree_L with "Hpub₂ Hpub₁") as %->. done.
   Qed.
-  #[local] Lemma inf_chaselev_deque_pub_update {γ_pub pub1 pub2} pub :
-    inf_chaselev_deque_pub₁ γ_pub pub1 -∗
-    inf_chaselev_deque_pub₂ γ_pub pub2 ==∗
-      inf_chaselev_deque_pub₁ γ_pub pub ∗
-      inf_chaselev_deque_pub₂ γ_pub pub.
+  #[local] Lemma inf_chaselev_deque_pub_update {γ pub1 pub2} pub :
+    inf_chaselev_deque_pub₁ γ pub1 -∗
+    inf_chaselev_deque_pub₂ γ pub2 ==∗
+      inf_chaselev_deque_pub₁ γ pub ∗
+      inf_chaselev_deque_pub₂ γ pub.
   Proof.
     iIntros "Hpub₁ Hpub₂".
     iMod (auth_excl_update' with "Hpub₂ Hpub₁") as "(Hpub₂ & Hpub₁)".
@@ -501,23 +534,23 @@ Section inf_chaselev_deque_G.
 
   #[local] Lemma inf_chaselev_deque_lock_alloc :
     ⊢ |==> ∃ γ_lock,
-      inf_chaselev_deque_lock γ_lock.
+      inf_chaselev_deque_lock' γ_lock.
   Proof.
     apply excl_alloc.
   Qed.
-  #[local] Lemma inf_chaselev_deque_lock_exclusive γ_lock :
-    inf_chaselev_deque_lock γ_lock -∗
-    inf_chaselev_deque_lock γ_lock -∗
+  #[local] Lemma inf_chaselev_deque_lock_exclusive γ :
+    inf_chaselev_deque_lock γ -∗
+    inf_chaselev_deque_lock γ -∗
     False.
   Proof.
     apply excl_exclusive.
   Qed.
-  #[local] Lemma inf_chaselev_deque_lock_state γ_hist γ_pub γ_lock γ_winner ι front back hist pub prophs :
-    inf_chaselev_deque_lock γ_lock -∗
-    inf_chaselev_deque_state γ_hist γ_pub γ_lock γ_winner ι front back hist pub prophs -∗
-      inf_chaselev_deque_lock γ_lock ∗
-      ( inf_chaselev_deque_state₁ γ_hist γ_winner front back hist
-      ∨ inf_chaselev_deque_state₂ γ_hist γ_pub γ_winner ι front back hist pub prophs
+  #[local] Lemma inf_chaselev_deque_lock_state γ ι front back hist pub prophs :
+    inf_chaselev_deque_lock γ -∗
+    inf_chaselev_deque_state γ ι front back hist pub prophs -∗
+      inf_chaselev_deque_lock γ ∗
+      ( inf_chaselev_deque_state₁ γ front back hist
+      ∨ inf_chaselev_deque_state₂ γ ι front back hist pub prophs
       ).
   Proof.
     iIntros "Hlock [Hstate | [Hstate | (Hlock' & Hstate)]]"; [iFrame.. |].
@@ -526,26 +559,26 @@ Section inf_chaselev_deque_G.
 
   #[local] Lemma inf_chaselev_deque_winner_alloc :
     ⊢ |==> ∃ γ_winner,
-      inf_chaselev_deque_winner γ_winner.
+      inf_chaselev_deque_winner' γ_winner.
   Proof.
     iMod (auth_excl_alloc' (auth_excl_G := inf_chaselev_deque_G_winner_G) (inhabitant, λ _, Next inhabitant)) as "(%γ_winner & Hwinner₁ & Hwinner₂)".
     repeat iExists _. iFrame. done.
   Qed.
-  #[local] Lemma inf_chaselev_deque_winner₂_exclusive γ_winner front Φ :
-    inf_chaselev_deque_winner₂ γ_winner front Φ -∗
-    inf_chaselev_deque_winner γ_winner -∗
+  #[local] Lemma inf_chaselev_deque_winner₂_exclusive γ front Φ :
+    inf_chaselev_deque_winner₂ γ front Φ -∗
+    inf_chaselev_deque_winner γ -∗
     False.
   Proof.
     iIntros "Hwinner₂ (%front' & %Φ1 & %Φ2 & Hwinner₁ & Hwinner₂')".
     iApply (auth_excl_auth_exclusive with "Hwinner₂ Hwinner₂'").
   Qed.
-  #[local] Lemma inf_chaselev_deque_winner_agree {γ_winner front1 Φ1 front2 Φ2} v :
-    inf_chaselev_deque_winner₁ γ_winner front1 Φ1 -∗
-    inf_chaselev_deque_winner₂ γ_winner front2 Φ2 -∗
+  #[local] Lemma inf_chaselev_deque_winner_agree {γ front1 Φ1 front2 Φ2} v :
+    inf_chaselev_deque_winner₁ γ front1 Φ1 -∗
+    inf_chaselev_deque_winner₂ γ front2 Φ2 -∗
       ⌜front1 = front2⌝ ∗
       ▷ (Φ1 v ≡ Φ2 v) ∗
-      inf_chaselev_deque_winner₁ γ_winner front1 Φ1 ∗
-      inf_chaselev_deque_winner₂ γ_winner front1 Φ2.
+      inf_chaselev_deque_winner₁ γ front1 Φ1 ∗
+      inf_chaselev_deque_winner₂ γ front1 Φ2.
   Proof.
     iIntros "Hwinner₁ Hwinner₂".
     iDestruct (auth_excl_agree with "Hwinner₂ Hwinner₁") as "#HΦ".
@@ -554,25 +587,25 @@ Section inf_chaselev_deque_G.
     rewrite discrete_fun_equivI. iDestruct ("HΦ" $! v) as "HΦv". rewrite later_equivI.
     iNext. iRewrite "HΦv". done.
   Qed.
-  #[local] Lemma inf_chaselev_deque_winner_update {γ_winner front1 Φ1 front2 Φ2} front Φ :
-    inf_chaselev_deque_winner₁ γ_winner front1 Φ1 -∗
-    inf_chaselev_deque_winner₂ γ_winner front2 Φ2 ==∗
-      inf_chaselev_deque_winner₁ γ_winner front Φ ∗
-      inf_chaselev_deque_winner₂ γ_winner front Φ.
+  #[local] Lemma inf_chaselev_deque_winner_update {γ front1 Φ1 front2 Φ2} front Φ :
+    inf_chaselev_deque_winner₁ γ front1 Φ1 -∗
+    inf_chaselev_deque_winner₂ γ front2 Φ2 ==∗
+      inf_chaselev_deque_winner₁ γ front Φ ∗
+      inf_chaselev_deque_winner₂ γ front Φ.
   Proof.
     iIntros "Hwinner₁ Hwinner₂".
     iMod (auth_excl_update (auth_excl_G := inf_chaselev_deque_G_winner_G) (front, Next ∘ Φ) with "Hwinner₂ Hwinner₁") as "($ & $)"; done.
   Qed.
-  #[local] Lemma inf_chaselev_deque_winner₂_state_inner₂ {γ_winner γ_pub ι front1 front2 prophs Φ} v :
-    inf_chaselev_deque_winner₂ γ_winner front1 Φ -∗
-    inf_chaselev_deque_state_inner₂ γ_pub γ_winner ι front2 prophs -∗
+  #[local] Lemma inf_chaselev_deque_winner₂_state_inner₂ {γ ι front1 front2 prophs Φ} v :
+    inf_chaselev_deque_winner₂ γ front1 Φ -∗
+    inf_chaselev_deque_state_inner₂ γ ι front2 prophs -∗
       ∃ id Φ',
       ⌜front1 = front2⌝ ∗
       ▷ (Φ' v ≡ Φ v) ∗
-      inf_chaselev_deque_winner₁ γ_winner front1 Φ' ∗
-      inf_chaselev_deque_winner₂ γ_winner front1 Φ ∗
+      inf_chaselev_deque_winner₁ γ front1 Φ' ∗
+      inf_chaselev_deque_winner₂ γ front1 Φ ∗
       identifier_model id ∗
-      inf_chaselev_deque_atomic_update γ_pub ι Φ'.
+      inf_chaselev_deque_atomic_update γ ι Φ'.
   Proof.
     iIntros "Hwinner₂ Hstate".
     rewrite /inf_chaselev_deque_state_inner₂. destruct (filter _ _) as [| (((? & ?) & ?) & id) prophs'] eqn:?.
@@ -582,14 +615,14 @@ Section inf_chaselev_deque_G.
       + iDestruct (inf_chaselev_deque_winner_agree v with "Hwinner₁ Hwinner₂") as "(-> & Heq & Hwinner₁ & Hwinner₂)".
         iExists id, Φ'. iFrame. done.
   Qed.
-  #[local] Lemma inf_chaselev_deque_winner₂_state_inner₃₁ {γ_winner front1 front2 hist prophs Φ} v :
-    inf_chaselev_deque_winner₂ γ_winner front1 Φ -∗
-    inf_chaselev_deque_state_inner₃₁ γ_winner front2 hist prophs -∗
+  #[local] Lemma inf_chaselev_deque_winner₂_state_inner₃₁ {γ front1 front2 hist prophs Φ} v :
+    inf_chaselev_deque_winner₂ γ front1 Φ -∗
+    inf_chaselev_deque_state_inner₃₁ γ front2 hist prophs -∗
       ∃ id Φ',
       ⌜front1 = front2⌝ ∗
       ▷ (Φ' v ≡ Φ v) ∗
-      inf_chaselev_deque_winner₁ γ_winner front1 Φ' ∗
-      inf_chaselev_deque_winner₂ γ_winner front1 Φ ∗
+      inf_chaselev_deque_winner₁ γ front1 Φ' ∗
+      inf_chaselev_deque_winner₂ γ front1 Φ ∗
       identifier_model id ∗
       Φ' (SOMEV (hist !!! front1)).
   Proof.
@@ -607,16 +640,16 @@ Section inf_chaselev_deque_G.
     inf_chaselev_deque_owner t -∗
     False.
   Proof.
-    iIntros "(%l & %γ_ctl & %γ_lock & %back & %priv & -> & #Hmeta_ctl & #Hmeta_lock & Hctl₂1 & Hlock1) (%_l & %_γ_ctl & %_γ_lock & %_back & %_priv & %Heq & #_Hmeta_ctl & #_Hmeta_lock & Hctl₂2 & Hlock2)". injection Heq as <-.
-    iDestruct (meta_agree with "Hmeta_lock _Hmeta_lock") as %->.
+    iIntros "(%l & %γ & %back & %priv & -> & #Hmeta & Hctl₂1 & Hlock1) (%_l & %_γ & %_back & %_priv & %Heq & #_Hmeta & Hctl₂2 & Hlock2)". injection Heq as <-.
+    iDestruct (meta_agree with "Hmeta _Hmeta") as %->. iClear "_Hmeta".
     iApply (inf_chaselev_deque_lock_exclusive with "Hlock1 Hlock2").
   Qed.
 
-  #[local] Lemma inf_chaselev_deque_get_hist l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner ι data p i v :
+  #[local] Lemma inf_chaselev_deque_get_hist l γ ι data p i v :
     {{{
-      inv ι (inf_chaselev_deque_inv_inner l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner ι data p) ∗
+      inv ι (inf_chaselev_deque_inv_inner l γ ι data p) ∗
       l.(data) ↦□ data ∗
-      inf_chaselev_deque_hist_frag γ_hist i v
+      inf_chaselev_deque_hist_frag γ i v
     }}}
       array.(inf_array_get) !#l.(data) #i
     {{{
@@ -657,19 +690,19 @@ Section inf_chaselev_deque_G.
     erewrite list_lookup_total_correct; last done.
     iApply ("HΦ" with "[//]").
   Qed.
-  #[local] Lemma inf_chaselev_deque_get_priv l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner ι data p back priv i :
+  #[local] Lemma inf_chaselev_deque_get_priv l γ ι data p back priv i :
     (back ≤ i)%Z →
     {{{
-      inv ι (inf_chaselev_deque_inv_inner l γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner ι data p) ∗
+      inv ι (inf_chaselev_deque_inv_inner l γ ι data p) ∗
       l.(data) ↦□ data ∗
-      inf_chaselev_deque_ctl₂ γ_ctl back priv ∗
-      inf_chaselev_deque_lock γ_lock
+      inf_chaselev_deque_ctl₂ γ back priv ∗
+      inf_chaselev_deque_lock γ
     }}}
       array.(inf_array_get) !#l.(data) #i
     {{{
       RET priv (Z.to_nat (i - back));
-      inf_chaselev_deque_ctl₂ γ_ctl back priv ∗
-      inf_chaselev_deque_lock γ_lock
+      inf_chaselev_deque_ctl₂ γ back priv ∗
+      inf_chaselev_deque_lock γ
     }}}.
   Proof.
     iIntros "%Hi %Φ (#Hinv & #Hdata & Hctl₂ & Hlock) HΦ".
@@ -728,7 +761,10 @@ Section inf_chaselev_deque_G.
     }}}.
   Proof.
     iIntros "%Φ _ HΦ".
+
     wp_rec.
+
+    (* → [AllocN #4 #0] *)
     wp_apply (wp_allocN with "[//]"); first done. iIntros "%l (Hl & (Hmeta & _))".
     iDestruct (array_cons with "Hl") as "(Hfront & Hl)".
     iDestruct (array_cons with "Hl") as "(Hback & Hl)".
@@ -737,34 +773,42 @@ Section inf_chaselev_deque_G.
     rewrite loc_add_0 -{2}(loc_add_0 l) !loc_add_assoc /=.
     assert (1 + 1 = 2)%Z as -> by lia.
     assert (2 + 1 = 3)%Z as -> by lia.
+
     wp_pures.
+
+    (* → [array.(inf_array_make) #()] *)
     wp_apply (inf_array_make_spec with "[//]"). iIntros "%data Hdata_model".
+
     wp_pures. wp_store.
+
+    (* → [NewProph] *)
     wp_apply (wise_prophet_new_proph_spec with "[//]"). iIntros "%p %γ_prophet %prophs Hprophet_model".
+
     wp_pures. wp_store.
+
     iMod (mapsto_persist with "Hdata") as "#Hdata".
     iMod (mapsto_persist with "Hp") as "#Hp".
+
     iApply "HΦ".
+
     iMod inf_chaselev_deque_ctl_alloc as "(%γ_ctl & Hctl₁ & Hctl₂)".
     iMod inf_chaselev_deque_front_alloc as "(%γ_front & Hfront_auth)".
     iMod inf_chaselev_deque_hist_alloc as "(%γ_hist & Hhist_auth)".
     iMod inf_chaselev_deque_pub_alloc as "(%γ_pub & Hpub₁ & Hpub₂)".
     iMod inf_chaselev_deque_lock_alloc as "(%γ_lock & Hlock)".
     iMod inf_chaselev_deque_winner_alloc as "(%γ_winner & Hwinner)".
-    iDestruct (meta_token_difference _ (↑inf_chaselev_deque_meta_ctl) with "Hmeta") as "(Hmeta_ctl & Hmeta)"; first solve_ndisj.
-    iDestruct (meta_token_difference _ (↑inf_chaselev_deque_meta_front) with "Hmeta") as "(Hmeta_front & Hmeta)"; first solve_ndisj.
-    iDestruct (meta_token_difference _ (↑inf_chaselev_deque_meta_hist) with "Hmeta") as "(Hmeta_hist & Hmeta)"; first solve_ndisj.
-    iDestruct (meta_token_difference _ (↑inf_chaselev_deque_meta_pub) with "Hmeta") as "(Hmeta_pub & Hmeta)"; first solve_ndisj.
-    iDestruct (meta_token_difference _ (↑inf_chaselev_deque_meta_lock) with "Hmeta") as "(Hmeta_lock & Hmeta)"; first solve_ndisj.
-    iDestruct (meta_token_difference _ (↑inf_chaselev_deque_meta_prophet) with "Hmeta") as "(Hmeta_prophet & Hmeta)"; first solve_ndisj.
-    iDestruct (meta_token_difference _ (↑inf_chaselev_deque_meta_winner) with "Hmeta") as "(Hmeta_winner & _)"; first solve_ndisj.
-    iMod (meta_set _ _ γ_ctl with "Hmeta_ctl") as "#Hmeta_ctl"; first done.
-    iMod (meta_set _ _ γ_front with "Hmeta_front") as "#Hmeta_front"; first done.
-    iMod (meta_set _ _ γ_hist with "Hmeta_hist") as "#Hmeta_hist"; first done.
-    iMod (meta_set _ _ γ_pub with "Hmeta_pub") as "#Hmeta_pub"; first done.
-    iMod (meta_set _ _ γ_lock with "Hmeta_lock") as "#Hmeta_lock"; first done.
-    iMod (meta_set _ _ γ_prophet with "Hmeta_prophet") as "#Hmeta_prophet"; first done.
-    iMod (meta_set _ _ γ_winner with "Hmeta_winner") as "#Hmeta_winner"; first done.
+
+    set γ := {|
+      inf_chaselev_deque_name_ctl := γ_ctl ;
+      inf_chaselev_deque_name_front := γ_front ;
+      inf_chaselev_deque_name_hist := γ_hist ;
+      inf_chaselev_deque_name_pub := γ_pub ;
+      inf_chaselev_deque_name_lock := γ_lock ;
+      inf_chaselev_deque_name_prophet := γ_prophet ;
+      inf_chaselev_deque_name_winner := γ_winner ;
+    |}.
+    iMod (meta_set _ _ γ with "Hmeta") as "#Hmeta"; first done.
+
     iSplitR "Hctl₂ Hpub₂ Hlock".
     { repeat iExists _. iFrame "#∗". iSplitR; first done.
       iApply inv_alloc. iExists 0, 0%Z, [], [], (λ _, #()), [], prophs. iFrame.
@@ -773,8 +817,8 @@ Section inf_chaselev_deque_G.
       iLeft. iFrame. done.
     }
     iSplitL "Hpub₂".
-    { iExists l, γ_pub. naive_solver. }
-    iExists l, γ_ctl, γ_lock, 0%Z, (λ _, #()). iFrame "∗#". done.
+    { iExists l, γ. naive_solver. }
+    iExists l, γ, 0%Z, (λ _, #()). iFrame "∗#". done.
   Qed.
 
   Lemma inf_chaselev_deque_push_spec t ι v :
@@ -789,9 +833,8 @@ Section inf_chaselev_deque_G.
       RET #(); inf_chaselev_deque_owner t
     >>>.
   Proof.
-    iIntros "!> %Φ ((%l & %γ_ctl & %γ_front & %γ_hist & %γ_pub & %γ_lock & %γ_prophet & %γ_winner & %data & %p & -> & #Hmeta_ctl & #Hmeta_front & #Hmeta_hist & #Hmeta_pub & #Hmeta_lock & #Hmeta_prophet & #Hmeta_winner & #Hdata & #Hp & #Hinv) & (%l' & %_γ_ctl & %_γ_lock & %back & %priv & %Heq & #_Hmeta_ctl & #_Hmeta_lock & Hctl₂ & Hlock)) HΦ". injection Heq as <-.
-    iDestruct (meta_agree with "Hmeta_ctl _Hmeta_ctl") as %<-. iClear "_Hmeta_ctl".
-    iDestruct (meta_agree with "Hmeta_lock _Hmeta_lock") as %<-. iClear "_Hmeta_lock".
+    iIntros "!> %Φ ((%l & %γ & %data & %p & -> & #Hmeta & #Hdata & #Hp & #Hinv) & (%_l & %_γ & %back & %priv & %Heq & #_Hmeta & Hctl₂ & Hlock)) HΦ". injection Heq as <-.
+    iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
 
     wp_rec. wp_pures.
 
@@ -860,8 +903,8 @@ Section inf_chaselev_deque_G.
     set (priv'' i := priv (S i)).
     iMod (inf_chaselev_deque_ctl_update (back + 1) priv'' with "Hctl₁ Hctl₂") as "(Hctl₁ & Hctl₂)".
     (* begin transaction *)
-    iMod "HΦ" as "(%_pub & (%_l & %_γ_pub & %Heq & _Hmeta_pub & Hpub₂) & _ & HΦ)". injection Heq as <-.
-    iDestruct (meta_agree with "Hmeta_pub _Hmeta_pub") as %<-. iClear "_Hmeta_pub".
+    iMod "HΦ" as "(%_pub & (%_l & %_γ & %Heq & _Hmeta & Hpub₂) & _ & HΦ)". injection Heq as <-.
+    iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
     iDestruct (inf_chaselev_deque_pub_agree with "Hpub₁ Hpub₂") as %<-.
     (* update public values *)
     set (pub' := pub ++ [v]).
@@ -918,7 +961,7 @@ Section inf_chaselev_deque_G.
       RET o; True
     >>>.
   Proof.
-    iIntros "!> %Φ (%l & %γ_ctl & %γ_front & %γ_hist & %γ_pub & %γ_lock & %γ_prophet & %γ_winner & %data & %p & -> & #Hmeta_ctl & #Hmeta_front & #Hmeta_hist & #Hmeta_pub & #Hmeta_lock & #Hmeta_prophet & #Hmeta_winner & #Hdata & #Hp & #Hinv) HΦ".
+    iIntros "!> %Φ (%l & %γ & %data & %p & -> & #Hmeta & #Hdata & #Hp & #Hinv) HΦ".
     iLöb as "IH".
 
     wp_rec. wp_pures.
@@ -956,8 +999,8 @@ Section inf_chaselev_deque_G.
     { (* we have [pub = []] *)
       assert (length pub = 0) as ->%nil_length_inv by lia.
       (* begin transaction *)
-      iMod "HΦ" as "(%_pub & (%_l & %_γ_pub & %Heq & #_Hmeta_pub & Hpub₂) & _ & HΦ)". injection Heq as <-.
-      iDestruct (meta_agree with "Hmeta_pub _Hmeta_pub") as %<-. iClear "_Hmeta_pub".
+      iMod "HΦ" as "(%_pub & (%_l & %_γ & %Heq & #_Hmeta & Hpub₂) & _ & HΦ)". injection Heq as <-.
+      iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
       iDestruct (inf_chaselev_deque_pub_agree with "Hpub₁ Hpub₂") as %<-.
       (* end transation *)
       iMod ("HΦ" with "[Hpub₂] [//]") as "HΦ".
@@ -1161,8 +1204,8 @@ Section inf_chaselev_deque_G.
       iRight. iLeft. iFrame. iSplit; first done. iSplit; first done.
       rewrite /inf_chaselev_deque_state_inner₂ Hbranch2. iRight. iFrame. iExists Φ. iFrame.
       iNext. rewrite /inf_chaselev_deque_atomic_update. iAuIntro.
-      iApply (aacc_aupd_commit with "HΦ"); first done. iIntros "%_pub (%_l & %_γ_pub & %Heq & #_Hmeta_pub & Hpub₂)". injection Heq as <-.
-      iDestruct (meta_agree with "Hmeta_pub _Hmeta_pub") as %<-.
+      iApply (aacc_aupd_commit with "HΦ"); first done. iIntros "%_pub (%_l & %_γ & %Heq & #_Hmeta & Hpub₂)". injection Heq as <-.
+      iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
       iAaccIntro with "Hpub₂".
       { iIntros "Hpub₂ !>". iSplitL "Hpub₂"; last auto.
         repeat iExists _. iFrame "#∗". done.
@@ -1304,9 +1347,8 @@ Section inf_chaselev_deque_G.
       RET o; inf_chaselev_deque_owner t
     >>>.
   Proof.
-    iIntros "!> %Φ ((%l & %γ_ctl & %γ_front & %γ_hist & %γ_pub & %γ_lock & %γ_prophet & %γ_winner & %data & %p & -> & #Hmeta_ctl & #Hmeta_front & #Hmeta_hist & #Hmeta_pub & #Hmeta_lock & #Hmeta_prophet & #Hmeta_winner & #Hdata & #Hp & #Hinv) & (%l' & %_γ_ctl & %_γ_lock & %back & %priv & %Heq & #_Hmeta_ctl & #_Hmeta_lock & Hctl₂ & Hlock)) HΦ". injection Heq as <-.
-    iDestruct (meta_agree with "Hmeta_ctl _Hmeta_ctl") as %<-. iClear "_Hmeta_ctl".
-    iDestruct (meta_agree with "Hmeta_lock _Hmeta_lock") as %<-. iClear "_Hmeta_lock".
+    iIntros "!> %Φ ((%l & %γ & %data & %p & -> & #Hmeta & #Hdata & #Hp & #Hinv) & (%_l & %_γ & %back & %priv & %Heq & #_Hmeta & Hctl₂ & Hlock)) HΦ". injection Heq as <-.
+    iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
 
     wp_rec.
 
@@ -1399,8 +1441,8 @@ Section inf_chaselev_deque_G.
       (* hence there is no public value *)
       destruct (nil_or_length_pos pub) as [-> |]; last lia.
       (* begin transaction *)
-      iMod "HΦ" as "(%_pub & (%_l & %_γ_pub & %Heq & #_Hmeta_pub & Hpub₂) & _ & HΦ)". injection Heq as <-.
-      iDestruct (meta_agree with "Hmeta_pub _Hmeta_pub") as %<-.
+      iMod "HΦ" as "(%_pub & (%_l & %_γ & %Heq & #_Hmeta & Hpub₂) & _ & HΦ)". injection Heq as <-.
+      iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
       iDestruct (inf_chaselev_deque_pub_agree with "Hpub₁ Hpub₂") as %<-.
       (* end transaction *)
       iMod ("HΦ" $! NONEV with "[Hpub₂]") as "HΦ".
@@ -1429,8 +1471,8 @@ Section inf_chaselev_deque_G.
       set (priv' := λ i, match i with 0 => v | S i => priv i end).
       iMod (inf_chaselev_deque_ctl_update (back - 1) priv' with "Hctl₁ Hctl₂") as "(Hctl₁ & Hctl₂)".
       (* begin transaction *)
-      iMod "HΦ" as "(%_pub & (%_l & %_γ_pub & %Heq & #_Hmeta_pub & Hpub₂) & (_ & HΦ))". injection Heq as <-.
-      iDestruct (meta_agree with "Hmeta_pub _Hmeta_pub") as %<-. iClear "_Hmeta_pub".
+      iMod "HΦ" as "(%_pub & (%_l & %_γ & %Heq & #_Hmeta & Hpub₂) & (_ & HΦ))". injection Heq as <-.
+      iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
       iDestruct (inf_chaselev_deque_pub_agree with "Hpub₁ Hpub₂") as %<-.
       (* update public values *)
       iMod (inf_chaselev_deque_pub_update (w :: pub) with "Hpub₁ Hpub₂") as "(Hpub₁ & Hpub₂)".
@@ -1593,7 +1635,7 @@ Section inf_chaselev_deque_G.
     inf_chaselev_deque_inv t ι -∗
     ⌜val_is_unboxed t⌝.
   Proof.
-    iIntros "(%l & %γ_ctl & %γ_front & %γ_hist & %γ_pub & %γ_lock & %γ_prophet & %γ_winner & %data & %p & -> & #Hmeta_ctl & #Hmeta_front & #Hmeta_hist & #Hmeta_pub & #Hmeta_lock & #Hmeta_prophet & #Hmeta_winner & #Hdata & #Hp & #Hinv) //".
+    iIntros "(%l & %γ & %data & %p & -> & #Hmeta & #Hdata & #Hp & #Hinv) //".
   Qed.
 
   Program Definition inf_chaselev_ws_deque : ws_deque Σ true := {|

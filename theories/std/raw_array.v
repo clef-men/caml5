@@ -41,7 +41,8 @@ Section raw_array_G.
     λ: "t" "i" "v",
       "t" +ₗ "i" <- "v".
 
-  Notation raw_array_meta_token := (nroot .@ "token").
+  #[local] Definition raw_array_name := gname.
+  Implicit Types γ : raw_array_name.
 
   Section raw_array_token.
     #[local] Definition raw_array_token_auth γ sz :=
@@ -77,7 +78,7 @@ Section raw_array_G.
     Definition raw_array_inv t sz : iProp Σ :=
       ∃ l γ,
       ⌜t = #l⌝ ∗
-      meta l raw_array_meta_token γ ∗
+      meta l nroot γ ∗
       ⌜0 < sz⌝ ∗ raw_array_token_auth γ sz.
 
     #[global] Instance raw_array_inv_persistent t sz :
@@ -98,7 +99,7 @@ Section raw_array_G.
     Definition raw_array_mapsto t i dq v : iProp Σ :=
       ∃ l γ,
       ⌜t = #l⌝ ∗
-      meta l raw_array_meta_token γ ∗
+      meta l nroot γ ∗
       raw_array_token_frag γ (S i) ∗
       (l +ₗ i) ↦{dq} v.
 
@@ -184,7 +185,7 @@ Section raw_array_G.
     Definition raw_array_view t i dq vs : iProp Σ :=
       ∃ l γ,
       ⌜t = #l⌝ ∗
-      meta l raw_array_meta_token γ ∗
+      meta l nroot γ ∗
       raw_array_token_frag γ (i + length vs) ∗
       [∗ list] j ↦ v ∈ vs, (l +ₗ (i + j)%nat) ↦{dq} v.
 
@@ -220,7 +221,7 @@ Section raw_array_G.
     #[local] Lemma raw_array_view_to_mapstos_strong t i dq vs :
       raw_array_view t i dq vs -∗
         ∃ l γ,
-        ⌜t = #l⌝ ∗ meta l raw_array_meta_token γ ∗
+        ⌜t = #l⌝ ∗ meta l nroot γ ∗
         raw_array_token_frag γ (i + length vs) ∗
         [∗ list] j ↦ v ∈ vs, raw_array_mapsto t (i + j) dq v.
     Proof.
@@ -243,7 +244,7 @@ Section raw_array_G.
       vs !! j = Some v →
       raw_array_view t i dq vs -∗
         ∃ l γ,
-        ⌜t = #l⌝ ∗ meta l raw_array_meta_token γ ∗
+        ⌜t = #l⌝ ∗ meta l nroot γ ∗
         raw_array_token_frag γ (i + length vs) ∗
         raw_array_mapsto t (i + j) dq v.
     Proof.
@@ -263,7 +264,7 @@ Section raw_array_G.
 
     #[local] Lemma raw_array_mapstos_to_view_strong t l γ i dq vs :
       t = #l →
-      meta l raw_array_meta_token γ -∗
+      meta l nroot γ -∗
       raw_array_token_frag γ (i + length vs) -∗
       ([∗ list] j ↦ v ∈ vs, raw_array_mapsto t (i + j) dq v) -∗
       raw_array_view t i dq vs.
@@ -666,7 +667,7 @@ Section raw_array_G.
     iMod (auth_nat_max_alloc (Z.to_nat sz)) as "(%γ & H●)".
     iDestruct (auth_nat_max_frag_get with "H●") as "#H◯".
     iMod (auth_nat_max_auth_persist with "H●") as "#H●".
-    iMod (meta_set _ _ γ raw_array_meta_token with "Hmeta") as "#Hmeta"; first done.
+    iMod (meta_set _ _ γ with "Hmeta") as "#Hmeta"; first done.
     iSplitR; iExists l, γ; iFrame "∗#"; first auto with lia.
     iSplitR; first done.
     iSplitR; first rewrite replicate_length Nat.add_0_l //.
