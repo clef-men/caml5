@@ -24,6 +24,16 @@ Section heapGS.
     l.(2) ↦{dq} v₂ ∗
     l.(3) ↦{dq} v₃.
 
+  Lemma record4_model_def l dq v₀ v₁ v₂ v₃ :
+    record4_model l dq v₀ v₁ v₂ v₃ -∗
+      l.(0) ↦{dq} v₀ ∗
+      l.(1) ↦{dq} v₁ ∗
+      l.(2) ↦{dq} v₂ ∗
+      l.(3) ↦{dq} v₃.
+  Proof.
+    done.
+  Qed.
+
   #[global] Instance record4_model_timeless l dq v₀ v₁ v₂ v₃ :
     Timeless (record4_model l dq v₀ v₁ v₂ v₃).
   Proof.
@@ -136,7 +146,7 @@ Section heapGS.
   Lemma record4_make_spec v₀ v₁ v₂ v₃ :
     {{{ True }}}
       record4_make v₀ v₁ v₂ v₃
-    {{{ l, RET #l; record4_model l (DfracOwn 1) v₀ v₁ v₂ v₃ }}}.
+    {{{ l, RET #l; record4_model l (DfracOwn 1) v₀ v₁ v₂ v₃ ∗ meta_token l ⊤ }}}.
   Proof.
     iIntros "%Φ _ HΦ".
     wp_rec. wp_pures.

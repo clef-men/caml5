@@ -22,6 +22,15 @@ Section heapGS.
     l.(1) ↦{dq} v₁ ∗
     l.(2) ↦{dq} v₂.
 
+  Lemma record3_model_def l dq v₀ v₁ v₂ :
+    record3_model l dq v₀ v₁ v₂ -∗
+      l.(0) ↦{dq} v₀ ∗
+      l.(1) ↦{dq} v₁ ∗
+      l.(2) ↦{dq} v₂.
+  Proof.
+    done.
+  Qed.
+
   #[global] Instance record3_model_timeless l dq v₀ v₁ v₂ :
     Timeless (record3_model l dq v₀ v₁ v₂).
   Proof.

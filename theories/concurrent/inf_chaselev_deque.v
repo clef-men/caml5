@@ -19,6 +19,7 @@ From caml5.lang Require Import
   notations
   proofmode.
 From caml5.std Require Import
+  record4
   inf_array.
 From caml5.concurrent Require Export
   base.
@@ -124,10 +125,7 @@ Section inf_chaselev_deque_G.
 
   Definition inf_chaselev_deque_make : val :=
     λ: <>,
-      let: "t" := AllocN #4 #0 in
-      "t".(data) <- array.(inf_array_make) #() ;;
-      "t".(prophecy) <- NewProph ;;
-      "t".
+      record4_make #0 #0 (array.(inf_array_make) #()) NewProph.
 
   Definition inf_chaselev_deque_push : val :=
     λ: "t" "v",
@@ -764,28 +762,16 @@ Section inf_chaselev_deque_G.
 
     wp_rec.
 
-    (* → [AllocN #4 #0] *)
-    wp_apply (wp_allocN with "[//]"); first done. iIntros "%l (Hl & (Hmeta & _))".
-    iDestruct (array_cons with "Hl") as "(Hfront & Hl)".
-    iDestruct (array_cons with "Hl") as "(Hback & Hl)".
-    iDestruct (array_cons with "Hl") as "(Hdata & Hl)".
-    iDestruct (array_cons with "Hl") as "(Hp & _)".
-    rewrite loc_add_0 -{2}(loc_add_0 l) !loc_add_assoc /=.
-    assert (1 + 1 = 2)%Z as -> by lia.
-    assert (2 + 1 = 3)%Z as -> by lia.
-
-    wp_pures.
+    (* → [NewProph] *)
+    wp_apply (wise_prophet_new_proph_spec with "[//]"). iIntros "%p %γ_prophet %prophs Hprophet_model".
 
     (* → [array.(inf_array_make) #()] *)
     wp_apply (inf_array_make_spec with "[//]"). iIntros "%data Hdata_model".
 
-    wp_pures. wp_store.
-
-    (* → [NewProph] *)
-    wp_apply (wise_prophet_new_proph_spec with "[//]"). iIntros "%p %γ_prophet %prophs Hprophet_model".
-
-    wp_pures. wp_store.
-
+    (* → [record4_make #0 #0 data #p] *)
+    iApply wp_fupd.
+    wp_apply (record4_make_spec with "[//]"). iIntros "%l (Hl & Hmeta)".
+    iDestruct (record4_model_def with "Hl") as "(Hfront & Hback & Hdata & Hp)".
     iMod (mapsto_persist with "Hdata") as "#Hdata".
     iMod (mapsto_persist with "Hp") as "#Hp".
 
