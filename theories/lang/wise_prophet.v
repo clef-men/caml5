@@ -9,138 +9,163 @@ From caml5.lang Require Import
 From caml5.lang Require Export
   typed_prophet.
 
-Class WiseProphetG Σ `{!heapGS Σ} prophet := {
-  wise_prophet_G_full_G : AgreeG Σ $ leibnizO (list prophet.(typed_prophet_type)) ;
-  wise_prophet_G_past_G : MonoListG Σ prophet.(typed_prophet_type) ;
-}.
-#[local] Existing Instance wise_prophet_G_full_G.
-#[local] Existing Instance wise_prophet_G_past_G.
+Record wise_strong_prophet `{!heapGS Σ} := {
+  wise_strong_prophet_type : Type ;
+  wise_strong_prophet_to_val : wise_strong_prophet_type → val * val ;
 
-Definition wise_prophet_Σ prophet := #[
-  agree_Σ $ leibnizO (list prophet.(typed_prophet_type)) ;
-  mono_list_Σ prophet.(typed_prophet_type)
-].
-Lemma subG_wise_prophet_Σ Σ `{!heapGS Σ} prophet :
-  subG (wise_prophet_Σ prophet) Σ →
-  WiseProphetG Σ prophet.
-Proof.
-  solve_inG.
-Qed.
+  wise_strong_prophet_name : Type ;
+  wise_strong_prophet_name_eq_dec :
+    EqDecision wise_strong_prophet_name ;
+  wise_strong_prophet_name_countable :
+    Countable wise_strong_prophet_name ;
 
-Section wise_prophet_G.
-  Context `{!heapGS Σ} prophet `{wise_prophet_G : !WiseProphetG Σ prophet}.
+  wise_strong_prophet_model : proph_id → wise_strong_prophet_name → list wise_strong_prophet_type → list wise_strong_prophet_type → iProp Σ ;
+  wise_strong_prophet_lb : wise_strong_prophet_name → list wise_strong_prophet_type → iProp Σ ;
 
-  Definition wise_prophet_name : Type := gname * gname.
+  wise_strong_prophet_model_timeless p γ past prophs :
+    Timeless (wise_strong_prophet_model p γ past prophs) ;
+  wise_strong_prophet_lb_timeless γ lb :
+    Timeless (wise_strong_prophet_lb γ lb) ;
+  wise_strong_prophet_lb_persistent γ lb :
+    Persistent (wise_strong_prophet_lb γ lb) ;
 
-  #[global] Instance wise_prophet_name_eq_dec :
-    EqDecision wise_prophet_name.
-  Proof.
-    apply _.
-  Defined.
-  #[global] Instance wise_prophet_name_countable :
-    Countable wise_prophet_name.
-  Proof.
-    apply _.
-  Qed.
+  wise_strong_prophet_model_exclusive p γ1 past1 prophs1 γ2 past2 prophs2 :
+    wise_strong_prophet_model p γ1 past1 prophs1 -∗
+    wise_strong_prophet_model p γ2 past2 prophs2 -∗
+    False ;
 
-  Notation prophecies := (list prophet.(typed_prophet_type)).
-  Let prophecies_O := leibnizO prophecies.
-  #[local] Canonical prophecies_O.
+  wise_strong_prophet_lb_get p γ past prophs :
+    wise_strong_prophet_model p γ past prophs -∗
+    wise_strong_prophet_lb γ prophs ;
+  wise_strong_prophet_model_lb_valid p γ past prophs lb :
+    wise_strong_prophet_model p γ past prophs -∗
+    wise_strong_prophet_lb γ lb -∗
+    ⌜∃ past1 past2, past = past1 ++ past2 ∧ lb = past2 ++ prophs⌝ ;
 
-  Implicit Types γ : wise_prophet_name.
-  Implicit Types prophs : prophecies.
-
-  Notation "γ '.(full)'" := γ.1
-  ( at level 5
-  ) : stdpp_scope.
-  Notation "γ '.(past)'" := γ.2
-  ( at level 5
-  ) : stdpp_scope.
-
-  Definition wise_prophet_model p γ past prophs : iProp Σ :=
-    agree_on γ.(full) (past ++ prophs) ∗
-    mono_list_auth γ.(past) 1 past ∗
-    typed_prophet_model prophet p prophs.
-
-  Definition wise_prophet_lb γ lb : iProp Σ :=
-    ∃ past_lb,
-    agree_on γ.(full) (past_lb ++ lb) ∗
-    mono_list_lb γ.(past) past_lb.
-
-  #[global] Instance wise_prophet_model_timeless p γ past prophs :
-    Timeless (wise_prophet_model p γ past prophs).
-  Proof.
-    apply _.
-  Qed.
-  #[global] Instance wise_prophet_lb_timeless γ lb :
-    Timeless (wise_prophet_lb γ lb).
-  Proof.
-    apply _.
-  Qed.
-  #[global] Instance wise_prophet_lb_persistent γ lb :
-    Persistent (wise_prophet_lb γ lb).
-  Proof.
-    apply _.
-  Qed.
-
-  Lemma wise_prophet_model_exclusive p γ1 past1 prophs1 γ2 past2 prophs2 :
-    wise_prophet_model p γ1 past1 prophs1 -∗
-    wise_prophet_model p γ2 past2 prophs2 -∗
-    False.
-  Proof.
-    iIntros "(_ & _ & Hmodel1) (_ & _ & Hmodel2)".
-    iApply (typed_prophet_model_exclusive with "Hmodel1 Hmodel2").
-  Qed.
-
-  Lemma wise_prophet_lb_get p γ past prophs :
-    wise_prophet_model p γ past prophs -∗
-    wise_prophet_lb γ prophs.
-  Proof.
-    iIntros "(#Hfull & Hpast_auth & Hmodel)".
-    iExists past. iFrame "#∗". iApply (mono_list_lb_get with "Hpast_auth").
-  Qed.
-  Lemma wise_prophet_model_lb_valid p γ past prophs lb :
-    wise_prophet_model p γ past prophs -∗
-    wise_prophet_lb γ lb -∗
-    ⌜∃ past1 past2, past = past1 ++ past2 ∧ lb = past2 ++ prophs⌝.
-  Proof.
-    iIntros "(#Hfull & Hpast_auth & Hmodel) (%past1 & #Hfull' & #Hpast_lb)".
-    iDestruct (agree_on_agree_L with "Hfull Hfull'") as %Hfull.
-    iDestruct (mono_list_auth_lb_valid with "Hpast_auth Hpast_lb") as %(_ & past2 & ->).
-    iExists past1, past2. rewrite -assoc in Hfull. naive_solver.
-  Qed.
-
-  Lemma wise_prophet_new_proph_spec E :
+  wise_strong_prophet_wp_new_proph E :
     {{{ True }}}
       NewProph @ E
     {{{ p γ prophs,
       RET #p;
-      wise_prophet_model p γ [] prophs
-    }}}.
-  Proof.
-    iIntros "%Φ _ HΦ".
-    iApply wp_fupd. wp_apply (typed_prophet_new_proph_spec with "[//]"). iIntros "%p %prophs Hp".
-    iMod (agree_alloc (agree_G := wise_prophet_G_full_G) prophs) as "(%γ_full & #Hfull)".
-    iMod (mono_list_alloc []) as "(%γ_past & Hpast_auth & _)".
-    iApply ("HΦ" $! _ (γ_full, γ_past)). iFrame "#∗". done.
-  Qed.
+      wise_strong_prophet_model p γ [] prophs
+    }}} ;
 
-  Lemma wise_prophet_resolve_spec e v E p γ past prophs Φ :
+  wise_strong_prophet_wp_resolve e v E p γ past prophs Φ :
     Atomic StronglyAtomic e →
     to_val e = None →
-    wise_prophet_model p γ past prophs -∗
+    wise_strong_prophet_model p γ past prophs -∗
     WP e @ E {{ w,
       ∃ proph,
-      ⌜(w, v) = prophet.(typed_prophet_to_val) proph⌝ ∗
+      ⌜(w, v) = wise_strong_prophet_to_val proph⌝ ∗
         ∀ prophs',
         ⌜prophs = proph :: prophs'⌝ -∗
-        wise_prophet_model p γ (past ++ [proph]) prophs' -∗
+        wise_strong_prophet_model p γ (past ++ [proph]) prophs' -∗
         Φ w
     }} -∗
-    WP Resolve e #p v @ E {{ Φ }}.
+    WP Resolve e #p v @ E {{ Φ }} ;
+}.
+#[global] Arguments wise_strong_prophet _ {_} : assert.
+#[global] Arguments Build_wise_strong_prophet {_ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ : assert.
+#[global] Existing Instance wise_strong_prophet_name_eq_dec.
+#[global] Existing Instance wise_strong_prophet_name_countable.
+#[global] Existing Instance wise_strong_prophet_model_timeless.
+#[global] Existing Instance wise_strong_prophet_lb_timeless.
+#[global] Existing Instance wise_strong_prophet_lb_persistent.
+#[global] Opaque wise_strong_prophet_model.
+#[global] Opaque wise_strong_prophet_lb.
+
+Class WiseStrongProphetG Σ `{!heapGS Σ} spec := {
+  wise_strong_prophet_G_full_G : AgreeG Σ (leibnizO (list spec.(typed_strong_prophet_spec_type))) ;
+  wise_strong_prophet_G_past_G : MonoListG Σ spec.(typed_strong_prophet_spec_type) ;
+}.
+#[local] Existing Instance wise_strong_prophet_G_full_G.
+#[local] Existing Instance wise_strong_prophet_G_past_G.
+
+Definition wise_strong_prophet_Σ spec := #[
+  agree_Σ (leibnizO (list spec.(typed_strong_prophet_spec_type))) ;
+  mono_list_Σ spec.(typed_strong_prophet_spec_type)
+].
+Lemma subG_wise_strong_prophet_Σ Σ `{!heapGS Σ} spec :
+  subG (wise_strong_prophet_Σ spec) Σ →
+  WiseStrongProphetG Σ spec.
+Proof.
+  solve_inG.
+Qed.
+
+Section make_wise_prophet_G.
+  Context `{!heapGS Σ} spec `{wise_prophet_G : !WiseStrongProphetG Σ spec}.
+
+  Definition make_wise_strong_prophet_typed_prophet :=
+    make_typed_strong_prophet spec.
+
+  Record make_wise_strong_prophet_name := {
+    make_wise_strong_prophet_name_full : gname ;
+    make_wise_strong_prophet_name_past : gname ;
+  }.
+  #[local] Instance make_wise_strong_prophet_name_eq_dec :
+    EqDecision make_wise_strong_prophet_name.
   Proof.
-    iIntros "% % (#Hfull & Hpast_auth & Hmodel) HΦ".
-    wp_apply (typed_prophet_resolve_spec with "Hmodel"); first done.
+    solve_decision.
+  Qed.
+  #[local] Instance make_wise_strong_prophet_name_countable :
+    Countable make_wise_strong_prophet_name.
+  Proof.
+    pose encode γ := (
+      γ.(make_wise_strong_prophet_name_full),
+      γ.(make_wise_strong_prophet_name_past)
+    ).
+    pose decode := λ '(γ_full, γ_past), {|
+      make_wise_strong_prophet_name_full := γ_full ;
+      make_wise_strong_prophet_name_past := γ_past ;
+    |}.
+    refine (inj_countable' encode decode _). intros []. done.
+  Qed.
+
+  Program Definition make_wise_strong_prophet := {|
+    wise_strong_prophet_type :=
+      spec.(typed_strong_prophet_spec_type) ;
+    wise_strong_prophet_to_val :=
+      spec.(typed_strong_prophet_spec_to_val) ;
+
+    wise_strong_prophet_model p γ past prophs := (
+      agree_on γ.(make_wise_strong_prophet_name_full) (past ++ prophs) ∗
+      mono_list_auth γ.(make_wise_strong_prophet_name_past) 1 past ∗
+      make_wise_strong_prophet_typed_prophet.(typed_strong_prophet_model) p prophs
+    )%I ;
+    wise_strong_prophet_lb γ lb := (
+      ∃ past_lb,
+      agree_on γ.(make_wise_strong_prophet_name_full) (past_lb ++ lb) ∗
+      mono_list_lb γ.(make_wise_strong_prophet_name_past) past_lb
+    )%I ;
+  |}.
+  Next Obligation.
+    iIntros "* (_ & _ & Hmodel1) (_ & _ & Hmodel2)".
+    iApply (typed_strong_prophet_model_exclusive with "Hmodel1 Hmodel2").
+  Qed.
+  Next Obligation.
+    iIntros "* (#Hfull & Hpast_auth & Hmodel)".
+    iExists past. iFrame "#∗". iApply (mono_list_lb_get with "Hpast_auth").
+  Qed.
+  Next Obligation.
+    iIntros "* (#Hfull & Hpast_auth & Hmodel) (%past1 & #Hfull' & #Hpast_lb)".
+    iDestruct (agree_on_agree_L with "Hfull Hfull'") as %Hfull.
+    iDestruct (mono_list_auth_lb_valid with "Hpast_auth Hpast_lb") as %(_ & past2 & ->).
+    iExists past1, past2. rewrite -assoc in Hfull. naive_solver.
+  Qed.
+  Next Obligation.
+    iIntros "* _ HΦ".
+    iApply wp_fupd. wp_apply (make_wise_strong_prophet_typed_prophet.(typed_strong_prophet_wp_new_proph) with "[//]"). iIntros "%p %prophs Hp".
+    iMod (agree_alloc (agree_G := wise_strong_prophet_G_full_G) prophs) as "(%γ_full & #Hfull)".
+    iMod (mono_list_alloc []) as "(%γ_past & Hpast_auth & _)".
+    set γ := {|
+      make_wise_strong_prophet_name_full := γ_full ;
+      make_wise_strong_prophet_name_past := γ_past ;
+    |}.
+    iApply ("HΦ" $! p γ). iFrame "#∗". done.
+  Qed.
+  Next Obligation.
+    iIntros "* % % (#Hfull & Hpast_auth & Hmodel) HΦ".
+    wp_apply (typed_strong_prophet_wp_resolve with "Hmodel"); first done.
     iApply wp_fupd. wp_apply (wp_wand with "HΦ"). iIntros "%w HΦ".
     iDestruct "HΦ" as "(%proph & % & HΦ)".
     iExists proph. iSplitR; first done.
@@ -148,8 +173,161 @@ Section wise_prophet_G.
     iIntros "!> %prophs' -> Hp".
     iApply ("HΦ" with "[//]"). iFrame. list_simplifier. done.
   Qed.
-End wise_prophet_G.
+End make_wise_prophet_G.
 
-#[global] Opaque wise_prophet_name.
+Record wise_prophet `{!heapGS Σ} := {
+  wise_prophet_type : Type ;
+  wise_prophet_to_val : wise_prophet_type → val ;
+
+  wise_prophet_name : Type ;
+  wise_prophet_name_eq_dec :
+    EqDecision wise_prophet_name ;
+  wise_prophet_name_countable :
+    Countable wise_prophet_name ;
+
+  wise_prophet_model : proph_id → wise_prophet_name → list wise_prophet_type → list wise_prophet_type → iProp Σ ;
+  wise_prophet_lb : wise_prophet_name → list wise_prophet_type → iProp Σ ;
+
+  wise_prophet_model_timeless p γ past prophs :
+    Timeless (wise_prophet_model p γ past prophs) ;
+  wise_prophet_lb_timeless γ lb :
+    Timeless (wise_prophet_lb γ lb) ;
+  wise_prophet_lb_persistent γ lb :
+    Persistent (wise_prophet_lb γ lb) ;
+
+  wise_prophet_model_exclusive p γ1 past1 prophs1 γ2 past2 prophs2 :
+    wise_prophet_model p γ1 past1 prophs1 -∗
+    wise_prophet_model p γ2 past2 prophs2 -∗
+    False ;
+
+  wise_prophet_lb_get p γ past prophs :
+    wise_prophet_model p γ past prophs -∗
+    wise_prophet_lb γ prophs ;
+  wise_prophet_model_lb_valid p γ past prophs lb :
+    wise_prophet_model p γ past prophs -∗
+    wise_prophet_lb γ lb -∗
+    ⌜∃ past1 past2, past = past1 ++ past2 ∧ lb = past2 ++ prophs⌝ ;
+
+  wise_prophet_wp_new_proph E :
+    {{{ True }}}
+      NewProph @ E
+    {{{ p γ prophs,
+      RET #p;
+      wise_prophet_model p γ [] prophs
+    }}} ;
+
+  wise_prophet_wp_resolve proph e v E p γ past prophs Φ :
+    Atomic StronglyAtomic e →
+    to_val e = None →
+    v = wise_prophet_to_val proph →
+    wise_prophet_model p γ past prophs -∗
+    WP e @ E {{ w,
+      ∀ prophs',
+      ⌜prophs = proph :: prophs'⌝ -∗
+      wise_prophet_model p γ (past ++ [proph]) prophs' -∗
+      Φ w
+    }} -∗
+    WP Resolve e #p v @ E {{ Φ }} ;
+}.
+#[global] Arguments wise_prophet _ {_} : assert.
+#[global] Arguments Build_wise_prophet {_ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ : assert.
+#[global] Existing Instance wise_prophet_name_eq_dec.
+#[global] Existing Instance wise_prophet_name_countable.
+#[global] Existing Instance wise_prophet_model_timeless.
+#[global] Existing Instance wise_prophet_lb_timeless.
+#[global] Existing Instance wise_prophet_lb_persistent.
 #[global] Opaque wise_prophet_model.
 #[global] Opaque wise_prophet_lb.
+
+Class WiseProphetG Σ `{!heapGS Σ} spec := {
+  wise_prophet_G_full_G : AgreeG Σ (leibnizO (list (val * spec.(typed_prophet_spec_type)))) ;
+  wise_prophet_G_past_G : MonoListG Σ (val * spec.(typed_prophet_spec_type)) ;
+}.
+#[local] Existing Instance wise_prophet_G_full_G.
+#[local] Existing Instance wise_prophet_G_past_G.
+
+Definition wise_prophet_Σ spec := #[
+  agree_Σ (leibnizO (list (val * spec.(typed_prophet_spec_type)))) ;
+  mono_list_Σ (val * spec.(typed_prophet_spec_type))
+].
+Lemma subG_wise_prophet_Σ Σ `{!heapGS Σ} spec :
+  subG (wise_prophet_Σ spec) Σ →
+  WiseProphetG Σ spec.
+Proof.
+  solve_inG.
+Qed.
+
+Section make_wise_prophet.
+  Context `{!heapGS Σ} spec `{wise_prophet_G : !WiseProphetG Σ spec}.
+
+  #[local] Program Definition make_wise_prophet_strong_prophet_spec := {|
+    typed_strong_prophet_spec_type :=
+      val * spec.(typed_prophet_spec_type) ;
+    typed_strong_prophet_spec_of_val w v :=
+      match spec.(typed_prophet_spec_of_val) v with
+      | None => None
+      | Some proph => Some (w, proph)
+      end ;
+    typed_strong_prophet_spec_to_val '(w, proph) :=
+      (w, spec.(typed_prophet_spec_to_val) proph) ;
+  |}.
+  Next Obligation.
+    intros (w & proph) _w v [= -> ->].
+    erewrite spec.(typed_prophet_spec_of_to_val); done.
+  Qed.
+
+  #[local] Instance make_wise_prophet_strong_prophet_G :
+    WiseStrongProphetG Σ make_wise_prophet_strong_prophet_spec.
+  Proof.
+    split; apply _.
+  Qed.
+
+  #[local] Definition make_wise_prophet_strong_prophet :=
+    make_wise_strong_prophet make_wise_prophet_strong_prophet_spec.
+
+  Program Definition make_wise_prophet := {|
+    wise_prophet_type :=
+      spec.(typed_prophet_spec_type) ;
+    wise_prophet_to_val :=
+      spec.(typed_prophet_spec_to_val) ;
+
+    wise_prophet_model p γ past prophs := (
+      ∃ spast sprophs,
+      ⌜past = spast.*2⌝ ∗
+      ⌜prophs = sprophs.*2⌝ ∗
+      make_wise_prophet_strong_prophet.(wise_strong_prophet_model) p γ spast sprophs
+    )%I ;
+    wise_prophet_lb γ lb := (
+      ∃ slb,
+      ⌜lb = slb.*2⌝ ∗
+      make_wise_prophet_strong_prophet.(wise_strong_prophet_lb) γ slb
+    )%I ;
+  |}.
+  Next Obligation.
+    iIntros "* (%spast1 & %sprophs1 & _ & _ & Hmodel1) (%spast2 & %sprophs2 & _ & _ & Hmodel2)".
+    iApply (wise_strong_prophet_model_exclusive with "Hmodel1 Hmodel2").
+  Qed.
+  Next Obligation.
+    iIntros "* (%spast & %sprophs & -> & -> & Hmodel)".
+    iExists sprophs. iSplit; first done.
+    iApply (wise_strong_prophet_lb_get with "Hmodel").
+  Qed.
+  Next Obligation.
+    iIntros "* (%spast & %sprophs & -> & -> & Hmodel) (%slb & -> & Hlb)".
+    iDestruct (wise_strong_prophet_model_lb_valid with "Hmodel Hlb") as "(%spast1 & %spast2 & -> & ->)".
+    iExists spast1.*2, spast2.*2. iSplit; iPureIntro; list_simplifier; done.
+  Qed.
+  Next Obligation.
+    iIntros "* _ HΦ".
+    wp_apply (make_wise_prophet_strong_prophet.(wise_strong_prophet_wp_new_proph) with "[//]"). iIntros "%p %γ %sprophs Hmodel".
+    iApply "HΦ". iExists [], sprophs. auto with iFrame.
+  Qed.
+  Next Obligation.
+    iIntros "*" (? ? ->) "(%spast & %sprophs & -> & -> & Hmodel) HΦ".
+    wp_apply (wise_strong_prophet_wp_resolve with "Hmodel"); first done.
+    wp_apply (wp_wand with "HΦ"). iIntros "%w HΦ".
+    iExists (w, proph). iSplit; first done. iIntros "%sprophs' -> Hmodel".
+    iApply ("HΦ" with "[//]"). iExists (spast ++ [(w, proph)]), sprophs'. iFrame.
+    iSplit; iPureIntro; list_simplifier; done.
+  Qed.
+End make_wise_prophet.
