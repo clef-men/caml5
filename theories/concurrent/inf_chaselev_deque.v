@@ -7,7 +7,8 @@ From iris.algebra Require Import
 From caml5 Require Import
   prelude.
 From caml5.common Require Import
-  tactics.
+  tactics
+  list.
 From caml5.base_logic Require Import
   lib.excl
   lib.auth_excl
@@ -323,13 +324,13 @@ Section inf_chaselev_deque_G.
   #[local] Definition inf_chaselev_deque_state_inner₃₁ γ front hist prophs : iProp Σ :=
     match filter (λ '(front', _), front' = front) prophs with
     | [] =>
-        inf_chaselev_deque_winner γ
+        ∃ Φ,
+        inf_chaselev_deque_winner₂ γ front Φ
     | (_, id) :: _ =>
-          inf_chaselev_deque_winner γ
-        ∨ identifier_model id ∗
-          ∃ Φ,
-          inf_chaselev_deque_winner₁ γ front Φ ∗
-          Φ (SOMEV (hist !!! front))
+        identifier_model id ∗
+        ∃ Φ,
+        inf_chaselev_deque_winner₁ γ front Φ ∗
+        Φ (SOMEV (hist !!! front))
     end.
   #[local] Definition inf_chaselev_deque_state₃₁ γ front back hist prophs : iProp Σ :=
     (* physical configuration *)
@@ -568,13 +569,35 @@ Section inf_chaselev_deque_G.
     iMod (auth_excl_alloc' (auth_excl_G := inf_chaselev_deque_G_winner_G) (inhabitant, λ _, Next inhabitant)) as "(%γ_winner & Hwinner₁ & Hwinner₂)".
     repeat iExists _. iFrame. done.
   Qed.
-  #[local] Lemma inf_chaselev_deque_winner₂_exclusive γ front Φ :
+  #[local] Lemma inf_chaselev_deque_winner₁_exclusive γ front1 Φ1 front2 Φ2 :
+    inf_chaselev_deque_winner₁ γ front1 Φ1 -∗
+    inf_chaselev_deque_winner₁ γ front2 Φ2 -∗
+    False.
+  Proof.
+    apply auth_excl_frag_exclusive.
+  Qed.
+  #[local] Lemma inf_chaselev_deque_winner₁_exclusive' γ front Φ :
+    inf_chaselev_deque_winner₁ γ front Φ -∗
+    inf_chaselev_deque_winner γ -∗
+    False.
+  Proof.
+    iIntros "Hwinner₁ (%front' & %Φ1 & %Φ2 & Hwinner₁' & Hwinner₂)".
+    iApply (inf_chaselev_deque_winner₁_exclusive with "Hwinner₁ Hwinner₁'").
+  Qed.
+  #[local] Lemma inf_chaselev_deque_winner₂_exclusive γ front1 Φ1 front2 Φ2 :
+    inf_chaselev_deque_winner₂ γ front1 Φ1 -∗
+    inf_chaselev_deque_winner₂ γ front2 Φ2 -∗
+    False.
+  Proof.
+    apply auth_excl_auth_exclusive.
+  Qed.
+  #[local] Lemma inf_chaselev_deque_winner₂_exclusive' γ front Φ :
     inf_chaselev_deque_winner₂ γ front Φ -∗
     inf_chaselev_deque_winner γ -∗
     False.
   Proof.
     iIntros "Hwinner₂ (%front' & %Φ1 & %Φ2 & Hwinner₁ & Hwinner₂')".
-    iApply (auth_excl_auth_exclusive with "Hwinner₂ Hwinner₂'").
+    iApply (inf_chaselev_deque_winner₂_exclusive with "Hwinner₂ Hwinner₂'").
   Qed.
   #[local] Lemma inf_chaselev_deque_winner_agree {γ front1 Φ1 front2 Φ2} v :
     inf_chaselev_deque_winner₁ γ front1 Φ1 -∗
@@ -600,43 +623,84 @@ Section inf_chaselev_deque_G.
     iIntros "Hwinner₁ Hwinner₂".
     iMod (auth_excl_update (auth_excl_G := inf_chaselev_deque_G_winner_G) (front, Next ∘ Φ) with "Hwinner₂ Hwinner₁") as "($ & $)"; done.
   Qed.
-  #[local] Lemma inf_chaselev_deque_winner₂_state_inner₂ {γ ι front1 front2 prophs Φ} v :
-    inf_chaselev_deque_winner₂ γ front1 Φ -∗
-    inf_chaselev_deque_state_inner₂ γ ι front2 prophs -∗
-      ∃ id Φ',
-      ⌜front1 = front2⌝ ∗
-      ▷ (Φ' v ≡ Φ v) ∗
-      inf_chaselev_deque_winner₁ γ front1 Φ' ∗
-      inf_chaselev_deque_winner₂ γ front1 Φ ∗
-      identifier_model id ∗
-      inf_chaselev_deque_atomic_update γ ι Φ'.
+  #[local] Lemma inf_chaselev_deque_winner₁_state γ ι front front' back hist pub prophs Φ :
+    inf_chaselev_deque_winner₁ γ front Φ -∗
+    inf_chaselev_deque_state γ ι front' back hist pub prophs -∗
+      ⌜front' = front⌝ ∗
+      ⌜back = front⌝ ∗
+      inf_chaselev_deque_lock γ ∗
+      inf_chaselev_deque_hist_auth γ hist ∗
+      ⌜length hist = S front⌝ ∗
+        ∃ Φ',
+        ⌜filter (λ '(front', _), front' = front) prophs = []⌝ ∗
+        inf_chaselev_deque_winner₁ γ front Φ ∗
+        inf_chaselev_deque_winner₂ γ front Φ'.
   Proof.
-    iIntros "Hwinner₂ Hstate".
-    rewrite /inf_chaselev_deque_state_inner₂. destruct (filter _ _) as [| (? & id) prophs'] eqn:?.
-    - iDestruct (inf_chaselev_deque_winner₂_exclusive with "Hwinner₂ Hstate") as %[].
-    - iDestruct "Hstate" as "[Hwinner | (Hid & %Φ' & Hwinner₁ & HΦ')]".
-      + iDestruct (inf_chaselev_deque_winner₂_exclusive with "Hwinner₂ Hwinner") as %[].
-      + iDestruct (inf_chaselev_deque_winner_agree v with "Hwinner₁ Hwinner₂") as "(-> & Heq & Hwinner₁ & Hwinner₂)".
-        iExists id, Φ'. iFrame. done.
+    iIntros "Hwinner₁ [Hstate | [Hstate | Hstate]]".
+    - iDestruct "Hstate" as "(_ & _ & _ & Hstate)".
+      iDestruct (inf_chaselev_deque_winner₁_exclusive' with "Hwinner₁ Hstate") as %[].
+    - iDestruct "Hstate" as "(_ & _ & _ & Hstate)".
+      rewrite /inf_chaselev_deque_state_inner₂. destruct (filter _ _) as [| [] ?].
+      + iDestruct (inf_chaselev_deque_winner₁_exclusive' with "Hwinner₁ Hstate") as %[].
+      + iDestruct "Hstate" as "[Hstate | (_ & % & Hwinner₁' & _)]".
+        * iDestruct (inf_chaselev_deque_winner₁_exclusive' with "Hwinner₁ Hstate") as %[].
+        * iDestruct (inf_chaselev_deque_winner₁_exclusive with "Hwinner₁ Hwinner₁'") as %[].
+    - iDestruct "Hstate" as "(Hlock & [(<- & Hhist_auth & -> & Hstate) | (_ & _ & _ & Hstate)])".
+      + rewrite /inf_chaselev_deque_state_inner₃₁. destruct (filter _ _) as [| [] ?] eqn:Hprophs.
+        * iDestruct "Hstate" as "(%Φ' & Hwinner₂)".
+          iDestruct (inf_chaselev_deque_winner_agree inhabitant with "Hwinner₁ Hwinner₂") as "(<- & _ & Hwinner₁ & Hwinner₂)".
+          auto 10 with iFrame.
+        * iDestruct "Hstate" as "(_ & % & Hwinner₁' & _)".
+          iDestruct (inf_chaselev_deque_winner₁_exclusive with "Hwinner₁ Hwinner₁'") as %[].
+      + iDestruct (inf_chaselev_deque_winner₁_exclusive' with "Hwinner₁ Hstate") as %[].
   Qed.
-  #[local] Lemma inf_chaselev_deque_winner₂_state_inner₃₁ {γ front1 front2 hist prophs Φ} v :
-    inf_chaselev_deque_winner₂ γ front1 Φ -∗
-    inf_chaselev_deque_state_inner₃₁ γ front2 hist prophs -∗
-      ∃ id Φ',
-      ⌜front1 = front2⌝ ∗
-      ▷ (Φ' v ≡ Φ v) ∗
-      inf_chaselev_deque_winner₁ γ front1 Φ' ∗
-      inf_chaselev_deque_winner₂ γ front1 Φ ∗
-      identifier_model id ∗
-      Φ' (SOMEV (hist !!! front1)).
+  #[local] Lemma inf_chaselev_deque_winner₂_state γ ι front front' back hist pub prophs Φ :
+    inf_chaselev_deque_winner₂ γ front Φ -∗
+    inf_chaselev_deque_state γ ι front' back hist pub prophs -∗
+      ⌜front' = front⌝ ∗
+      ( ⌜(front < back)%Z⌝ ∗
+        inf_chaselev_deque_hist_auth γ (hist ++ [pub !!! 0]) ∗
+        ⌜length hist = front⌝ ∗
+        ( ∃ id fprophs Φ',
+          ⌜filter (λ '(front', _), front' = front) prophs = (front, id) :: fprophs⌝ ∗
+          inf_chaselev_deque_winner₁ γ front Φ' ∗
+          inf_chaselev_deque_winner₂ γ front Φ ∗
+          identifier_model id ∗
+          inf_chaselev_deque_atomic_update γ ι Φ'
+        )
+      ∨ ⌜back = front⌝ ∗
+        inf_chaselev_deque_lock γ ∗
+        inf_chaselev_deque_hist_auth γ hist ∗
+        ⌜length hist = S front⌝ ∗
+        ( ∃ id fprophs Φ',
+          ⌜filter (λ '(front', _), front' = front) prophs = (front, id) :: fprophs⌝ ∗
+          inf_chaselev_deque_winner₁ γ front Φ' ∗
+          inf_chaselev_deque_winner₂ γ front Φ ∗
+          identifier_model id ∗
+          Φ' (SOMEV (hist !!! front))
+        )
+      ).
   Proof.
-    iIntros "Hwinner₂ Hstate".
-    rewrite /inf_chaselev_deque_state_inner₃₁. destruct (filter _ _) as [| (? & id) prophs'] eqn:?.
-    - iDestruct (inf_chaselev_deque_winner₂_exclusive with "Hwinner₂ Hstate") as %[].
-    - iDestruct "Hstate" as "[Hwinner | (Hid & %Φ' & Hwinner₁ & HΦ')]".
-      + iDestruct (inf_chaselev_deque_winner₂_exclusive with "Hwinner₂ Hwinner") as %[].
-      + iDestruct (inf_chaselev_deque_winner_agree v with "Hwinner₁ Hwinner₂") as "(-> & Heq & Hwinner₁ & Hwinner₂)".
-        iExists id, Φ'. iFrame. done.
+    iIntros "Hwinner₂ [Hstate | [Hstate | Hstate]]".
+    - iDestruct "Hstate" as "(_ & _ & _ & Hstate)".
+      iDestruct (inf_chaselev_deque_winner₂_exclusive' with "Hwinner₂ Hstate") as %[].
+    - iDestruct "Hstate" as "(%Hstate & Hhist_auth & -> & Hstate)".
+      rewrite /inf_chaselev_deque_state_inner₂. destruct (filter _ _) as [| (front'' & id) fprophs] eqn:Hprophs.
+      + iDestruct (inf_chaselev_deque_winner₂_exclusive' with "Hwinner₂ Hstate") as %[].
+      + iDestruct "Hstate" as "[Hstate | (Hid & %Φ' & Hwinner₁ & HΦ')]".
+        * iDestruct (inf_chaselev_deque_winner₂_exclusive' with "Hwinner₂ Hstate") as %[].
+        * iDestruct (inf_chaselev_deque_winner_agree inhabitant with "Hwinner₁ Hwinner₂") as "(-> & _ & Hwinner₁ & Hwinner₂)".
+          pose proof (filter_eq_cons _ _ _ _ Hprophs) as ->.
+          auto 10 with iFrame.
+    - iDestruct "Hstate" as "(Hlock & [(<- & Hhist_auth & -> & Hstate) | (_ & _ & _ & Hstate)])".
+      + rewrite /inf_chaselev_deque_state_inner₃₁. destruct (filter _ _) as [| (front'' & id) fprophs] eqn:Hprophs.
+        * iDestruct "Hstate" as "(%Φ' & Hwinner₂')".
+          iDestruct (inf_chaselev_deque_winner₂_exclusive with "Hwinner₂ Hwinner₂'") as %[].
+        * iDestruct "Hstate" as "(Hid & %Φ' & Hwinner₁ & HΦ')".
+          iDestruct (inf_chaselev_deque_winner_agree inhabitant with "Hwinner₁ Hwinner₂") as "(-> & _ & Hwinner₁ & Hwinner₂)".
+          pose proof (filter_eq_cons _ _ _ _ Hprophs) as ->.
+          auto 10 with iFrame.
+      + iDestruct (inf_chaselev_deque_winner₂_exclusive' with "Hwinner₂ Hstate") as %[].
   Qed.
 
   Lemma inf_chaselev_deque_owner_exclusive t :
@@ -910,7 +974,7 @@ Section inf_chaselev_deque_G.
     (* we have lock, hence we are in state 1 or state 2 *)
     iDestruct (inf_chaselev_deque_lock_state with "Hlock Hstate") as "(Hlock & [Hstate | Hstate])".
 
-    - iDestruct "Hstate" as "(%Hstate & Hhist_auth & %Hhist & Hwinner)".
+    - iDestruct "Hstate" as "(%Hstate & Hhist_auth & %Hhist & Hstate)".
       destruct (nil_or_length_pos pub) as [-> |]; last lia.
       (* update history values *)
       iMod (inf_chaselev_deque_hist_update v with "Hhist_auth") as "Hhist_auth".
@@ -920,13 +984,13 @@ Section inf_chaselev_deque_G.
         iSplit. { iPureIntro. simpl. lia. }
         iSplit; first done.
         iRight. iLeft. iFrame. iSplit; first auto with lia.
-        rewrite /inf_chaselev_deque_state_inner₂. destruct (filter _ _) as [| (? & id) _]; auto.
+        rewrite /inf_chaselev_deque_state_inner₂. destruct (filter _ _) as [| [] _]; auto.
       }
       clear.
 
       iApply "HΦ". repeat iExists _. iFrame "#∗". done.
 
-    - iDestruct "Hstate" as "(%Hstate & Hhist_auth & %Hhist & Hwinner)".
+    - iDestruct "Hstate" as "(%Hstate & Hhist_auth & %Hhist & Hstate)".
       destruct pub as [| w pub]; first naive_solver lia.
       (* close invariant *)
       iModIntro. iSplitR "Hctl₂ Hlock HΦ".
@@ -986,7 +1050,7 @@ Section inf_chaselev_deque_G.
     wp_load.
     (* we have [front1 ≤ front2] *)
     iDestruct (inf_chaselev_deque_front_valid with "Hfront_auth Hfront_frag") as %Hfront2.
-    (* enforce [front1 < back2] *)
+    (* branching 1: enforce [front1 < back2] *)
     destruct (decide (front1 < back2)%Z) as [Hbranch1 | Hbranch1]; last first.
     { (* we have [pub = []] *)
       assert (length pub = 0) as ->%nil_length_inv by lia.
@@ -1011,7 +1075,7 @@ Section inf_chaselev_deque_G.
 
       iApply "HΦ".
     }
-    (* enforce [front2 = front1] *)
+    (* branching 2: enforce [front2 = front1] *)
     rewrite Nat.le_lteq in Hfront2. destruct Hfront2 as [Hbranch2 | <-].
     { (* emit front fragment at [front2] *)
       iClear "Hfront_frag". iDestruct (inf_chaselev_deque_front_frag_get with "Hfront_auth") as "#Hfront_frag".
@@ -1038,7 +1102,7 @@ Section inf_chaselev_deque_G.
       iInv "Hinv" as "(%front3 & %back3 & %hist & %pub & %priv & %past3 & %prophs3 & Hfront & Hback & Hctl₁ & Hfront_auth & Hdata_model & Hpub₁ & >%Hpub & >Hprophet_model & >%Hpast & Hstate)".
       (* do resolve *)
       wp_apply (inf_chaselev_deque_prophet.(wise_prophet_wp_resolve) (front1, id) with "Hprophet_model"); [done.. |].
-      (* CmpXchg must fail as we have seen [front2] such that [front1 < front2] *)
+      (* branching 3: CmpXchg must fail as we have seen [front2] such that [front1 < front2] *)
       wp_cmpxchg as [= ->%(inj _)] | _Hbranch3.
       { iDestruct (inf_chaselev_deque_front_valid with "Hfront_auth Hfront_frag") as %?.
         lia.
@@ -1077,17 +1141,17 @@ Section inf_chaselev_deque_G.
     { rewrite lookup_app_r; last lia. rewrite Hhist Nat.sub_diag //. }
     (* emit prophet lower bound *)
     iDestruct (wise_prophet_lb_get with "Hprophet_model") as "#Hprophet_lb".
-    (* enforce [filter (λ '(_, _, front', _), front' = front1) prophs2 ≠ []] *)
-    rewrite /inf_chaselev_deque_state_inner₂. destruct (filter _ prophs2) as [| (front1' & id') prophs2'] eqn:Hbranch2.
+    (* branching 3: enforce [filter (λ '(_, _, front', _), front' = front1) prophs2 ≠ []] *)
+    rewrite /inf_chaselev_deque_state_inner₂. destruct (filter _ prophs2) as [| (front1' & id') prophs2'] eqn:Hbranch3.
     { (* close invariant *)
       iModIntro. iSplitR "Hid HΦ".
       { iExists front1, back2, hist, (v :: pub), priv, past2, prophs2. iFrame.
         iSplit; first done.
         iSplit; first done.
         iRight. iLeft. iFrame. iSplit; first done. iSplit; first done.
-        rewrite /inf_chaselev_deque_state_inner₂ Hbranch2 //.
+        rewrite /inf_chaselev_deque_state_inner₂ Hbranch3 //.
       }
-      clear- Hbranch1 Hbranch2.
+      clear- Hbranch1 Hbranch3.
 
       wp_pures.
 
@@ -1115,17 +1179,17 @@ Section inf_chaselev_deque_G.
       all: eelim (filter_nil_not_elem_of _ _ (front1, id)); [done.. |].
       all: apply elem_of_app; right; apply elem_of_cons; naive_solver.
     }
-    (* enforce [id' = id] *)
-    destruct (decide (id' = id)) as [-> | Hbranch3]; first last.
+    (* branching 4: enforce [id' = id] *)
+    destruct (decide (id' = id)) as [-> | Hbranch4]; first last.
     { (* close invariant *)
       iModIntro. iSplitR "Hid HΦ".
       { iExists front1, back2, hist, (v :: pub), priv, past2, prophs2. iFrame.
         iSplit; first done.
         iSplit; first done.
         iRight. iLeft. iFrame. iSplit; first done. iSplit; first done.
-        rewrite /inf_chaselev_deque_state_inner₂ Hbranch2 //.
+        rewrite /inf_chaselev_deque_state_inner₂ Hbranch3 //.
       }
-      clear- Hbranch1 Hbranch2 Hbranch3.
+      clear- Hbranch1 Hbranch3 Hbranch4.
 
       wp_pures.
 
@@ -1147,19 +1211,19 @@ Section inf_chaselev_deque_G.
       iDestruct (wise_prophet_model_lb_valid with "Hprophet_model Hprophet_lb") as %(past3_1 & past3_2 & -> & ->).
       (* do resolve *)
       wp_apply (inf_chaselev_deque_prophet.(wise_prophet_wp_resolve) (front1, id) with "Hprophet_model"); [done.. |].
-      (* CmpXchg must fail as we are not the winner *)
-      wp_cmpxchg as [= ->%(inj _)] | _Hbranch4.
+      (* branching 5: CmpXchg must fail as we are not the winner *)
+      wp_cmpxchg as [= ->%(inj _)] | _Hbranch5.
       { iModIntro. iIntros "%prophs3' -> Hprophet_model".
         exfalso. simpl in *.
-        rewrite filter_app filter_cons_True // in Hbranch2.
-        destruct (filter _ past3_2) as [| ? past3_2'] eqn:Heq; invert Hbranch2.
+        rewrite filter_app filter_cons_True // in Hbranch3.
+        destruct (filter _ past3_2) as [| ? past3_2'] eqn:Heq; invert Hbranch3.
         eassert ((front1', id') ∈ filter _ past3_2) as Helem.
         { erewrite Heq. constructor. }
         apply elem_of_list_filter in Helem as (-> & Helem).
         rewrite Forall_app !Forall_forall in Hpast. destruct Hpast as (_ & Hpast).
         specialize (Hpast (front1, id') Helem). simpl in Hpast. lia.
       }
-      iAssert ⌜front1 < front3⌝%I as %Hbranch4; last clear _Hbranch4.
+      iAssert ⌜front1 < front3⌝%I as %Hbranch5; last clear _Hbranch5.
       { iDestruct (inf_chaselev_deque_front_valid with "Hfront_auth Hfront_frag") as %?.
         iPureIntro. assert (front1 ≠ front3) by naive_solver. lia.
       }
@@ -1177,7 +1241,7 @@ Section inf_chaselev_deque_G.
           rewrite /inf_chaselev_deque_state_inner₃₁ filter_cons_False //. lia.
         - do 2 iRight. iFrame.
       }
-      clear- Hbranch1 Hbranch2 Hbranch3 Hbranch4.
+      clear- Hbranch1 Hbranch3 Hbranch4 Hbranch5.
 
       wp_pures.
 
@@ -1194,7 +1258,7 @@ Section inf_chaselev_deque_G.
       iSplit; first done.
       iSplit; first done.
       iRight. iLeft. iFrame. iSplit; first done. iSplit; first done.
-      rewrite /inf_chaselev_deque_state_inner₂ Hbranch2. iRight. iFrame. iExists Φ. iFrame.
+      rewrite /inf_chaselev_deque_state_inner₂ Hbranch3. iRight. iFrame. iExists Φ. iFrame.
       iNext. rewrite /inf_chaselev_deque_atomic_update. iAuIntro.
       iApply (aacc_aupd_commit with "HΦ"); first done. iIntros "%_pub (%_l & %_γ & %Heq & #_Hmeta & Hpub₂)". injection Heq as <-.
       iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
@@ -1206,7 +1270,7 @@ Section inf_chaselev_deque_G.
       - iRight. repeat iExists _. iSplit; first done. repeat iExists _. iFrame "#∗". done.
       - iIntros "HΦ". iApply ("HΦ" with "[//]").
     }
-    clear- Hbranch1 Hbranch2.
+    clear- Hbranch1 Hbranch3.
 
     wp_pures.
 
@@ -1225,18 +1289,17 @@ Section inf_chaselev_deque_G.
     (* open invariant *)
     iInv "Hinv" as "(%front3 & %back3 & %hist & %pub & %priv & %past3 & %prophs3 & Hfront & Hback & Hctl₁ & Hfront_auth & Hdata_model & Hpub₁ & >%Hpub & >Hprophet_model & >%Hpast & Hstate)".
     (* we are in state 2 or state 3.1 *)
-    iDestruct "Hstate" as "[(_ & _ & _ & Hwinner) | [(>%Hbranch3 & Hhist_auth & >%Hhist & Hstate) | (Hlock & [(><- & Hhist_auth & >%Hhist & Hstate) | (_ & _ & _ & Hwinner)])]]";
-      (* do resolve *)
-      (wp_apply (inf_chaselev_deque_prophet.(wise_prophet_wp_resolve) (front1, id) with "Hprophet_model"); [done.. |]).
+    iDestruct (inf_chaselev_deque_winner₂_state with "Hwinner₂ Hstate") as "(>-> & Hstate)".
+    (* do resolve *)
+    wp_apply (inf_chaselev_deque_prophet.(wise_prophet_wp_resolve) (front1, id) with "Hprophet_model"); [done.. |].
+    (* CmpXchg must succeed as we are the next winner *)
+    wp_cmpxchg_suc.
+    (* branching 5 *)
+    iDestruct "Hstate" as "[Hstate | Hstate]".
 
-    1,4:
-      wp_cmpxchg as _ | _;
-      iDestruct (inf_chaselev_deque_winner₂_exclusive with "Hwinner₂ Hwinner") as %[].
-
-    - (* CmpXchg must succeed as we are the next winner *)
-      wp_cmpxchg as [= ->%(inj _)] | Hbranch4;
-        iDestruct (inf_chaselev_deque_winner₂_state_inner₂ (SOMEV v) with "Hwinner₂ Hstate") as "(%id' & %Φ' & %Heq & HΦ & Hwinner₁ & Hwinner₂ & _ & HΦ')";
-        [clear Heq | naive_solver].
+    (* branch 5.1: state 2 *)
+    - iDestruct "Hstate" as "(%Hstate & Hhist_auth & %Hhist & %id' & %fprophs3 & %Φ' & %Hprophs3 & Hwinner₁ & Hwinner₂ & Hid' & HΦ')".
+      iDestruct (inf_chaselev_deque_winner_agree (SOMEV v) with "Hwinner₁ Hwinner₂") as "(_ & HΦ & Hwinner₁ & Hwinner₂)".
       iModIntro. iIntros "%prophs3' -> Hprophet_model".
       (* update front *)
       iMod (inf_chaselev_deque_front_auth_update (S front1) with "Hfront_auth") as "Hfront_auth"; first lia.
@@ -1272,12 +1335,12 @@ Section inf_chaselev_deque_G.
         - iMod (inf_chaselev_deque_hist_update w with "Hhist_auth") as "Hhist_auth".
           iModIntro. iRight. iLeft. iFrame. iSplit; first auto with lia.
           iSplit. { rewrite app_length /=. auto with lia. }
-          rewrite /inf_chaselev_deque_state_inner₂. destruct (filter _ prophs3') as [| (? & ?) ?].
+          rewrite /inf_chaselev_deque_state_inner₂. destruct (filter _ prophs3') as [| [] ?].
           + repeat iExists _. iFrame.
           + iLeft. repeat iExists _. iFrame.
       }
       iModIntro.
-      clear- Hbranch1 Hbranch2 Hbranch3.
+      clear- Hbranch1 Hbranch3.
 
       wp_pures.
 
@@ -1288,10 +1351,9 @@ Section inf_chaselev_deque_G.
 
       iRewrite -"HΦ". done.
 
-    - (* CmpXchg must succeed as we are the next winner *)
-      wp_cmpxchg as [= ->%(inj _)] | Hbranch4;
-          iDestruct (inf_chaselev_deque_winner₂_state_inner₃₁ (SOMEV v) with "Hwinner₂ Hstate") as "(%id' & %Φ' & %Heq & HΦ & Hwinner₁ & Hwinner₂ & _ & HΦ')";
-        [clear Heq | naive_solver].
+    (* branch 5.2: state 3.1 *)
+    - iDestruct "Hstate" as "(-> & Hlock & Hhist_auth & %Hhist & %id' & %fprophs3 & %Φ' & %Hprophs3 & Hwinner₁ & Hwinner₂ & Hid' & HΦ')".
+      iDestruct (inf_chaselev_deque_winner_agree (SOMEV v) with "Hwinner₁ Hwinner₂") as "(_ & HΦ & Hwinner₁ & Hwinner₂)".
       iModIntro. iIntros "%prophs3' -> Hprophet_model".
       (* we know there is no public value and [hist !!! front1 = v] *)
       destruct (nil_or_length_pos pub) as [-> |]; last lia.
@@ -1313,7 +1375,7 @@ Section inf_chaselev_deque_G.
         do 2 iRight. iFrame. iRight. iSplit; first auto with lia. iSplit; first done.
         repeat iExists _. iFrame.
       }
-      clear- Hbranch1 Hbranch2.
+      clear- Hbranch1 Hbranch3.
 
       wp_pures.
 
