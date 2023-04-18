@@ -14,6 +14,11 @@ Record mpmc_stack `{!heapGS Σ} {unboxed : bool} := {
   mpmc_stack_pop : val ;
 
   mpmc_stack_name : Type ;
+  mpmc_stack_name_eq_dec :
+    EqDecision mpmc_stack_name ;
+  mpmc_stack_name_countable :
+    Countable mpmc_stack_name ;
+
   mpmc_stack_inv : val → mpmc_stack_name → namespace → iProp Σ ;
   mpmc_stack_model : val → mpmc_stack_name → list val → iProp Σ ;
 
@@ -49,6 +54,8 @@ Record mpmc_stack `{!heapGS Σ} {unboxed : bool} := {
       True ;
 }.
 #[global] Arguments mpmc_stack _ {_} _ : assert.
-#[global] Arguments Build_mpmc_stack {_ _} _ {_ _ _ _ _ _ _ _} _ _ _ _ : assert.
+#[global] Arguments Build_mpmc_stack {_ _} _ {_ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
+#[global] Existing Instance mpmc_stack_name_eq_dec.
+#[global] Existing Instance mpmc_stack_name_countable.
 #[global] Existing Instance mpmc_stack_inv_persistent.
 #[global] Existing Instance mpmc_stack_model_timeless.

@@ -19,6 +19,11 @@ Record mpsc_queue `{!heapGS Σ} {unboxed : bool} := {
   mpsc_queue_pop : val ;
 
   mpsc_queue_name : Type ;
+  mpsc_queue_name_eq_dec :
+    EqDecision mpsc_queue_name ;
+  mpsc_queue_name_countable :
+    Countable mpsc_queue_name ;
+
   mpsc_queue_inv : val → mpsc_queue_name → namespace → iProp Σ ;
   mpsc_queue_model : val → mpsc_queue_name → list val → iProp Σ ;
   mpsc_queue_consumer : val → mpsc_queue_name → iProp Σ ;
@@ -77,7 +82,9 @@ Record mpsc_queue `{!heapGS Σ} {unboxed : bool} := {
       True ;
 }.
 #[global] Arguments mpsc_queue _ {_} _ : assert.
-#[global] Arguments Build_mpsc_queue {_ _} _ {_ _ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
+#[global] Arguments Build_mpsc_queue {_ _} _ {_ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
+#[global] Existing Instance mpsc_queue_name_eq_dec.
+#[global] Existing Instance mpsc_queue_name_countable.
 #[global] Existing Instance mpsc_queue_inv_persistent.
 #[global] Existing Instance mpsc_queue_model_timeless.
 #[global] Existing Instance mpsc_queue_consumer_timeless.

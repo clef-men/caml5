@@ -26,6 +26,11 @@ Record ws_bag `{!heapGS Σ} {unboxed : bool} := {
   ws_bag_steal : val ;
 
   ws_bag_name : Type ;
+  ws_bag_name_eq_dec :
+    EqDecision ws_bag_name ;
+  ws_bag_name_countable :
+    Countable ws_bag_name ;
+
   ws_bag_inv : val → ws_bag_name → namespace → (val → iProp Σ) → iProp Σ ;
   ws_bag_model : val → ws_bag_name → nat → iProp Σ ;
   ws_bag_owner : val → ws_bag_name → iProp Σ ;
@@ -102,7 +107,9 @@ Record ws_bag `{!heapGS Σ} {unboxed : bool} := {
       True ;
 }.
 #[global] Arguments ws_bag _ {_} _ : assert.
-#[global] Arguments Build_ws_bag {_ _} _ {_ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ _ : assert.
+#[global] Arguments Build_ws_bag {_ _} _ {_ _ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ _ : assert.
+#[global] Existing Instance ws_bag_name_eq_dec.
+#[global] Existing Instance ws_bag_name_countable.
 #[global] Existing Instance ws_bag_inv_ne.
 #[global] Existing Instance ws_bag_inv_persistent.
 #[global] Existing Instance ws_bag_model_timeless.

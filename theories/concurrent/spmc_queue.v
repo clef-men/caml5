@@ -19,6 +19,11 @@ Record spmc_queue `{!heapGS Σ} {unboxed : bool} := {
   spmc_queue_pop : val ;
 
   spmc_queue_name : Type ;
+  spmc_queue_name_eq_dec :
+    EqDecision spmc_queue_name ;
+  spmc_queue_name_countable :
+    Countable spmc_queue_name ;
+
   spmc_queue_inv : val → spmc_queue_name → namespace → iProp Σ ;
   spmc_queue_model : val → spmc_queue_name → list val → iProp Σ ;
   spmc_queue_producer : val → spmc_queue_name → iProp Σ ;
@@ -77,7 +82,9 @@ Record spmc_queue `{!heapGS Σ} {unboxed : bool} := {
       True ;
 }.
 #[global] Arguments spmc_queue _ {_} _ : assert.
-#[global] Arguments Build_spmc_queue {_ _} _ {_ _ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
+#[global] Arguments Build_spmc_queue {_ _} _ {_ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
+#[global] Existing Instance spmc_queue_name_eq_dec.
+#[global] Existing Instance spmc_queue_name_countable.
 #[global] Existing Instance spmc_queue_inv_persistent.
 #[global] Existing Instance spmc_queue_model_timeless.
 #[global] Existing Instance spmc_queue_producer_timeless.

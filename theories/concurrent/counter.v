@@ -39,9 +39,6 @@ Qed.
 
 Section counter_G.
   Context `{counter_G : CounterG Σ}.
-  Implicit Types n m lb : nat.
-  Implicit Types l : loc.
-  Implicit Types t : val.
 
   Definition counter_make : val :=
     λ: <>,
@@ -73,10 +70,18 @@ Section counter_G.
       γ.(counter_name_token),
       γ.(counter_name_model)
     ).
-    pose decode := λ '(γ_ub, γ_lb, γ_token, γ_model),
-      Build_counter_name γ_ub γ_lb γ_token γ_model.
+    pose decode := λ '(γ_ub, γ_lb, γ_token, γ_model), {|
+      counter_name_ub := γ_ub ;
+      counter_name_lb := γ_lb ;
+      counter_name_token := γ_token ;
+      counter_name_model := γ_model ;
+    |}.
     refine (inj_countable' encode decode _). intros []. done.
   Qed.
+
+  Implicit Types n m lb : nat.
+  Implicit Types l : loc.
+  Implicit Types t : val.
   Implicit Types γ : counter_name.
 
   #[local] Definition counter_ub_auth γ ub :=

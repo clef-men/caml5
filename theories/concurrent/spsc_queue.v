@@ -21,6 +21,11 @@ Record spsc_queue `{!heapGS Σ} {unboxed : bool} := {
   spsc_queue_pop : val ;
 
   spsc_queue_name : Type ;
+  spsc_queue_name_eq_dec :
+    EqDecision spsc_queue_name ;
+  spsc_queue_name_countable :
+    Countable spsc_queue_name ;
+
   spsc_queue_inv : val → spsc_queue_name → namespace → iProp Σ ;
   spsc_queue_model : val → spsc_queue_name → list val → iProp Σ ;
   spsc_queue_producer : val → spsc_queue_name → iProp Σ ;
@@ -88,7 +93,9 @@ Record spsc_queue `{!heapGS Σ} {unboxed : bool} := {
       True ;
 }.
 #[global] Arguments spsc_queue _ {_} _ : assert.
-#[global] Arguments Build_spsc_queue {_ _} _ {_ _ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
+#[global] Arguments Build_spsc_queue {_ _} _ {_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
+#[global] Existing Instance spsc_queue_name_eq_dec.
+#[global] Existing Instance spsc_queue_name_countable.
 #[global] Existing Instance spsc_queue_inv_persistent.
 #[global] Existing Instance spsc_queue_model_timeless.
 #[global] Existing Instance spsc_queue_producer_timeless.

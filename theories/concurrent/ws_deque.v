@@ -15,6 +15,11 @@ Record ws_deque `{!heapGS Σ} {unboxed : bool} := {
   ws_deque_steal : val ;
 
   ws_deque_name : Type ;
+  ws_deque_name_eq_dec :
+    EqDecision ws_deque_name ;
+  ws_deque_name_countable :
+    Countable ws_deque_name ;
+
   ws_deque_inv : val → ws_deque_name → namespace → iProp Σ ;
   ws_deque_model : val → ws_deque_name → list val → iProp Σ ;
   ws_deque_owner : val → ws_deque_name → iProp Σ ;
@@ -79,7 +84,9 @@ Record ws_deque `{!heapGS Σ} {unboxed : bool} := {
       True ;
 }.
 #[global] Arguments ws_deque _ {_} _ : assert.
-#[global] Arguments Build_ws_deque {_ _} _ {_ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ _ : assert.
+#[global] Arguments Build_ws_deque {_ _} _ {_ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ _ : assert.
+#[global] Existing Instance ws_deque_name_eq_dec.
+#[global] Existing Instance ws_deque_name_countable.
 #[global] Existing Instance ws_deque_inv_persistent.
 #[global] Existing Instance ws_deque_model_timeless.
 #[global] Existing Instance ws_deque_owner_timeless.

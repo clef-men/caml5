@@ -21,6 +21,11 @@ Record spsc_stack `{!heapGS Σ} {unboxed : bool} := {
   spsc_stack_pop : val ;
 
   spsc_stack_name : Type ;
+  spsc_stack_name_eq_dec :
+    EqDecision spsc_stack_name ;
+  spsc_stack_name_countable :
+    Countable spsc_stack_name ;
+
   spsc_stack_inv : val → spsc_stack_name → namespace → iProp Σ ;
   spsc_stack_model : val → spsc_stack_name → list val → iProp Σ ;
   spsc_stack_producer : val → spsc_stack_name → iProp Σ ;
@@ -88,7 +93,9 @@ Record spsc_stack `{!heapGS Σ} {unboxed : bool} := {
       True ;
 }.
 #[global] Arguments spsc_stack _ {_} _ : assert.
-#[global] Arguments Build_spsc_stack {_ _} _ {_ _ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
+#[global] Arguments Build_spsc_stack {_ _} _ {_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
+#[global] Existing Instance spsc_stack_name_eq_dec.
+#[global] Existing Instance spsc_stack_name_countable.
 #[global] Existing Instance spsc_stack_inv_persistent.
 #[global] Existing Instance spsc_stack_model_timeless.
 #[global] Existing Instance spsc_stack_producer_timeless.

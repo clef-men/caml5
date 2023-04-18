@@ -26,9 +26,6 @@ Qed.
 
 Section raw_array_G.
   Context `{raw_array_G : RawArrayG Σ}.
-  Implicit Types sz i j : nat.
-  Implicit Types l : loc.
-  Implicit Types v t : val.
 
   Definition raw_array_make : val :=
     λ: "sz" "v",
@@ -42,6 +39,10 @@ Section raw_array_G.
       "t" +ₗ "i" <- "v".
 
   #[local] Definition raw_array_name := gname.
+
+  Implicit Types sz i j : nat.
+  Implicit Types l : loc.
+  Implicit Types v t : val.
   Implicit Types γ : raw_array_name.
 
   Section raw_array_token.

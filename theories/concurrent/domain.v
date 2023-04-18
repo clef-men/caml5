@@ -27,6 +27,7 @@ Section domain_G.
   Context `{domain_G : DomainG Σ}.
   Implicit Types l : loc.
   Implicit Types v t fn : val.
+  Implicit Types γ : gname.
   Implicit Types Ψ : val → iProp Σ.
 
   Definition domain_spawn : val :=
@@ -41,9 +42,6 @@ Section domain_G.
         NONE => "domain_join" "t"
       | SOME "v" => "v"
       end.
-
-  #[local] Definition domain_name := gname.
-  Implicit Types γ : domain_name.
 
   Definition domain_model t : iProp Σ :=
     ∃ l γ,

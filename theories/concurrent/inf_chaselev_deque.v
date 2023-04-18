@@ -169,18 +169,6 @@ Section inf_chaselev_deque_G.
     inf_chaselev_deque_name_winner : gname ;
   }.
 
-  Implicit Types front : nat.
-  Implicit Types back : Z.
-  Implicit Types l : loc.
-  Implicit Types p : proph_id.
-  Implicit Types id : identifier.
-  Implicit Types v t data : val.
-  Implicit Types γ : inf_chaselev_deque_name.
-  Implicit Types hist pub : list val.
-  Implicit Types priv : nat → val.
-  Implicit Types past prophs : list inf_chaselev_deque_prophet.(wise_prophet_type).
-  Implicit Types Φ : val → iProp Σ.
-
   #[local] Instance inf_chaselev_deque_name_eq_dec :
     EqDecision inf_chaselev_deque_name.
   Proof.
@@ -198,10 +186,29 @@ Section inf_chaselev_deque_G.
       γ.(inf_chaselev_deque_name_prophet),
       γ.(inf_chaselev_deque_name_winner)
     ).
-    pose decode := λ '(γ_ctl, γ_front, γ_hist, γ_pub, γ_lock, γ_prophet, γ_winner),
-      Build_inf_chaselev_deque_name γ_ctl γ_front γ_hist γ_pub γ_lock γ_prophet γ_winner.
+    pose decode := λ '(γ_ctl, γ_front, γ_hist, γ_pub, γ_lock, γ_prophet, γ_winner), {|
+      inf_chaselev_deque_name_ctl := γ_ctl ;
+      inf_chaselev_deque_name_front := γ_front ;
+      inf_chaselev_deque_name_hist := γ_hist ;
+      inf_chaselev_deque_name_pub := γ_pub ;
+      inf_chaselev_deque_name_lock := γ_lock ;
+      inf_chaselev_deque_name_prophet := γ_prophet ;
+      inf_chaselev_deque_name_winner := γ_winner ;
+    |}.
     refine (inj_countable' encode decode _). intros []. done.
   Qed.
+
+  Implicit Types front : nat.
+  Implicit Types back : Z.
+  Implicit Types l : loc.
+  Implicit Types p : proph_id.
+  Implicit Types id : identifier.
+  Implicit Types v t data : val.
+  Implicit Types γ : inf_chaselev_deque_name.
+  Implicit Types hist pub : list val.
+  Implicit Types priv : nat → val.
+  Implicit Types past prophs : list inf_chaselev_deque_prophet.(wise_prophet_type).
+  Implicit Types Φ : val → iProp Σ.
 
   #[local] Definition inf_chaselev_deque_ctl₁' γ_ctl back priv :=
     auth_excl_auth (auth_excl_G := inf_chaselev_deque_G_ctl_G) γ_ctl (DfracOwn 1) (back, priv).
@@ -379,7 +386,7 @@ Section inf_chaselev_deque_G.
     (* immutable physical fields *)
     l.(data) ↦□ data ∗
     l.(prophecy) ↦□ #p ∗
-    (* main invariant *)
+    (* invariant *)
     inv ι (inf_chaselev_deque_inv_inner l γ ι data p).
 
   #[global] Instance inf_chaselev_deque_model_timeless t pub :
