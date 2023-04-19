@@ -438,28 +438,34 @@ Section inf_chaselev_deque_G.
     ⊢ |==> ∃ γ_front,
       inf_chaselev_deque_front_auth' γ_front 0.
   Proof.
-    iMod (auth_nat_max_alloc 0) as "(%γ_front & Hfront_auth)".
-    iExists γ_front. done.
+    apply auth_nat_max_alloc.
   Qed.
   #[local] Lemma inf_chaselev_deque_front_valid γ front1 front2 :
     inf_chaselev_deque_front_auth γ front1 -∗
     inf_chaselev_deque_front_frag γ front2 -∗
     ⌜front2 ≤ front1⌝.
   Proof.
-    iApply auth_nat_max_valid.
+    apply auth_nat_max_valid.
   Qed.
   #[local] Lemma inf_chaselev_deque_front_auth_update {γ front} front' :
     front ≤ front' →
     inf_chaselev_deque_front_auth γ front ==∗
     inf_chaselev_deque_front_auth γ front'.
   Proof.
-    intros. iApply auth_nat_max_update. done.
+    apply auth_nat_max_update.
   Qed.
   #[local] Lemma inf_chaselev_deque_front_frag_get γ front :
     inf_chaselev_deque_front_auth γ front -∗
     inf_chaselev_deque_front_frag γ front.
   Proof.
-    iApply auth_nat_max_frag_get.
+    apply auth_nat_max_frag_get.
+  Qed.
+  #[local] Lemma inf_chaselev_deque_front_frag_le {γ front} front' :
+    front' ≤ front →
+    inf_chaselev_deque_front_frag γ front -∗
+    inf_chaselev_deque_front_frag γ front'.
+  Proof.
+    apply auth_nat_max_frag_le.
   Qed.
   #[local] Lemma inf_chaselev_deque_front_state₃₂ γ ι front front' back hist pub prophs :
     back = (front' - 1)%Z →
@@ -818,7 +824,7 @@ Section inf_chaselev_deque_G.
     iApply "HΦ". iFrame.
   Qed.
 
-  #[local] Lemma inf_chaselev_deque_wp_resolve_inconsistent l γ ι data p prophs_lb v1 v2 front id :
+  #[local] Lemma inf_chaselev_deque_wp_resolve_inconsistent l γ ι data p front id prophs_lb v1 v2 :
     filter (λ '(front', _), front' = front) prophs_lb = [] →
     {{{
       inv ι (inf_chaselev_deque_inv_inner l γ ι data p) ∗
@@ -843,6 +849,69 @@ Section inf_chaselev_deque_G.
     all: iModIntro; iIntros "%prophs' ->".
     all: eelim (filter_nil_not_elem_of _ _ (front, id)); [done.. |].
     all: apply elem_of_app; right; apply elem_of_cons; naive_solver.
+  Qed.
+  #[local] Lemma inf_chaselev_deque_wp_resolve_loser l γ ι data p front _front id id' prophs_lb fprophs_lb v :
+    filter (λ '(front', _), front' = front) prophs_lb = (_front, id') :: fprophs_lb →
+    id ≠ id' →
+    {{{
+      inv ι (inf_chaselev_deque_inv_inner l γ ι data p) ∗
+      inf_chaselev_deque_front_frag γ front ∗
+      inf_chaselev_deque_prophet.(wise_prophet_lb) γ.(inf_chaselev_deque_name_prophet) prophs_lb
+    }}}
+      Resolve (CmpXchg #l.(front) #front v) #p (#front, #id)%V
+    {{{ w,
+      RET (w, #false);
+      inf_chaselev_deque_front_frag γ (S front)
+    }}}.
+  Proof.
+    iIntros "%Hprophs_lb %Hid %Φ (#Hinv & #Hfront_frag & #Hprophet_lb) HΦ".
+
+    (* → [Resolve (CmpXchg #l.(front) #front v) #p (#front, #id)] *)
+    wp_bind (Resolve (CmpXchg #l.(front) #front v) #p (#front, #id)%V).
+    (* open invariant *)
+    iInv "Hinv" as "(%front' & %back & %hist & %pub & %priv & %past & %prophs & Hfront & Hback & Hctl₁ & Hfront_auth & Hdata_model & Hpub₁ & >%Hpub & >Hprophet_model & >%Hpast & Hstate)".
+    (* current prophecies are a suffix of prophet lower bound *)
+    iDestruct (wise_prophet_model_lb_valid with "Hprophet_model Hprophet_lb") as %(past1 & past2 & -> & ->).
+    (* do resolve *)
+    wp_apply (inf_chaselev_deque_prophet.(wise_prophet_wp_resolve) (front, id) with "Hprophet_model"); [done.. |].
+    (* CmpXchg must fail as we are not the winner: [id ≠ id'] *)
+    wp_cmpxchg as [= ->%(inj _)] | _Hfront.
+    { iModIntro. iIntros "%prophs' -> Hprophet_model".
+      exfalso. simpl in *.
+      rewrite filter_app filter_cons_True // in Hprophs_lb.
+      destruct (filter _ past2) as [| __front fpast2] eqn:Heq; invert Hprophs_lb.
+      eassert ((_front, id') ∈ filter _ past2) as Helem.
+      { erewrite Heq. constructor. }
+      apply elem_of_list_filter in Helem as (-> & Helem).
+      rewrite Forall_app !Forall_forall in Hpast. destruct Hpast as (_ & Hpast).
+      specialize (Hpast (front, id') Helem). simpl in Hpast. lia.
+    }
+    iAssert ⌜front < front'⌝%I as %Hfront; last clear _Hfront.
+    { iDestruct (inf_chaselev_deque_front_valid with "Hfront_auth Hfront_frag") as %?.
+      iPureIntro. assert (front ≠ front') by naive_solver. lia.
+    }
+    iModIntro. iIntros "%prophs' -> Hprophet_model".
+    (* emit front fragment at [S front] *)
+    iClear "Hfront_frag".
+    iDestruct (inf_chaselev_deque_front_frag_get with "Hfront_auth") as "#_Hfront_frag".
+    iDestruct (inf_chaselev_deque_front_frag_le (S front) with "_Hfront_frag") as "#Hfront_frag"; first lia.
+    iClear "_Hfront_frag".
+    (* close invariant *)
+    iModIntro. iSplitR "HΦ".
+    { iExists front', back, hist, pub, priv, _, prophs'. iFrame.
+      iSplit; first done.
+      iSplit. { iPureIntro. decompose_Forall; done. }
+      iDestruct "Hstate" as "[Hstate | [(%Hstate & Hstate) | (Hlock & [(%Hstate & Hstate) | Hstate])]]".
+      - iLeft. done.
+      - iRight. iLeft. iFrame. iSplit; first done.
+        rewrite /inf_chaselev_deque_state_inner₂ filter_cons_False //. lia.
+      - do 2 iRight. iFrame. iLeft. iFrame. iSplit; first done.
+        rewrite /inf_chaselev_deque_state_inner₃₁ filter_cons_False //. lia.
+      - do 2 iRight. iFrame.
+    }
+    clear.
+
+    iApply ("HΦ" with "Hfront_frag").
   Qed.
 
   Lemma inf_chaselev_deque_make_spec ι :
@@ -1213,45 +1282,8 @@ Section inf_chaselev_deque_G.
 
       wp_pures.
 
-      (* → [Resolve (CmpXchg #l.(front) #front1 #(front1 + 1)) #p (#front1, #id)] *)
-      wp_bind (Resolve (CmpXchg #l.(front) #front1 #(front1 + 1)) #p (#front1, #id)%V).
-      (* open invariant *)
-      iInv "Hinv" as "(%front3 & %back3 & %hist & %pub & %priv & %past3 & %prophs3 & Hfront & Hback & Hctl₁ & Hfront_auth & Hdata_model & Hpub₁ & >%Hpub & >Hprophet_model & >%Hpast & Hstate)".
-      (* current prophecies are a suffix of prophet lower bound *)
-      iDestruct (wise_prophet_model_lb_valid with "Hprophet_model Hprophet_lb") as %(past3_1 & past3_2 & -> & ->).
-      (* do resolve *)
-      wp_apply (inf_chaselev_deque_prophet.(wise_prophet_wp_resolve) (front1, id) with "Hprophet_model"); [done.. |].
-      (* branching 5: CmpXchg must fail as we are not the winner *)
-      wp_cmpxchg as [= ->%(inj _)] | _Hbranch5.
-      { iModIntro. iIntros "%prophs3' -> Hprophet_model".
-        exfalso. simpl in *.
-        rewrite filter_app filter_cons_True // in Hbranch3.
-        destruct (filter _ past3_2) as [| __front1 fpast3_2] eqn:Heq; invert Hbranch3.
-        eassert ((_front1, id') ∈ filter _ past3_2) as Helem.
-        { erewrite Heq. constructor. }
-        apply elem_of_list_filter in Helem as (-> & Helem).
-        rewrite Forall_app !Forall_forall in Hpast. destruct Hpast as (_ & Hpast).
-        specialize (Hpast (front1, id') Helem). simpl in Hpast. lia.
-      }
-      iAssert ⌜front1 < front3⌝%I as %Hbranch5; last clear _Hbranch5.
-      { iDestruct (inf_chaselev_deque_front_valid with "Hfront_auth Hfront_frag") as %?.
-        iPureIntro. assert (front1 ≠ front3) by naive_solver. lia.
-      }
-      iModIntro. iIntros "%prophs3' -> Hprophet_model".
-      (* close invariant *)
-      iModIntro. iSplitR "Hid HΦ".
-      { iExists front3, back3, hist, pub, priv, _, prophs3'. iFrame.
-        iSplit; first done.
-        iSplit. { iPureIntro. decompose_Forall; done. }
-        iDestruct "Hstate" as "[Hstate | [(%Hstate & Hstate) | (Hlock & [(%Hstate & Hstate) | Hstate])]]".
-        - iLeft. done.
-        - iRight. iLeft. iFrame. iSplit; first done.
-          rewrite /inf_chaselev_deque_state_inner₂ filter_cons_False //. lia.
-        - do 2 iRight. iFrame. iLeft. iFrame. iSplit; first done.
-          rewrite /inf_chaselev_deque_state_inner₃₁ filter_cons_False //. lia.
-        - do 2 iRight. iFrame.
-      }
-      clear- Hbranch1 Hbranch3 Hbranch4 Hbranch5.
+      (* CmpXchg must fail as we are not the winner *)
+      wp_apply (inf_chaselev_deque_wp_resolve_loser with "[$Hinv $Hfront_frag $Hprophet_lb]"); [done.. |]. iIntros "%_ _".
 
       wp_pures.
 
