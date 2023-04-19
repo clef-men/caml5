@@ -31,8 +31,8 @@ Section auth_natinf_max_G.
 
   Definition auth_natinf_max_auth γ dq n :=
     own γ (auth_natinf_max_auth dq n).
-  Definition auth_natinf_max_frag γ n :=
-    own γ (auth_natinf_max_frag n).
+  Definition auth_natinf_max_lb γ n :=
+    own γ (auth_natinf_max_lb n).
 
   #[global] Instance auth_natinf_max_auth_timeless γ dq n :
     Timeless (auth_natinf_max_auth γ dq n).
@@ -44,13 +44,13 @@ Section auth_natinf_max_G.
   Proof.
     apply _.
   Qed.
-  #[global] Instance auth_natinf_max_frag_timeless γ n :
-    Timeless (auth_natinf_max_frag γ n).
+  #[global] Instance auth_natinf_max_lb_timeless γ n :
+    Timeless (auth_natinf_max_lb γ n).
   Proof.
     apply _.
   Qed.
-  #[global] Instance auth_natinf_max_frag_persistent γ n :
-    Persistent (auth_natinf_max_frag γ n).
+  #[global] Instance auth_natinf_max_lb_persistent γ n :
+    Persistent (auth_natinf_max_lb γ n).
   Proof.
     apply _.
   Qed.
@@ -118,28 +118,28 @@ Section auth_natinf_max_G.
     iDestruct (auth_natinf_max_auth_valid_2 with "H●1 H●2") as %(? & _). done.
   Qed.
 
-  Lemma auth_natinf_max_frag_0 γ :
-    ⊢ |==> auth_natinf_max_frag γ (natinf_nat 0).
+  Lemma auth_natinf_max_lb_0 γ :
+    ⊢ |==> auth_natinf_max_lb γ (natinf_nat 0).
   Proof.
     iApply own_unit.
   Qed.
-  Lemma auth_natinf_max_frag_get γ q n :
+  Lemma auth_natinf_max_lb_get γ q n :
     auth_natinf_max_auth γ q n -∗
-    auth_natinf_max_frag γ n.
+    auth_natinf_max_lb γ n.
   Proof.
     apply own_mono, auth_natinf_max_included.
   Qed.
-  Lemma auth_natinf_max_frag_le {γ n} n' :
+  Lemma auth_natinf_max_lb_le {γ n} n' :
     natinf_le n' n →
-    auth_natinf_max_frag γ n -∗
-    auth_natinf_max_frag γ n'.
+    auth_natinf_max_lb γ n -∗
+    auth_natinf_max_lb γ n'.
   Proof.
-    intros. apply own_mono, auth_natinf_max_frag_mono. done.
+    intros. apply own_mono, auth_natinf_max_lb_mono. done.
   Qed.
 
   Lemma auth_natinf_max_valid γ dq n m :
     auth_natinf_max_auth γ dq n -∗
-    auth_natinf_max_frag γ m -∗
+    auth_natinf_max_lb γ m -∗
     ⌜natinf_le m n⌝.
   Proof.
     iIntros "H●1 H●2".
@@ -165,4 +165,4 @@ Section auth_natinf_max_G.
 End auth_natinf_max_G.
 
 #[global] Opaque auth_natinf_max_auth.
-#[global] Opaque auth_natinf_max_frag.
+#[global] Opaque auth_natinf_max_lb.

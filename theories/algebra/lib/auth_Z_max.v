@@ -20,7 +20,7 @@ Definition auth_Z_max_UR :=
 
 Definition auth_Z_max_auth dq n : auth_Z_max_UR :=
   ●O{dq} Build_Z_max n ⋅ ◯O Build_Z_max n.
-Definition auth_Z_max_frag n : auth_Z_max_UR :=
+Definition auth_Z_max_lb n : auth_Z_max_UR :=
   ◯O Build_Z_max n.
 
 #[global] Instance auth_Z_max_cmra_discrete :
@@ -34,8 +34,8 @@ Qed.
 Proof.
   apply _.
 Qed.
-#[global] Instance auth_Z_max_frag_core_id n :
-  CoreId (auth_Z_max_frag n).
+#[global] Instance auth_Z_max_lb_core_id n :
+  CoreId (auth_Z_max_lb n).
 Proof.
   apply _.
 Qed.
@@ -53,29 +53,29 @@ Proof.
   rewrite /IsOp' /IsOp => ->. rewrite auth_Z_max_auth_dfrac_op //.
 Qed.
 
-Lemma auth_Z_max_frag_op n1 n2 :
-  auth_Z_max_frag (n1 `max` n2) = auth_Z_max_frag n1 ⋅ auth_Z_max_frag n2.
+Lemma auth_Z_max_lb_op n1 n2 :
+  auth_Z_max_lb (n1 `max` n2) = auth_Z_max_lb n1 ⋅ auth_Z_max_lb n2.
 Proof.
   rewrite -auth_option_frag_op Z_max_op_eq //.
 Qed.
-#[global] Instance auth_Z_max_frag_is_op n n1 n2 :
+#[global] Instance auth_Z_max_lb_is_op n n1 n2 :
   IsOp (Build_Z_max n) (Build_Z_max n1) (Build_Z_max n2) →
-  IsOp' (auth_Z_max_frag n) (auth_Z_max_frag n1) (auth_Z_max_frag n2).
+  IsOp' (auth_Z_max_lb n) (auth_Z_max_lb n1) (auth_Z_max_lb n2).
 Proof.
-  rewrite /IsOp' /IsOp /auth_Z_max_frag => -> //.
+  rewrite /IsOp' /IsOp /auth_Z_max_lb => -> //.
 Qed.
 
 Lemma auth_Z_max_auth_frag_op dq n :
-  auth_Z_max_auth dq n ≡ auth_Z_max_auth dq n ⋅ auth_Z_max_frag n.
+  auth_Z_max_auth dq n ≡ auth_Z_max_auth dq n ⋅ auth_Z_max_lb n.
 Proof.
   rewrite -!assoc -auth_option_frag_op -core_id_dup //.
 Qed.
 
-Lemma auth_Z_max_frag_op_le n n' :
+Lemma auth_Z_max_lb_op_le n n' :
   (n' ≤ n)%Z →
-  auth_Z_max_frag n = auth_Z_max_frag n' ⋅ auth_Z_max_frag n.
+  auth_Z_max_lb n = auth_Z_max_lb n' ⋅ auth_Z_max_lb n.
 Proof.
-  intros. rewrite -auth_Z_max_frag_op Z.max_r //.
+  intros. rewrite -auth_Z_max_lb_op Z.max_r //.
 Qed.
 
 Lemma auth_Z_max_auth_dfrac_valid dq n :
@@ -108,28 +108,28 @@ Proof.
 Qed.
 
 Lemma auth_Z_max_both_dfrac_valid dq n m :
-  ✓ (auth_Z_max_auth dq n ⋅ auth_Z_max_frag m) ↔
+  ✓ (auth_Z_max_auth dq n ⋅ auth_Z_max_lb m) ↔
   ✓ dq ∧ (m ≤ n)%Z.
 Proof.
   rewrite -assoc -auth_option_frag_op auth_option_both_dfrac_valid_discrete.
   rewrite Z_max_included Z_max_op_eq /=. naive_solver lia.
 Qed.
 Lemma auth_Z_max_both_valid n m :
-  ✓ (auth_Z_max_auth (DfracOwn 1) n ⋅ auth_Z_max_frag m) ↔
+  ✓ (auth_Z_max_auth (DfracOwn 1) n ⋅ auth_Z_max_lb m) ↔
   (m ≤ n)%Z.
 Proof.
   rewrite auth_Z_max_both_dfrac_valid dfrac_valid_own. naive_solver.
 Qed.
 
-Lemma auth_Z_max_frag_mono n1 n2 :
+Lemma auth_Z_max_lb_mono n1 n2 :
   (n1 ≤ n2)%Z →
-  auth_Z_max_frag n1 ≼ auth_Z_max_frag n2.
+  auth_Z_max_lb n1 ≼ auth_Z_max_lb n2.
 Proof.
   intros. apply auth_option_frag_mono, Z_max_included. done.
 Qed.
 
 Lemma auth_Z_max_included dq n :
-  auth_Z_max_frag n ≼ auth_Z_max_auth dq n.
+  auth_Z_max_lb n ≼ auth_Z_max_auth dq n.
 Proof.
   apply cmra_included_r.
 Qed.
@@ -148,4 +148,4 @@ Proof.
 Qed.
 
 #[global] Opaque auth_Z_max_auth.
-#[global] Opaque auth_Z_max_frag.
+#[global] Opaque auth_Z_max_lb.

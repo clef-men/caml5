@@ -29,8 +29,8 @@ Section auth_Z_max_G.
 
   Definition auth_Z_max_auth γ dq n :=
     own γ (auth_Z_max_auth dq n).
-  Definition auth_Z_max_frag γ n :=
-    own γ (auth_Z_max_frag n).
+  Definition auth_Z_max_lb γ n :=
+    own γ (auth_Z_max_lb n).
 
   #[global] Instance auth_Z_max_auth_timeless γ dq n :
     Timeless (auth_Z_max_auth γ dq n).
@@ -42,13 +42,13 @@ Section auth_Z_max_G.
   Proof.
     apply _.
   Qed.
-  #[global] Instance auth_Z_max_frag_timeless γ n :
-    Timeless (auth_Z_max_frag γ n).
+  #[global] Instance auth_Z_max_lb_timeless γ n :
+    Timeless (auth_Z_max_lb γ n).
   Proof.
     apply _.
   Qed.
-  #[global] Instance auth_Z_max_frag_persistent γ n :
-    Persistent (auth_Z_max_frag γ n).
+  #[global] Instance auth_Z_max_lb_persistent γ n :
+    Persistent (auth_Z_max_lb γ n).
   Proof.
     apply _.
   Qed.
@@ -116,23 +116,23 @@ Section auth_Z_max_G.
     iDestruct (auth_Z_max_auth_valid_2 with "H●1 H●2") as %(? & _). done.
   Qed.
 
-  Lemma auth_Z_max_frag_get γ q n :
+  Lemma auth_Z_max_lb_get γ q n :
     auth_Z_max_auth γ q n -∗
-    auth_Z_max_frag γ n.
+    auth_Z_max_lb γ n.
   Proof.
     apply own_mono, auth_Z_max_included.
   Qed.
-  Lemma auth_Z_max_frag_le {γ n} n' :
+  Lemma auth_Z_max_lb_le {γ n} n' :
     (n' ≤ n)%Z →
-    auth_Z_max_frag γ n -∗
-    auth_Z_max_frag γ n'.
+    auth_Z_max_lb γ n -∗
+    auth_Z_max_lb γ n'.
   Proof.
-    intros. apply own_mono, auth_Z_max_frag_mono. done.
+    intros. apply own_mono, auth_Z_max_lb_mono. done.
   Qed.
 
   Lemma auth_Z_max_valid γ dq n m :
     auth_Z_max_auth γ dq n -∗
-    auth_Z_max_frag γ m -∗
+    auth_Z_max_lb γ m -∗
     ⌜m ≤ n⌝%Z.
   Proof.
     iIntros "H●1 H●2".
@@ -158,4 +158,4 @@ Section auth_Z_max_G.
 End auth_Z_max_G.
 
 #[global] Opaque auth_Z_max_auth.
-#[global] Opaque auth_Z_max_frag.
+#[global] Opaque auth_Z_max_lb.

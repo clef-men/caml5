@@ -29,8 +29,8 @@ Section auth_Z_min_G.
 
   Definition auth_Z_min_auth γ dq n :=
     own γ (auth_Z_min_auth dq n).
-  Definition auth_Z_min_frag γ n :=
-    own γ (auth_Z_min_frag n).
+  Definition auth_Z_min_ub γ n :=
+    own γ (auth_Z_min_ub n).
 
   #[global] Instance auth_Z_min_auth_timeless γ dq n :
     Timeless (auth_Z_min_auth γ dq n).
@@ -42,13 +42,13 @@ Section auth_Z_min_G.
   Proof.
     apply _.
   Qed.
-  #[global] Instance auth_Z_min_frag_timeless γ n :
-    Timeless (auth_Z_min_frag γ n).
+  #[global] Instance auth_Z_min_ub_timeless γ n :
+    Timeless (auth_Z_min_ub γ n).
   Proof.
     apply _.
   Qed.
-  #[global] Instance auth_Z_min_frag_persistent γ n :
-    Persistent (auth_Z_min_frag γ n).
+  #[global] Instance auth_Z_min_ub_persistent γ n :
+    Persistent (auth_Z_min_ub γ n).
   Proof.
     apply _.
   Qed.
@@ -116,23 +116,23 @@ Section auth_Z_min_G.
     iDestruct (auth_Z_min_auth_valid_2 with "H●1 H●2") as %(? & _). done.
   Qed.
 
-  Lemma auth_Z_min_frag_get γ q n :
+  Lemma auth_Z_min_ub_get γ q n :
     auth_Z_min_auth γ q n -∗
-    auth_Z_min_frag γ n.
+    auth_Z_min_ub γ n.
   Proof.
     apply own_mono, auth_Z_min_included.
   Qed.
-  Lemma auth_Z_min_frag_le {γ n} n' :
+  Lemma auth_Z_min_ub_le {γ n} n' :
     (n ≤ n')%Z →
-    auth_Z_min_frag γ n -∗
-    auth_Z_min_frag γ n'.
+    auth_Z_min_ub γ n -∗
+    auth_Z_min_ub γ n'.
   Proof.
-    intros. apply own_mono, auth_Z_min_frag_mono. done.
+    intros. apply own_mono, auth_Z_min_ub_mono. done.
   Qed.
 
   Lemma auth_Z_min_valid γ dq n m :
     auth_Z_min_auth γ dq n -∗
-    auth_Z_min_frag γ m -∗
+    auth_Z_min_ub γ m -∗
     ⌜n ≤ m⌝%Z.
   Proof.
     iIntros "H●1 H●2".
@@ -158,4 +158,4 @@ Section auth_Z_min_G.
 End auth_Z_min_G.
 
 #[global] Opaque auth_Z_min_auth.
-#[global] Opaque auth_Z_min_frag.
+#[global] Opaque auth_Z_min_ub.

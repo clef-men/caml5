@@ -48,8 +48,8 @@ Section raw_array_G.
   Section raw_array_token.
     #[local] Definition raw_array_token_auth γ sz :=
       auth_nat_max_auth γ DfracDiscarded sz.
-    #[local] Definition raw_array_token_frag γ i :=
-      auth_nat_max_frag γ i.
+    #[local] Definition raw_array_token_lb γ i :=
+      auth_nat_max_lb γ i.
 
     #[local] Lemma raw_array_token_alloc sz :
       ⊢ |==> ∃ γ,
@@ -61,17 +61,17 @@ Section raw_array_G.
     Qed.
     #[local] Lemma raw_array_token_valid γ sz i :
       raw_array_token_auth γ sz -∗
-      raw_array_token_frag γ i -∗
+      raw_array_token_lb γ i -∗
       ⌜i ≤ sz⌝.
     Proof.
       iApply auth_nat_max_valid.
     Qed.
-    #[local] Lemma raw_array_token_frag_le γ i i' :
+    #[local] Lemma raw_array_token_lb_le γ i i' :
       i' ≤ i →
-      raw_array_token_frag γ i -∗
-      raw_array_token_frag γ i'.
+      raw_array_token_lb γ i -∗
+      raw_array_token_lb γ i'.
     Proof.
-      intros. iApply auth_nat_max_frag_le. done.
+      intros. iApply auth_nat_max_lb_le. done.
     Qed.
   End raw_array_token.
 
@@ -101,7 +101,7 @@ Section raw_array_G.
       ∃ l γ,
       ⌜t = #l⌝ ∗
       meta l nroot γ ∗
-      raw_array_token_frag γ (S i) ∗
+      raw_array_token_lb γ (S i) ∗
       (l +ₗ i) ↦{dq} v.
 
     #[global] Instance raw_array_mapsto_timeless t i dq v :
@@ -187,7 +187,7 @@ Section raw_array_G.
       ∃ l γ,
       ⌜t = #l⌝ ∗
       meta l nroot γ ∗
-      raw_array_token_frag γ (i + length vs) ∗
+      raw_array_token_lb γ (i + length vs) ∗
       [∗ list] j ↦ v ∈ vs, (l +ₗ (i + j)%nat) ↦{dq} v.
 
     #[global] Instance raw_array_view_timeless t i dq vs :
@@ -223,14 +223,14 @@ Section raw_array_G.
       raw_array_view t i dq vs -∗
         ∃ l γ,
         ⌜t = #l⌝ ∗ meta l nroot γ ∗
-        raw_array_token_frag γ (i + length vs) ∗
+        raw_array_token_lb γ (i + length vs) ∗
         [∗ list] j ↦ v ∈ vs, raw_array_mapsto t (i + j) dq v.
     Proof.
       iIntros "(%l & %γ & -> & #Hmeta & #H◯ & H↦s)".
       iExists l, γ. iFrame "∗#". iSplit; first done.
       iApply (big_sepL_impl with "H↦s"). iIntros "!> %j %v %Hlookup H↦".
       iExists l, γ. repeat iSplit; try done.
-      iApply (raw_array_token_frag_le with "H◯").
+      iApply (raw_array_token_lb_le with "H◯").
       apply lookup_lt_Some in Hlookup. lia.
     Qed.
     Lemma raw_array_view_to_mapstos t i dq vs :
@@ -246,7 +246,7 @@ Section raw_array_G.
       raw_array_view t i dq vs -∗
         ∃ l γ,
         ⌜t = #l⌝ ∗ meta l nroot γ ∗
-        raw_array_token_frag γ (i + length vs) ∗
+        raw_array_token_lb γ (i + length vs) ∗
         raw_array_mapsto t (i + j) dq v.
     Proof.
       iIntros "% Hview".
@@ -266,7 +266,7 @@ Section raw_array_G.
     #[local] Lemma raw_array_mapstos_to_view_strong t l γ i dq vs :
       t = #l →
       meta l nroot γ -∗
-      raw_array_token_frag γ (i + length vs) -∗
+      raw_array_token_lb γ (i + length vs) -∗
       ([∗ list] j ↦ v ∈ vs, raw_array_mapsto t (i + j) dq v) -∗
       raw_array_view t i dq vs.
     Proof.
@@ -433,7 +433,7 @@ Section raw_array_G.
       iIntros (->) "(%l & %γ & -> & #Hmeta & #H◯ & H↦)".
       iDestruct (bi.equiv_entails_1_1 _ _ (big_sepL_app _ vs1 vs2) with "H↦") as "(H↦1 & H↦2)".
       iSplitL "H↦1"; iExists l, γ; iFrame "∗#"; (iSplit; first done).
-      - iApply (raw_array_token_frag_le with "H◯"). rewrite app_length. lia.
+      - iApply (raw_array_token_lb_le with "H◯"). rewrite app_length. lia.
       - rewrite app_length assoc. setoid_rewrite (assoc Nat.add). auto.
     Qed.
   End raw_array_view.
@@ -666,7 +666,7 @@ Section raw_array_G.
     iEval (rewrite loc_add_0) in "Hmeta".
     iApply "HΦ".
     iMod (auth_nat_max_alloc (Z.to_nat sz)) as "(%γ & H●)".
-    iDestruct (auth_nat_max_frag_get with "H●") as "#H◯".
+    iDestruct (auth_nat_max_lb_get with "H●") as "#H◯".
     iMod (auth_nat_max_auth_persist with "H●") as "#H●".
     iMod (meta_set _ _ γ with "Hmeta") as "#Hmeta"; first done.
     iSplitR; iExists l, γ; iFrame "∗#"; first auto with lia.

@@ -20,7 +20,7 @@ Definition auth_Z_min_UR :=
 
 Definition auth_Z_min_auth dq n : auth_Z_min_UR :=
   ●O{dq} Build_Z_min n ⋅ ◯O Build_Z_min n.
-Definition auth_Z_min_frag n : auth_Z_min_UR :=
+Definition auth_Z_min_ub n : auth_Z_min_UR :=
   ◯O Build_Z_min n.
 
 #[global] Instance auth_Z_min_cmra_discrete :
@@ -34,8 +34,8 @@ Qed.
 Proof.
   apply _.
 Qed.
-#[global] Instance auth_Z_min_frag_core_id n :
-  CoreId (auth_Z_min_frag n).
+#[global] Instance auth_Z_min_ub_core_id n :
+  CoreId (auth_Z_min_ub n).
 Proof.
   apply _.
 Qed.
@@ -53,29 +53,29 @@ Proof.
   rewrite /IsOp' /IsOp => ->. rewrite auth_Z_min_auth_dfrac_op //.
 Qed.
 
-Lemma auth_Z_min_frag_op n1 n2 :
-  auth_Z_min_frag (n1 `min` n2) = auth_Z_min_frag n1 ⋅ auth_Z_min_frag n2.
+Lemma auth_Z_min_ub_op n1 n2 :
+  auth_Z_min_ub (n1 `min` n2) = auth_Z_min_ub n1 ⋅ auth_Z_min_ub n2.
 Proof.
   rewrite -auth_option_frag_op Z_min_op_eq //.
 Qed.
-#[global] Instance auth_Z_min_frag_is_op n n1 n2 :
+#[global] Instance auth_Z_min_ub_is_op n n1 n2 :
   IsOp (Build_Z_min n) (Build_Z_min n1) (Build_Z_min n2) →
-  IsOp' (auth_Z_min_frag n) (auth_Z_min_frag n1) (auth_Z_min_frag n2).
+  IsOp' (auth_Z_min_ub n) (auth_Z_min_ub n1) (auth_Z_min_ub n2).
 Proof.
-  rewrite /IsOp' /IsOp /auth_Z_min_frag => -> //.
+  rewrite /IsOp' /IsOp /auth_Z_min_ub => -> //.
 Qed.
 
 Lemma auth_Z_min_auth_frag_op dq n :
-  auth_Z_min_auth dq n ≡ auth_Z_min_auth dq n ⋅ auth_Z_min_frag n.
+  auth_Z_min_auth dq n ≡ auth_Z_min_auth dq n ⋅ auth_Z_min_ub n.
 Proof.
   rewrite -!assoc -auth_option_frag_op -core_id_dup //.
 Qed.
 
-Lemma auth_Z_min_frag_op_le n n' :
+Lemma auth_Z_min_ub_op_le n n' :
   (n ≤ n')%Z →
-  auth_Z_min_frag n = auth_Z_min_frag n' ⋅ auth_Z_min_frag n.
+  auth_Z_min_ub n = auth_Z_min_ub n' ⋅ auth_Z_min_ub n.
 Proof.
-  intros. rewrite -auth_Z_min_frag_op Z.min_r //.
+  intros. rewrite -auth_Z_min_ub_op Z.min_r //.
 Qed.
 
 Lemma auth_Z_min_auth_dfrac_valid dq n :
@@ -108,28 +108,28 @@ Proof.
 Qed.
 
 Lemma auth_Z_min_both_dfrac_valid dq n m :
-  ✓ (auth_Z_min_auth dq n ⋅ auth_Z_min_frag m) ↔
+  ✓ (auth_Z_min_auth dq n ⋅ auth_Z_min_ub m) ↔
   ✓ dq ∧ (n ≤ m)%Z.
 Proof.
   rewrite -assoc -auth_option_frag_op auth_option_both_dfrac_valid_discrete.
   rewrite Z_min_included Z_min_op_eq /=. naive_solver lia.
 Qed.
 Lemma auth_Z_min_both_valid n m :
-  ✓ (auth_Z_min_auth (DfracOwn 1) n ⋅ auth_Z_min_frag m) ↔
+  ✓ (auth_Z_min_auth (DfracOwn 1) n ⋅ auth_Z_min_ub m) ↔
   (n ≤ m)%Z.
 Proof.
   rewrite auth_Z_min_both_dfrac_valid dfrac_valid_own. naive_solver.
 Qed.
 
-Lemma auth_Z_min_frag_mono n1 n2 :
+Lemma auth_Z_min_ub_mono n1 n2 :
   (n2 ≤ n1)%Z →
-  auth_Z_min_frag n1 ≼ auth_Z_min_frag n2.
+  auth_Z_min_ub n1 ≼ auth_Z_min_ub n2.
 Proof.
   intros. apply auth_option_frag_mono, Z_min_included. done.
 Qed.
 
 Lemma auth_Z_min_included dq n :
-  auth_Z_min_frag n ≼ auth_Z_min_auth dq n.
+  auth_Z_min_ub n ≼ auth_Z_min_auth dq n.
 Proof.
   apply cmra_included_r.
 Qed.
@@ -148,4 +148,4 @@ Proof.
 Qed.
 
 #[global] Opaque auth_Z_min_auth.
-#[global] Opaque auth_Z_min_frag.
+#[global] Opaque auth_Z_min_ub.
