@@ -41,6 +41,11 @@ Section sts.
     Proof.
       apply _.
     Qed.
+    #[global] Instance sts_cell_auth_persistent γ s :
+      Persistent (sts_cell_auth γ DfracDiscarded s).
+    Proof.
+      apply _.
+    Qed.
     #[global] Instance sts_cell_lb_timeless γ s :
       Timeless (sts_cell_lb γ s).
     Proof.
@@ -74,8 +79,8 @@ Section sts.
       sts_cell_auth γ dq s -∗
       ⌜✓ dq⌝.
     Proof.
-      iIntros "H●".
-      iDestruct (own_valid with "H●") as %?%sts_cell_auth_dfrac_valid. done.
+      iIntros "Hauth".
+      iDestruct (own_valid with "Hauth") as %?%sts_cell_auth_dfrac_valid. done.
     Qed.
     Lemma sts_cell_auth_combine `{!AntiSymm (=) steps} γ dq1 s1 dq2 s2 :
       sts_cell_auth γ dq1 s1 -∗
@@ -83,8 +88,8 @@ Section sts.
         sts_cell_auth γ (dq1 ⋅ dq2) s1 ∗
         ⌜s1 = s2⌝.
     Proof.
-      iIntros "H●1 H●2". iCombine "H●1 H●2" as "H●".
-      iDestruct (own_valid with "H●") as %(_ & ->)%sts_cell_auth_dfrac_op_valid.
+      iIntros "Hauth1 Hauth2". iCombine "Hauth1 Hauth2" as "Hauth".
+      iDestruct (own_valid with "Hauth") as %(_ & ->)%sts_cell_auth_dfrac_op_valid.
       rewrite -sts_cell_auth_dfrac_op. naive_solver.
     Qed.
     Lemma sts_cell_auth_valid_2 `{!AntiSymm (=) steps} γ dq1 s1 dq2 s2 :
@@ -92,25 +97,25 @@ Section sts.
       sts_cell_auth γ dq2 s2 -∗
       ⌜✓ (dq1 ⋅ dq2) ∧ s1 = s2⌝.
     Proof.
-      iIntros "H●1 H●2".
-      iDestruct (sts_cell_auth_combine with "H●1 H●2") as "(H● & ->)".
-      iDestruct (sts_cell_auth_valid with "H●") as %?. done.
+      iIntros "Hauth1 Hauth2".
+      iDestruct (sts_cell_auth_combine with "Hauth1 Hauth2") as "(Hauth & ->)".
+      iDestruct (sts_cell_auth_valid with "Hauth") as %?. done.
     Qed.
     Lemma sts_cell_auth_agree `{!AntiSymm (=) steps} γ dq1 s1 dq2 s2 :
       sts_cell_auth γ dq1 s1 -∗
       sts_cell_auth γ dq2 s2 -∗
       ⌜s1 = s2⌝.
     Proof.
-      iIntros "H●1 H●2".
-      iDestruct (sts_cell_auth_valid_2 with "H●1 H●2") as "(_ & $)".
+      iIntros "Hauth1 Hauth2".
+      iDestruct (sts_cell_auth_valid_2 with "Hauth1 Hauth2") as "(_ & $)".
     Qed.
     Lemma sts_cell_auth_exclusive `{!AntiSymm (=) steps} γ s1 s2 :
       sts_cell_auth γ (DfracOwn 1) s1 -∗
       sts_cell_auth γ (DfracOwn 1) s2 -∗
       False.
     Proof.
-      iIntros "H●1 H●2".
-      iDestruct (sts_cell_auth_valid_2 with "H●1 H●2") as "(% & _)". done.
+      iIntros "Hauth1 Hauth2".
+      iDestruct (sts_cell_auth_valid_2 with "Hauth1 Hauth2") as "(% & _)". done.
     Qed.
 
     Lemma sts_cell_lb_get γ q s :
@@ -132,8 +137,8 @@ Section sts.
       sts_cell_lb γ t -∗
       ⌜steps t s⌝.
     Proof.
-      iIntros "H●1 H●2".
-      iDestruct (own_valid_2 with "H●1 H●2") as %?%sts_cell_both_dfrac_valid.
+      iIntros "Hauth1 Hauth2".
+      iDestruct (own_valid_2 with "Hauth1 Hauth2") as %?%sts_cell_both_dfrac_valid.
       naive_solver.
     Qed.
 
@@ -149,8 +154,8 @@ Section sts.
       sts_cell_auth γ (DfracOwn 1) s ==∗
       sts_cell_auth γ (DfracOwn 1) s'.
     Proof.
-      iIntros "% H●".
-      iMod (own_update with "H●"); first apply sts_cell_auth_update; done.
+      iIntros "% Hauth".
+      iMod (own_update with "Hauth"); first apply sts_cell_auth_update; done.
     Qed.
   End sts_cell_G.
 End sts.

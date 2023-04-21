@@ -26,7 +26,7 @@ Section sts.
   Context `{Countable key}.
   Context `(step : relation state).
   Implicit Types k : key.
-  Implicit Types s : state.
+  Implicit Types s t : state.
   Implicit Types ss : gmap key state.
 
   Let state_O := leibnizO state.
@@ -70,7 +70,7 @@ Section sts.
     apply _.
   Qed.
 
-  Lemma sts_cells_mapsto_op k q1 q2 s :
+  Lemma sts_cells_mapsto_frac_op k q1 q2 s :
     sts_cells_mapsto k (q1 ⋅ q2) s ≡ sts_cells_mapsto k q1 s ⋅ sts_cells_mapsto k q2 s.
   Proof.
     apply is_op, _.
@@ -103,7 +103,7 @@ Section sts.
     rewrite sts_cells_auth_dfrac_valid //.
   Qed.
 
-  Lemma sts_cells_mapsto_dfrac_valid k q s :
+  Lemma sts_cells_mapsto_frac_valid k q s :
     ✓ sts_cells_mapsto k q s ↔
     ✓ q.
   Proof.
@@ -112,7 +112,7 @@ Section sts.
   Lemma sts_cells_mapsto_valid k s :
     ✓ sts_cells_mapsto k 1 s.
   Proof.
-    rewrite sts_cells_mapsto_dfrac_valid //.
+    rewrite sts_cells_mapsto_frac_valid //.
   Qed.
 
   Lemma sts_cells_auth_dfrac_op_valid `{!AntiSymm (=) steps} dq1 ss1 dq2 ss2 :
@@ -133,7 +133,7 @@ Section sts.
     rewrite sts_cells_auth_dfrac_op_valid. naive_solver.
   Qed.
 
-  Lemma sts_cells_mapsto_dfrac_op_valid `{!AntiSymm (=) steps} k q1 s1 q2 s2 :
+  Lemma sts_cells_mapsto_frac_op_valid `{!AntiSymm (=) steps} k q1 s1 q2 s2 :
     ✓ (sts_cells_mapsto k q1 s1 ⋅ sts_cells_mapsto k q2 s2) ↔
     ✓ (q1 ⋅ q2) ∧ s1 = s2.
   Proof.
@@ -143,10 +143,10 @@ Section sts.
     ✓ (sts_cells_mapsto k 1 s1 ⋅ sts_cells_mapsto k 1 s2) ↔
     False.
   Proof.
-    rewrite sts_cells_mapsto_dfrac_op_valid. naive_solver.
+    rewrite sts_cells_mapsto_frac_op_valid. naive_solver.
   Qed.
 
-  Lemma sts_cells_auth_frag_dfrac_valid `{!AntiSymm (=) steps} dq ss k q s :
+  Lemma sts_cells_auth_mapsto_dfrac_valid `{!AntiSymm (=) steps} dq ss k q s :
     ✓ (sts_cells_auth dq ss ⋅ sts_cells_mapsto k q s) ↔
     ✓ dq ∧ ✓ q ∧ ss !! k = Some s.
   Proof.
@@ -167,16 +167,16 @@ Section sts.
       + clear. intros k. rewrite lookup_fmap.
         destruct (ss !! k); [apply sts_cell_auth_valid | done].
   Qed.
-  Lemma sts_cells_auth_frag_valid `{!AntiSymm (=) steps} ss k s :
+  Lemma sts_cells_auth_mapsto_valid `{!AntiSymm (=) steps} ss k s :
     ✓ (sts_cells_auth (DfracOwn 1) ss ⋅ sts_cells_mapsto k 1 s) ↔
     ss !! k = Some s.
   Proof.
-    rewrite sts_cells_auth_frag_dfrac_valid. naive_solver apply dfrac_valid_own_1.
+    rewrite sts_cells_auth_mapsto_dfrac_valid. naive_solver apply dfrac_valid_own_1.
   Qed.
 
-  Lemma sts_cells_auth_dfrac_lb_valid dq ss k s :
-    ✓ (sts_cells_auth dq ss ⋅ sts_cells_lb k s) ↔
-    ✓ dq ∧ ∃ s', steps s s' ∧ ss !! k = Some s'.
+  Lemma sts_cells_auth_dfrac_lb_valid dq ss k t :
+    ✓ (sts_cells_auth dq ss ⋅ sts_cells_lb k t) ↔
+    ✓ dq ∧ ∃ s, steps t s ∧ ss !! k = Some s.
   Proof.
     rewrite auth_both_dfrac_valid_discrete singleton_included_l.
     setoid_rewrite Some_equiv_eq.
@@ -192,14 +192,14 @@ Section sts.
       + clear. intros k. rewrite lookup_fmap.
         destruct (ss !! k); [apply sts_cell_auth_valid | done].
   Qed.
-  Lemma sts_cells_auth_lb_valid ss k s :
-    ✓ (sts_cells_auth (DfracOwn 1) ss ⋅ sts_cells_lb k s) ↔
-    ∃ s', steps s s' ∧ ss !! k = Some s'.
+  Lemma sts_cells_auth_lb_valid ss k t :
+    ✓ (sts_cells_auth (DfracOwn 1) ss ⋅ sts_cells_lb k t) ↔
+    ∃ s, steps t s ∧ ss !! k = Some s.
   Proof.
     rewrite sts_cells_auth_dfrac_lb_valid. naive_solver apply dfrac_valid_own_1.
   Qed.
 
-  Lemma sts_cells_mapsto_dfrac_lb_valid k q s1 s2 :
+  Lemma sts_cells_mapsto_frac_lb_valid k q s1 s2 :
     ✓ (sts_cells_mapsto k q s1 ⋅ sts_cells_lb k s2) ↔
     ✓ q ∧ steps s2 s1.
   Proof.
@@ -209,7 +209,7 @@ Section sts.
     ✓ (sts_cells_mapsto k 1 s1 ⋅ sts_cells_lb k s2) ↔
     steps s2 s1.
   Proof.
-    rewrite sts_cells_mapsto_dfrac_lb_valid. naive_solver apply frac_valid_1.
+    rewrite sts_cells_mapsto_frac_lb_valid. naive_solver apply frac_valid_1.
   Qed.
 
   Lemma sts_cells_lb_mono k s1 s2 :
@@ -232,7 +232,7 @@ Section sts.
   Proof.
     apply auth_update_auth_persist.
   Qed.
-  Lemma sts_cells_auth_alloc k s ss :
+  Lemma sts_cells_auth_alloc {ss} k s :
     ss !! k = None →
     sts_cells_auth (DfracOwn 1) ss ~~> sts_cells_auth (DfracOwn 1) (<[k := s]> ss).
   Proof.
@@ -249,7 +249,7 @@ Section sts.
     sts_cells_auth (DfracOwn 1) (<[k := s']> ss) ⋅ sts_cells_mapsto k 1 s'.
   Proof.
     intros.
-    apply cmra_update_valid0. intros Hlookup%cmra_discrete_valid%sts_cells_auth_frag_valid.
+    apply cmra_update_valid0. intros Hlookup%cmra_discrete_valid%sts_cells_auth_mapsto_valid.
     apply auth_update. rewrite fmap_insert. apply singleton_local_update_any.
     intros ? (? & <- & ?)%lookup_fmap_Some. simplify_eq.
     apply sts_cell_auth_local_update. done.

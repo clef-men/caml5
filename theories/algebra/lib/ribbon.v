@@ -64,10 +64,10 @@ Section sts.
     apply _.
   Qed.
 
-  Lemma ribbon_mapsto_op i q1 q2 s :
+  Lemma ribbon_mapsto_frac_op i q1 q2 s :
     ribbon_mapsto i (q1 ⋅ q2) s ≡ ribbon_mapsto i q1 s ⋅ ribbon_mapsto i q2 s.
   Proof.
-    apply sts_cells_mapsto_op.
+    apply sts_cells_mapsto_frac_op.
   Qed.
   #[global] Instance ribbon_mapsto_frac_is_op i q q1 q2 s :
     IsOp q q1 q2 →
@@ -94,11 +94,11 @@ Section sts.
     apply sts_cells_auth_valid.
   Qed.
 
-  Lemma ribbon_mapsto_dfrac_valid i q s :
+  Lemma ribbon_mapsto_frac_valid i q s :
     ✓ ribbon_mapsto i q s ↔
     ✓ q.
   Proof.
-    apply sts_cells_mapsto_dfrac_valid.
+    apply sts_cells_mapsto_frac_valid.
   Qed.
   Lemma ribbon_mapsto_valid i s :
     ✓ ribbon_mapsto i 1 s.
@@ -120,11 +120,11 @@ Section sts.
     rewrite ribbon_auth_dfrac_op_valid. naive_solver.
   Qed.
 
-  Lemma ribbon_mapsto_dfrac_op_valid `{!AntiSymm (=) steps} i q1 s1 q2 s2 :
+  Lemma ribbon_mapsto_frac_op_valid `{!AntiSymm (=) steps} i q1 s1 q2 s2 :
     ✓ (ribbon_mapsto i q1 s1 ⋅ ribbon_mapsto i q2 s2) ↔
     ✓ (q1 ⋅ q2) ∧ s1 = s2.
   Proof.
-    rewrite sts_cells_mapsto_dfrac_op_valid //.
+    rewrite sts_cells_mapsto_frac_op_valid //.
   Qed.
   Lemma ribbon_mapsto_op_valid `{!AntiSymm (=) steps} i s1 s2 :
     ✓ (ribbon_mapsto i 1 s1 ⋅ ribbon_mapsto i 1 s2) ↔
@@ -133,17 +133,17 @@ Section sts.
     rewrite sts_cells_mapsto_op_valid //.
   Qed.
 
-  Lemma ribbon_auth_frag_dfrac_valid `{!AntiSymm (=) steps} dq rib i q s :
+  Lemma ribbon_auth_mapsto_dfrac_valid `{!AntiSymm (=) steps} dq rib i q s :
     ✓ (ribbon_auth dq rib ⋅ ribbon_mapsto i q s) ↔
     ✓ dq ∧ ✓ q ∧ rib !! i = Some s.
   Proof.
-    rewrite sts_cells_auth_frag_dfrac_valid (lookup_map_seq_Some_inv 0) //.
+    rewrite sts_cells_auth_mapsto_dfrac_valid (lookup_map_seq_Some_inv 0) //.
   Qed.
-  Lemma ribbon_auth_frag_valid `{!AntiSymm (=) steps} rib i s :
+  Lemma ribbon_auth_mapsto_valid `{!AntiSymm (=) steps} rib i s :
     ✓ (ribbon_auth (DfracOwn 1) rib ⋅ ribbon_mapsto i 1 s) ↔
     rib !! i = Some s.
   Proof.
-    rewrite ribbon_auth_frag_dfrac_valid. naive_solver apply dfrac_valid_own_1.
+    rewrite ribbon_auth_mapsto_dfrac_valid. naive_solver apply dfrac_valid_own_1.
   Qed.
 
   Lemma ribbon_auth_dfrac_lb_valid dq rib i s :
@@ -160,11 +160,11 @@ Section sts.
     rewrite ribbon_auth_dfrac_lb_valid. naive_solver apply dfrac_valid_own_1.
   Qed.
 
-  Lemma ribbon_mapsto_dfrac_lb_valid i q s1 s2 :
+  Lemma ribbon_mapsto_frac_lb_valid i q s1 s2 :
     ✓ (ribbon_mapsto i q s1 ⋅ ribbon_lb i s2) ↔
     ✓ q ∧ steps s2 s1.
   Proof.
-    rewrite sts_cells_mapsto_dfrac_lb_valid //.
+    rewrite sts_cells_mapsto_frac_lb_valid //.
   Qed.
   Lemma ribbon_mapsto_lb_valid i s1 s2 :
     ✓ (ribbon_mapsto i 1 s1 ⋅ ribbon_lb i s2) ↔
@@ -204,7 +204,7 @@ Section sts.
     ribbon_auth (DfracOwn 1) (<[i := s']> rib) ⋅ ribbon_mapsto i 1 s'.
   Proof.
     intros.
-    apply cmra_update_valid0. intros ?%cmra_discrete_valid%ribbon_auth_frag_valid%lookup_lt_Some.
+    apply cmra_update_valid0. intros ?%cmra_discrete_valid%ribbon_auth_mapsto_valid%lookup_lt_Some.
     rewrite /ribbon_auth -insert_map_seq_0 //.
     apply sts_cells_update; done.
   Qed.
