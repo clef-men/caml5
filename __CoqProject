@@ -45,6 +45,7 @@ theories/base_logic/lib/auth_Z_max.v
 theories/base_logic/lib/auth_Z_min.v
 theories/base_logic/lib/mono_list.v
 theories/base_logic/lib/sts_cell.v
+theories/base_logic/lib/sts_cells.v
 
 theories/program_logic/atomic.v
 
