@@ -11,7 +11,7 @@ From caml5.common Require Import
 From caml5.algebra Require Export
   base.
 From caml5.algebra Require Import
-  lib.sts_cells.
+  lib.mono_states.
 
 Section sts.
   Context `(step : relation state).
@@ -22,18 +22,18 @@ Section sts.
   Notation steps := (rtc step).
 
   Definition ribbon :=
-    sts_cells nat step.
+    mono_states nat step.
   Definition ribbon_R :=
-    sts_cells_R nat step.
+    mono_states_R nat step.
   Definition ribbon_UR :=
-    sts_cells_UR nat step.
+    mono_states_UR nat step.
 
   Definition ribbon_auth dq rib : ribbon_UR :=
-    sts_cells_auth step dq (map_seq 0 rib).
+    mono_states_auth step dq (map_seq 0 rib).
   Definition ribbon_mapsto i q s : ribbon_UR :=
-    sts_cells_mapsto step i q s.
+    mono_states_mapsto step i q s.
   Definition ribbon_lb i s : ribbon_UR :=
-    sts_cells_lb step i s.
+    mono_states_lb step i s.
 
   #[global] Instance ribbon_cmra_discrete :
     CmraDiscrete ribbon_R.
@@ -55,7 +55,7 @@ Section sts.
   Lemma ribbon_auth_dfrac_op dq1 dq2 rib :
     ribbon_auth (dq1 ⋅ dq2) rib ≡ ribbon_auth dq1 rib ⋅ ribbon_auth dq2 rib.
   Proof.
-    apply sts_cells_auth_dfrac_op.
+    apply mono_states_auth_dfrac_op.
   Qed.
   #[global] Instance ribbon_auth_dfrac_is_op dq dq1 dq2 rib :
     IsOp dq dq1 dq2 →
@@ -67,7 +67,7 @@ Section sts.
   Lemma ribbon_mapsto_frac_op i q1 q2 s :
     ribbon_mapsto i (q1 ⋅ q2) s ≡ ribbon_mapsto i q1 s ⋅ ribbon_mapsto i q2 s.
   Proof.
-    apply sts_cells_mapsto_frac_op.
+    apply mono_states_mapsto_frac_op.
   Qed.
   #[global] Instance ribbon_mapsto_frac_is_op i q q1 q2 s :
     IsOp q q1 q2 →
@@ -79,38 +79,38 @@ Section sts.
   Lemma ribbon_mapsto_lb_op i q s :
     ribbon_mapsto i q s ≡ ribbon_mapsto i q s ⋅ ribbon_lb i s.
   Proof.
-    apply sts_cells_mapsto_lb_op.
+    apply mono_states_mapsto_lb_op.
   Qed.
 
   Lemma ribbon_auth_dfrac_valid dq rib :
     ✓ ribbon_auth dq rib ↔
     ✓ dq.
   Proof.
-    apply sts_cells_auth_dfrac_valid.
+    apply mono_states_auth_dfrac_valid.
   Qed.
   Lemma ribbon_auth_valid rib :
     ✓ ribbon_auth (DfracOwn 1) rib.
   Proof.
-    apply sts_cells_auth_valid.
+    apply mono_states_auth_valid.
   Qed.
 
   Lemma ribbon_mapsto_frac_valid i q s :
     ✓ ribbon_mapsto i q s ↔
     ✓ q.
   Proof.
-    apply sts_cells_mapsto_frac_valid.
+    apply mono_states_mapsto_frac_valid.
   Qed.
   Lemma ribbon_mapsto_valid i s :
     ✓ ribbon_mapsto i 1 s.
   Proof.
-    apply sts_cells_mapsto_valid.
+    apply mono_states_mapsto_valid.
   Qed.
 
   Lemma ribbon_auth_dfrac_op_valid `{!AntiSymm (=) steps} dq1 rib1 dq2 rib2 :
     ✓ (ribbon_auth dq1 rib1 ⋅ ribbon_auth dq2 rib2) ↔
     ✓ (dq1 ⋅ dq2) ∧ rib1 = rib2.
   Proof.
-    rewrite sts_cells_auth_dfrac_op_valid. split; last naive_solver.
+    rewrite mono_states_auth_dfrac_op_valid. split; last naive_solver.
     intros (? & ?%(inj _)). done.
   Qed.
   Lemma ribbon_auth_op_valid `{!AntiSymm (=) steps} rib1 rib2 :
@@ -124,20 +124,20 @@ Section sts.
     ✓ (ribbon_mapsto i q1 s1 ⋅ ribbon_mapsto i q2 s2) ↔
     ✓ (q1 ⋅ q2) ∧ s1 = s2.
   Proof.
-    rewrite sts_cells_mapsto_frac_op_valid //.
+    rewrite mono_states_mapsto_frac_op_valid //.
   Qed.
   Lemma ribbon_mapsto_op_valid `{!AntiSymm (=) steps} i s1 s2 :
     ✓ (ribbon_mapsto i 1 s1 ⋅ ribbon_mapsto i 1 s2) ↔
     False.
   Proof.
-    rewrite sts_cells_mapsto_op_valid //.
+    rewrite mono_states_mapsto_op_valid //.
   Qed.
 
   Lemma ribbon_auth_mapsto_dfrac_valid `{!AntiSymm (=) steps} dq rib i q s :
     ✓ (ribbon_auth dq rib ⋅ ribbon_mapsto i q s) ↔
     ✓ dq ∧ ✓ q ∧ rib !! i = Some s.
   Proof.
-    rewrite sts_cells_auth_mapsto_dfrac_valid (lookup_map_seq_Some_inv 0) //.
+    rewrite mono_states_auth_mapsto_dfrac_valid (lookup_map_seq_Some_inv 0) //.
   Qed.
   Lemma ribbon_auth_mapsto_valid `{!AntiSymm (=) steps} rib i s :
     ✓ (ribbon_auth (DfracOwn 1) rib ⋅ ribbon_mapsto i 1 s) ↔
@@ -150,7 +150,7 @@ Section sts.
     ✓ (ribbon_auth dq rib ⋅ ribbon_lb i s) ↔
     ✓ dq ∧ ∃ s', steps s s' ∧ rib !! i = Some s'.
   Proof.
-    rewrite sts_cells_auth_dfrac_lb_valid.
+    rewrite mono_states_auth_dfrac_lb_valid.
     setoid_rewrite (lookup_map_seq_Some_inv 0). done.
   Qed.
   Lemma ribbon_auth_lb_valid rib i s :
@@ -164,38 +164,38 @@ Section sts.
     ✓ (ribbon_mapsto i q s1 ⋅ ribbon_lb i s2) ↔
     ✓ q ∧ steps s2 s1.
   Proof.
-    rewrite sts_cells_mapsto_frac_lb_valid //.
+    rewrite mono_states_mapsto_frac_lb_valid //.
   Qed.
   Lemma ribbon_mapsto_lb_valid i s1 s2 :
     ✓ (ribbon_mapsto i 1 s1 ⋅ ribbon_lb i s2) ↔
     steps s2 s1.
   Proof.
-    rewrite sts_cells_mapsto_lb_valid //.
+    rewrite mono_states_mapsto_lb_valid //.
   Qed.
 
   Lemma ribbon_lb_mono i s1 s2 :
     steps s1 s2 →
     ribbon_lb i s1 ≼ ribbon_lb i s2.
   Proof.
-    apply sts_cells_lb_mono.
+    apply mono_states_lb_mono.
   Qed.
 
   Lemma ribbon_lb_included i dq s :
     ribbon_lb i s ≼ ribbon_mapsto i dq s.
   Proof.
-    apply sts_cells_lb_included.
+    apply mono_states_lb_included.
   Qed.
 
   Lemma ribbon_auth_persist dq rib :
     ribbon_auth dq rib ~~> ribbon_auth DfracDiscarded rib.
   Proof.
-    apply sts_cells_auth_persist.
+    apply mono_states_auth_persist.
   Qed.
   Lemma ribbon_auth_alloc s rib :
     ribbon_auth (DfracOwn 1) rib ~~> ribbon_auth (DfracOwn 1) (rib ++ [s]).
   Proof.
     rewrite /ribbon_auth map_seq_snoc.
-    apply sts_cells_auth_alloc. rewrite lookup_map_seq_None. lia.
+    apply mono_states_auth_alloc. rewrite lookup_map_seq_None. lia.
   Qed.
 
   Lemma ribbon_update `{!AntiSymm (=) steps} {rib i s} s' :
@@ -206,7 +206,7 @@ Section sts.
     intros.
     apply cmra_update_valid0. intros ?%cmra_discrete_valid%ribbon_auth_mapsto_valid%lookup_lt_Some.
     rewrite /ribbon_auth -insert_map_seq_0 //.
-    apply sts_cells_update; done.
+    apply mono_states_update; done.
   Qed.
 End sts.
 
