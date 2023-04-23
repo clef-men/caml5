@@ -1012,7 +1012,7 @@ Section inf_chaselev_deque_G.
     }
     iSplitL "Hpub₂".
     { iExists l, γ. naive_solver. }
-    iExists l, γ, 0%Z, (λ _, #()). iFrame "∗#". done.
+    iExists l, γ, 0%Z, (λ _, #()). iFrame "#∗". done.
   Qed.
 
   Lemma inf_chaselev_deque_push_spec t ι v :
@@ -1596,7 +1596,7 @@ Section inf_chaselev_deque_G.
 
       wp_pures.
 
-      iApply "HΦ". repeat iExists _. iFrame "∗#". done.
+      iApply "HΦ". repeat iExists _. iFrame "#∗". done.
 
     (* branch 1.2: front2 + 1 < back; no conflict *)
     - (* there is stricly more than one public value *)
@@ -2142,7 +2142,7 @@ Section inf_chaselev_deque_G.
 
               wp_pures.
 
-              iApply "HΦ". repeat iExists _. iFrame "∗#". done.
+              iApply "HΦ". repeat iExists _. iFrame "#∗". done.
 
           (* branch 5.2: state 3.2; winning thief has already won *)
           --- assert (front3 = S front2) as -> by lia.
@@ -2185,7 +2185,7 @@ Section inf_chaselev_deque_G.
 
               wp_pures.
 
-              iApply "HΦ". repeat iExists _. iFrame "∗#". done.
+              iApply "HΦ". repeat iExists _. iFrame "#∗". done.
   Qed.
 
   Lemma inf_chaselev_deque_unboxed t ι :
