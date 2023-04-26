@@ -47,6 +47,7 @@ theories/base_logic/lib/mono_list.v
 theories/base_logic/lib/mono_state.v
 theories/base_logic/lib/mono_states.v
 theories/base_logic/lib/ribbon.v
+theories/base_logic/lib/simple_ribbon.v
 
 theories/program_logic/atomic.v
 

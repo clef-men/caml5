@@ -176,7 +176,7 @@ Section sts.
 
   Lemma mono_states_auth_dfrac_lb_valid dq ss k t :
     ✓ (mono_states_auth dq ss ⋅ mono_states_lb k t) ↔
-    ✓ dq ∧ ∃ s, steps t s ∧ ss !! k = Some s.
+    ✓ dq ∧ ∃ s, ss !! k = Some s ∧ steps t s.
   Proof.
     rewrite auth_both_dfrac_valid_discrete singleton_included_l.
     setoid_rewrite Some_equiv_eq.
@@ -194,7 +194,7 @@ Section sts.
   Qed.
   Lemma mono_states_auth_lb_valid ss k t :
     ✓ (mono_states_auth (DfracOwn 1) ss ⋅ mono_states_lb k t) ↔
-    ∃ s, steps t s ∧ ss !! k = Some s.
+    ∃ s, ss !! k = Some s ∧ steps t s.
   Proof.
     rewrite mono_states_auth_dfrac_lb_valid. naive_solver apply dfrac_valid_own_1.
   Qed.

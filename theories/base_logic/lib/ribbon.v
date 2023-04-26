@@ -191,7 +191,7 @@ Section sts.
     Lemma ribbon_auth_lb_valid γ dq rib i t :
       ribbon_auth γ dq rib -∗
       ribbon_lb γ i t -∗
-      ⌜∃ s, steps t s ∧ rib !! i = Some s⌝.
+      ⌜∃ s, rib !! i = Some s ∧ steps t s⌝.
     Proof.
       iIntros "Hauth Hlb".
       iDestruct (own_valid_2 with "Hauth Hlb") as %?%ribbon_auth_dfrac_lb_valid.

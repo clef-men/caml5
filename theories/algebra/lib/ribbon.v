@@ -148,14 +148,14 @@ Section sts.
 
   Lemma ribbon_auth_dfrac_lb_valid dq rib i s :
     ✓ (ribbon_auth dq rib ⋅ ribbon_lb i s) ↔
-    ✓ dq ∧ ∃ s', steps s s' ∧ rib !! i = Some s'.
+    ✓ dq ∧ ∃ s', rib !! i = Some s' ∧ steps s s'.
   Proof.
     rewrite mono_states_auth_dfrac_lb_valid.
     setoid_rewrite (lookup_map_seq_Some_inv 0). done.
   Qed.
   Lemma ribbon_auth_lb_valid rib i s :
     ✓ (ribbon_auth (DfracOwn 1) rib ⋅ ribbon_lb i s) ↔
-    ∃ s', steps s s' ∧ rib !! i = Some s'.
+    ∃ s', rib !! i = Some s' ∧ steps s s'.
   Proof.
     rewrite ribbon_auth_dfrac_lb_valid. naive_solver apply dfrac_valid_own_1.
   Qed.

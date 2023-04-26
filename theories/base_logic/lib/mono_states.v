@@ -192,7 +192,7 @@ Section sts.
     Lemma mono_states_auth_lb_valid γ dq ss k t :
       mono_states_auth γ dq ss -∗
       mono_states_lb γ k t -∗
-      ⌜∃ s, steps t s ∧ ss !! k = Some s⌝.
+      ⌜∃ s, ss !! k = Some s ∧ steps t s⌝.
     Proof.
       iIntros "Hauth Hlb".
       iDestruct (own_valid_2 with "Hauth Hlb") as %?%mono_states_auth_dfrac_lb_valid.
