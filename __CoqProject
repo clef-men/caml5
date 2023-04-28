@@ -4,7 +4,6 @@ theories/prelude.v
 theories/base.v
 
 theories/common/tactics.v
-theories/common/typeclasses.v
 theories/common/natinf.v
 theories/common/list.v
 theories/common/fin_maps.v
