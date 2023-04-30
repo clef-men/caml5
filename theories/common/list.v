@@ -14,7 +14,6 @@ Section filter.
     filter P l = x :: k →
     P x.
   Proof.
-    pose proof (elem_of_list_here x k) as Hx.
-    intros Hl. rewrite -Hl elem_of_list_filter in Hx. naive_solver.
+    intros ?%(f_equal head)%head_Some_elem_of%elem_of_list_filter. naive_solver.
   Qed.
 End filter.
