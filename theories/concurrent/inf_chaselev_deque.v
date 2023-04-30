@@ -7,8 +7,7 @@ From iris.algebra Require Import
 From caml5 Require Import
   prelude.
 From caml5.common Require Import
-  tactics
-  list.
+  tactics.
 From caml5.base_logic Require Import
   lib.excl
   lib.auth_excl
