@@ -31,6 +31,8 @@ theories/algebra/lib/mono_state.v
 theories/algebra/lib/mono_states.v
 theories/algebra/lib/ribbon.v
 
+theories/bi/big_op.v
+
 theories/base_logic/algebra/auth_excl.v
 theories/base_logic/lib/agree.v
 theories/base_logic/lib/excl.v
@@ -61,6 +63,7 @@ theories/std/record2.v
 theories/std/record3.v
 theories/std/record4.v
 theories/std/inf_array.v
+theories/std/chunk.v
 theories/std/raw_array.v
 theories/std/lst.v
 theories/std/chain.v

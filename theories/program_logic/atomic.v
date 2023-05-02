@@ -202,6 +202,16 @@ Section atomic_wp.
     iAuIntro. iAaccIntro with "Hα"; first auto. iIntros "%y Hβ !>".
     rewrite !tele_app_bind. iIntros "HΨ HΦ". iApply ("HΦ" with "Hβ HΨ").
   Qed.
+  Lemma atomic_wp_seq_step e E α β Ψ f :
+    to_val e = None →
+    atomic_wp e E α β Ψ f -∗
+    ∀ Φ, ∀.. x, α x -∗ ▷ (∀.. y, β x y -∗ Ψ x y -∗ Φ (f x y)) -∗ WP e {{ Φ }}.
+  Proof.
+    iIntros "% H %Φ %x Hα HΦ".
+    iApply (wp_step_fupd _ _ _ _ (∀.. y, β x y -∗ Ψ x y -∗ Φ (f x y)) with "[$HΦ //]"); [rewrite TCEq_eq // | done |].
+    iApply (atomic_wp_seq with "H Hα"). iIntros "%y Hβ HΨ HΦ".
+    iApply ("HΦ" with "Hβ HΨ").
+  Qed.
 
   Lemma atomic_wp_inv ι I e E α β Ψ f :
     ↑ι ⊆ E →
@@ -450,6 +460,16 @@ Section atomic_triple.
     iApply (wp_frame_wand with "HΦ"). iApply ("H" with "HP").
     iAuIntro. iAaccIntro with "Hα"; first auto. iIntros "%y Hβ !>".
     rewrite !tele_app_bind. iIntros "HΨ HΦ". iApply ("HΦ" with "Hβ HΨ").
+  Qed.
+  Lemma atomic_triple_seq_step e E P α β Ψ f :
+    to_val e = None →
+    atomic_triple e E P α β Ψ f -∗
+    □ ∀ Φ, P -∗ ∀.. x, α x -∗ ▷ (∀.. y, β x y -∗ Ψ x y -∗ Φ (f x y)) -∗ WP e {{ Φ }}.
+  Proof.
+    iIntros "% #H !> %Φ HP %x Hα HΦ".
+    iApply (wp_step_fupd _ _ _ _ (∀.. y, β x y -∗ Ψ x y -∗ Φ (f x y)) with "[$HΦ //]"); [rewrite TCEq_eq // | done |].
+    iApply (atomic_triple_seq with "H HP Hα"). iIntros "%y Hβ HΨ HΦ".
+    iApply ("HΦ" with "Hβ HΨ").
   Qed.
 
   Lemma atomic_triple_inv ι I e E P α β Ψ f :
