@@ -315,80 +315,34 @@ Section heapGS.
       iApply "HΦ". rewrite right_id /chunk_model Z2Nat.nonpos //=. lia.
   Qed.
 
-  Lemma chunk_get_spec l i dq :
-    (0 ≤ i)%Z →
-    <<<
-      True |
-      ∀∀ vs v, chunk_model l dq vs ∗ ⌜vs !! Z.to_nat i = Some v⌝
-    >>>
-      !(#l +ₗ #i)
-    <<<
-      chunk_model l dq vs |
-      RET v; True
-    >>>.
-  Proof.
-    iIntros "% !> %Φ _ HΦ".
-    wp_pures.
-    iMod "HΦ" as "(%vs & %v & (Hmodel & %) & _ & HΦ)".
-    iDestruct (chunk_model_lookup_acc with "Hmodel") as "(H↦ & Hmodel)"; first done.
-    rewrite (Z2Nat.id i); last done. wp_load.
-    iApply ("HΦ" with "(Hmodel H↦) [//]").
-  Qed.
-  Lemma chunk_get_spec' l i dq vs v :
+  Lemma chunk_get_spec l i dq vs v E :
     (0 ≤ i)%Z →
     vs !! Z.to_nat i = Some v →
-    {{{
+    chunk_model l dq vs -∗
+    WP !#(l +ₗ i) @ E {{ w,
+      ⌜w = v⌝ ∗
       chunk_model l dq vs
-    }}}
-      !(#l +ₗ #i)
-    {{{
-      RET v;
-      chunk_model l dq vs
-    }}}.
+    }}.
   Proof.
-    iIntros "% % %Φ Hmodel HΦ".
-    iPoseProof chunk_get_spec as "Hatriple"; first done.
-    iPoseProof (atomic_triple_seq_step with "Hatriple [//]") as "H"; first done.
-    iApply ("H" $! vs v with "[$Hmodel //]"). iIntros "!> Hmodel _".
-    iApply ("HΦ" with "Hmodel").
+    iIntros "% % Hmodel".
+    iDestruct (chunk_model_lookup_acc with "Hmodel") as "(H↦ & Hmodel)"; first done.
+    rewrite (Z2Nat.id i); last done. wp_load.
+    iSplitR; first done. iApply ("Hmodel" with "H↦").
   Qed.
 
-  Lemma chunk_set_spec l i v :
-    (0 ≤ i)%Z →
-    <<<
-      True |
-      ∀∀ vs, chunk_model l (DfracOwn 1) vs ∗ ⌜i < length vs⌝%Z
-    >>>
-      #l +ₗ #i <- v
-    <<<
-      chunk_model l (DfracOwn 1) (<[Z.to_nat i := v]> vs) |
-      RET #(); True
-    >>>.
+  Lemma chunk_set_spec l i vs v E :
+    (0 ≤ i < length vs)%Z →
+    chunk_model l (DfracOwn 1) vs -∗
+    WP #(l +ₗ i) <- v @ E {{ w,
+      ⌜w = #()⌝ ∗
+      chunk_model l (DfracOwn 1) (<[Z.to_nat i := v]> vs)
+    }}.
   Proof.
-    iIntros "% !> %Φ _ HΦ".
-    wp_pures.
-    iMod "HΦ" as "(%vs & (Hmodel & %) & _ & HΦ)".
+    iIntros "% Hmodel".
     iDestruct (chunk_model_update with "Hmodel") as "(H↦ & Hmodel)".
     { destruct (nth_lookup_or_length vs (Z.to_nat i) inhabitant); [done | lia]. }
-    rewrite (Z2Nat.id i); last done. wp_store.
-    iApply ("HΦ" with "(Hmodel H↦) [//]").
-  Qed.
-  Lemma chunk_set_spec' l i v vs :
-    (0 ≤ i < length vs)%Z →
-    {{{
-      chunk_model l (DfracOwn 1) vs
-    }}}
-      #l +ₗ #i <- v
-    {{{
-      RET #();
-      chunk_model l (DfracOwn 1) (<[Z.to_nat i := v]> vs)
-    }}}.
-  Proof.
-    iIntros "% %Φ Hmodel HΦ".
-    iPoseProof chunk_set_spec as "Hatriple"; first lia.
-    iPoseProof (atomic_triple_seq_step with "Hatriple [//]") as "H"; first done.
-    iApply ("H" $! vs with "[$Hmodel]"); first auto with lia. iIntros "!> Hmodel _".
-    iApply ("HΦ" with "Hmodel").
+    rewrite (Z2Nat.id i); last naive_solver. wp_store.
+    iSplitR; first done. iApply ("Hmodel" with "H↦").
   Qed.
 
   #[local] Lemma chunk_init_aux_spec i vs_done k Ψ l sz fn :
