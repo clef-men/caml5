@@ -282,7 +282,6 @@ Section heapGS.
     iIntros "% % Hmodel1 Hmodel2".
     iDestruct (chunk_model_valid_2 with "Hmodel1 Hmodel2") as %?; naive_solver.
   Qed.
-
   Lemma chunk_model_persist l dq vs :
     chunk_model l dq vs ==∗
     chunk_model l DfracDiscarded vs.
@@ -319,8 +318,8 @@ Section heapGS.
     (0 ≤ i)%Z →
     vs !! Z.to_nat i = Some v →
     chunk_model l dq vs -∗
-    WP !#(l +ₗ i) @ E {{ w,
-      ⌜w = v⌝ ∗
+    WP !#(l +ₗ i) @ E {{ res,
+      ⌜res = v⌝ ∗
       chunk_model l dq vs
     }}.
   Proof.
@@ -333,8 +332,8 @@ Section heapGS.
   Lemma chunk_set_spec l i vs v E :
     (0 ≤ i < length vs)%Z →
     chunk_model l (DfracOwn 1) vs -∗
-    WP #(l +ₗ i) <- v @ E {{ w,
-      ⌜w = #()⌝ ∗
+    WP #(l +ₗ i) <- v @ E {{ res,
+      ⌜res = #()⌝ ∗
       chunk_model l (DfracOwn 1) (<[Z.to_nat i := v]> vs)
     }}.
   Proof.
