@@ -817,9 +817,9 @@ Section heapGS.
     }}}
       chunk_iteri #l #sz fn
     {{{
-        RET #();
-        chunk_model l dq vs ∗
-        [∗ list] i ↦ v ∈ vs, Ψ i v
+      RET #();
+      chunk_model l dq vs ∗
+      [∗ list] i ↦ v ∈ vs, Ψ i v
     }}}.
   Proof.
     iIntros "% %Φ (Hmodel & Hfn) HΦ".
@@ -841,9 +841,9 @@ Section heapGS.
     }}}
       chunk_iteri #l #sz fn
     {{{
-        RET #();
-        chunk_model l dq vs ∗
-        [∗ list] i ↦ v ∈ vs, Ψ i v
+      RET #();
+      chunk_model l dq vs ∗
+      [∗ list] i ↦ v ∈ vs, Ψ i v
     }}}.
   Proof.
     iIntros "% %Φ (Hmodel & #Hfn) HΦ".
@@ -906,9 +906,9 @@ Section heapGS.
     }}}
       chunk_iter #l #sz fn
     {{{
-        RET #();
-        chunk_model l dq vs ∗
-        [∗ list] v ∈ vs, Ψ v
+      RET #();
+      chunk_model l dq vs ∗
+      [∗ list] v ∈ vs, Ψ v
     }}}.
   Proof.
     iIntros "% %Φ (Hmodel & Hfn) HΦ".
@@ -929,9 +929,9 @@ Section heapGS.
     }}}
       chunk_iter #l #sz fn
     {{{
-        RET #();
-        chunk_model l dq vs ∗
-        [∗ list] v ∈ vs, Ψ v
+      RET #();
+      chunk_model l dq vs ∗
+      [∗ list] v ∈ vs, Ψ v
     }}}.
   Proof.
     iIntros "% %Φ (Hmodel & #Hfn) HΦ".
