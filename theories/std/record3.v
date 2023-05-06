@@ -22,13 +22,27 @@ Section heapGS.
     l.(1) ↦{dq} v₁ ∗
     l.(2) ↦{dq} v₂.
 
-  Lemma record3_model_def l dq v₀ v₁ v₂ :
+  Lemma record3_model_eq l dq v₀ v₁ v₂ :
+    record3_model l dq v₀ v₁ v₂ ⊣⊢
+    l.(0) ↦{dq} v₀ ∗ l.(1) ↦{dq} v₁ ∗ l.(2) ↦{dq} v₂.
+  Proof.
+    done.
+  Qed.
+  Lemma record3_model_eq_1 l dq v₀ v₁ v₂ :
     record3_model l dq v₀ v₁ v₂ -∗
       l.(0) ↦{dq} v₀ ∗
       l.(1) ↦{dq} v₁ ∗
       l.(2) ↦{dq} v₂.
   Proof.
     done.
+  Qed.
+  Lemma record3_model_eq_2 l dq v₀ v₁ v₂ :
+    l.(0) ↦{dq} v₀ -∗
+    l.(1) ↦{dq} v₁ -∗
+    l.(2) ↦{dq} v₂ -∗
+    record3_model l dq v₀ v₁ v₂.
+  Proof.
+    rewrite /record3_model. auto with iFrame.
   Qed.
 
   #[global] Instance record3_model_timeless l dq v₀ v₁ v₂ :

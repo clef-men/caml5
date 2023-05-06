@@ -20,12 +20,25 @@ Section heapGS.
     l.(0) ↦{dq} v₀ ∗
     l.(1) ↦{dq} v₁.
 
-  Lemma record2_model_def l dq v₀ v₁ :
+  Lemma record2_model_eq l dq v₀ v₁ :
+    record2_model l dq v₀ v₁ ⊣⊢
+    l.(0) ↦{dq} v₀ ∗ l.(1) ↦{dq} v₁.
+  Proof.
+    done.
+  Qed.
+  Lemma record2_model_eq_1 l dq v₀ v₁ :
     record2_model l dq v₀ v₁ -∗
       l.(0) ↦{dq} v₀ ∗
       l.(1) ↦{dq} v₁.
   Proof.
     done.
+  Qed.
+  Lemma record2_model_eq_2 l dq v₀ v₁ :
+    l.(0) ↦{dq} v₀ -∗
+    l.(1) ↦{dq} v₁ -∗
+    record2_model l dq v₀ v₁.
+  Proof.
+    rewrite /record2_model. auto with iFrame.
   Qed.
 
   #[global] Instance record2_model_timeless l dq v₀ v₁ :

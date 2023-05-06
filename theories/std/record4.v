@@ -24,7 +24,13 @@ Section heapGS.
     l.(2) ↦{dq} v₂ ∗
     l.(3) ↦{dq} v₃.
 
-  Lemma record4_model_def l dq v₀ v₁ v₂ v₃ :
+  Lemma record4_model_eq l dq v₀ v₁ v₂ v₃ :
+    record4_model l dq v₀ v₁ v₂ v₃ ⊣⊢
+    l.(0) ↦{dq} v₀ ∗ l.(1) ↦{dq} v₁ ∗ l.(2) ↦{dq} v₂ ∗ l.(3) ↦{dq} v₃.
+  Proof.
+    done.
+  Qed.
+  Lemma record4_model_eq_1 l dq v₀ v₁ v₂ v₃ :
     record4_model l dq v₀ v₁ v₂ v₃ -∗
       l.(0) ↦{dq} v₀ ∗
       l.(1) ↦{dq} v₁ ∗
@@ -32,6 +38,15 @@ Section heapGS.
       l.(3) ↦{dq} v₃.
   Proof.
     done.
+  Qed.
+  Lemma record4_model_eq_2 l dq v₀ v₁ v₂ v₃ :
+    l.(0) ↦{dq} v₀ -∗
+    l.(1) ↦{dq} v₁ -∗
+    l.(2) ↦{dq} v₂ -∗
+    l.(3) ↦{dq} v₃ -∗
+    record4_model l dq v₀ v₁ v₂ v₃.
+  Proof.
+   rewrite /record4_model. auto with iFrame.
   Qed.
 
   #[global] Instance record4_model_timeless l dq v₀ v₁ v₂ v₃ :

@@ -987,7 +987,7 @@ Section inf_chaselev_deque_G.
     (* → [record4_make #0 #0 data #p] *)
     iApply wp_fupd.
     wp_apply (record4_make_spec with "[//]"). iIntros "%l (Hl & Hmeta)".
-    iDestruct (record4_model_def with "Hl") as "(Hfront & Hback & Hdata & Hp)".
+    iDestruct (record4_model_eq_1 with "Hl") as "(Hfront & Hback & Hdata & Hp)".
     iMod (mapsto_persist with "Hdata") as "#Hdata".
     iMod (mapsto_persist with "Hp") as "#Hp".
 
