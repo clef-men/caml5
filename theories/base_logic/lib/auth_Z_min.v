@@ -85,8 +85,8 @@ Section auth_Z_min_G.
       auth_Z_min_auth γ (dq1 ⋅ dq2) n1 ∗
       ⌜n1 = n2⌝.
   Proof.
-    iIntros "H●1 H●2". iCombine "H●1 H●2" as "H●".
-    iDestruct (own_valid with "H●") as %(? & <-)%auth_Z_min_auth_dfrac_op_valid.
+    iIntros "Hauth1 Hauth2". iCombine "Hauth1 Hauth2" as "Hauth".
+    iDestruct (own_valid with "Hauth") as %(? & <-)%auth_Z_min_auth_dfrac_op_valid.
     rewrite -auth_Z_min_auth_dfrac_op. naive_solver.
   Qed.
   Lemma auth_Z_min_auth_valid_2 γ dq1 n1 dq2 n2 :
@@ -94,9 +94,9 @@ Section auth_Z_min_G.
     auth_Z_min_auth γ dq2 n2 -∗
     ⌜✓ (dq1 ⋅ dq2) ∧ n1 = n2⌝.
   Proof.
-    iIntros "H●1 H●2".
-    iDestruct (auth_Z_min_auth_combine with "H●1 H●2") as "(H● & %)".
-    iDestruct (auth_Z_min_auth_valid with "H●") as %?.
+    iIntros "Hauth1 Hauth2".
+    iDestruct (auth_Z_min_auth_combine with "Hauth1 Hauth2") as "(Hauth & %)".
+    iDestruct (auth_Z_min_auth_valid with "Hauth") as %?.
     done.
   Qed.
   Lemma auth_Z_min_auth_agree γ dq1 n1 dq2 n2 :
@@ -104,16 +104,38 @@ Section auth_Z_min_G.
     auth_Z_min_auth γ dq2 n2 -∗
     ⌜n1 = n2⌝.
   Proof.
-    iIntros "H●1 H●2".
-    iDestruct (auth_Z_min_auth_valid_2 with "H●1 H●2") as %?. naive_solver.
+    iIntros "Hauth1 Hauth2".
+    iDestruct (auth_Z_min_auth_valid_2 with "Hauth1 Hauth2") as %?. naive_solver.
+  Qed.
+  Lemma auth_Z_min_auth_dfrac_ne γ1 dq1 n1 γ2 dq2 n2 :
+    ¬ ✓ (dq1 ⋅ dq2) →
+    auth_Z_min_auth γ1 dq1 n1 -∗
+    auth_Z_min_auth γ2 dq2 n2 -∗
+    ⌜γ1 ≠ γ2⌝.
+  Proof.
+    iIntros "% Hauth1 Hauth2" (->).
+    iDestruct (auth_Z_min_auth_valid_2 with "Hauth1 Hauth2") as %?; naive_solver.
+  Qed.
+  Lemma auth_Z_min_auth_ne γ1 n1 γ2 dq2 n2 :
+    auth_Z_min_auth γ1 (DfracOwn 1) n1 -∗
+    auth_Z_min_auth γ2 dq2 n2 -∗
+    ⌜γ1 ≠ γ2⌝.
+  Proof.
+    intros. iApply auth_Z_min_auth_dfrac_ne; [done.. | intros []%(exclusive_l _)].
   Qed.
   Lemma auth_Z_min_auth_exclusive γ n1 n2 :
     auth_Z_min_auth γ (DfracOwn 1) n1 -∗
     auth_Z_min_auth γ (DfracOwn 1) n2 -∗
     False.
   Proof.
-    iIntros "H●1 H●2".
-    iDestruct (auth_Z_min_auth_valid_2 with "H●1 H●2") as %(? & _). done.
+    iIntros "Hauth1 Hauth2".
+    iDestruct (auth_Z_min_auth_valid_2 with "Hauth1 Hauth2") as %(? & _). done.
+  Qed.
+  Lemma auth_Z_min_auth_persist γ dq n :
+    auth_Z_min_auth γ dq n ==∗
+    auth_Z_min_auth γ DfracDiscarded n.
+  Proof.
+    iApply own_update. apply auth_Z_min_auth_persist.
   Qed.
 
   Lemma auth_Z_min_ub_get γ q n :
@@ -135,16 +157,9 @@ Section auth_Z_min_G.
     auth_Z_min_ub γ m -∗
     ⌜n ≤ m⌝%Z.
   Proof.
-    iIntros "H●1 H●2".
-    iDestruct (own_valid_2 with "H●1 H●2") as %?%auth_Z_min_both_dfrac_valid.
+    iIntros "Hauth1 Hauth2".
+    iDestruct (own_valid_2 with "Hauth1 Hauth2") as %?%auth_Z_min_both_dfrac_valid.
     naive_solver.
-  Qed.
-
-  Lemma auth_Z_min_auth_persist γ dq n :
-    auth_Z_min_auth γ dq n ==∗
-    auth_Z_min_auth γ DfracDiscarded n.
-  Proof.
-    iApply own_update. apply auth_Z_min_auth_persist.
   Qed.
 
   Lemma auth_Z_min_update {γ n} n' :
@@ -152,8 +167,8 @@ Section auth_Z_min_G.
     auth_Z_min_auth γ (DfracOwn 1) n ==∗
     auth_Z_min_auth γ (DfracOwn 1) n'.
   Proof.
-    iIntros "% H●".
-    iMod (own_update with "H●"); first apply auth_Z_min_auth_update; done.
+    iIntros "% Hauth".
+    iMod (own_update with "Hauth"); first apply auth_Z_min_auth_update; done.
   Qed.
 End auth_Z_min_G.
 

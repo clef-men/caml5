@@ -67,17 +67,6 @@ Section heapGS.
     split; done || apply _.
   Qed.
 
-  Lemma record3_model_persist l dq v₀ v₁ v₂ :
-    record3_model l dq v₀ v₁ v₂ ==∗
-    record3_model l DfracDiscarded v₀ v₁ v₂.
-  Proof.
-    iIntros "(Hv₀ & Hv₁ & Hv₂)".
-    iMod (mapsto_persist with "Hv₀") as "$".
-    iMod (mapsto_persist with "Hv₁") as "$".
-    iMod (mapsto_persist with "Hv₂") as "$".
-    done.
-  Qed.
-
   Lemma record3_model_valid l dq v₀ v₁ v₂ :
     record3_model l dq v₀ v₁ v₂ -∗
     ⌜✓ dq⌝.
@@ -137,6 +126,16 @@ Section heapGS.
   Proof.
     iIntros "Hl1 Hl2".
     iDestruct (record3_model_ne with "Hl1 Hl2") as %?. naive_solver.
+  Qed.
+  Lemma record3_model_persist l dq v₀ v₁ v₂ :
+    record3_model l dq v₀ v₁ v₂ ==∗
+    record3_model l DfracDiscarded v₀ v₁ v₂.
+  Proof.
+    iIntros "(Hv₀ & Hv₁ & Hv₂)".
+    iMod (mapsto_persist with "Hv₀") as "$".
+    iMod (mapsto_persist with "Hv₁") as "$".
+    iMod (mapsto_persist with "Hv₂") as "$".
+    done.
   Qed.
 
   Lemma record3_dfrac_relax dq l v₀ v₁ v₂ :

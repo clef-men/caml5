@@ -182,17 +182,6 @@ Section heapGS.
     - iApply dlchain_model_app_2; first done.
   Qed.
 
-  Lemma dlchain_model_persist t dq prev vs last next :
-    dlchain_model t dq prev vs last next ==∗
-    dlchain_model t DfracDiscarded prev vs last next.
-  Proof.
-    iInduction vs as [| v vs] "IH" forall (t prev); first done.
-    iIntros "(%l & %t' & -> & Hnode & Hmodel')".
-    iMod (record3_model_persist with "Hnode") as "Hnode".
-    iMod ("IH" with "Hmodel'") as "Hmodel'".
-    repeat iExists _. naive_solver.
-  Qed.
-
   Lemma dlchain_model_valid t dq prev vs last next :
     0 < length vs →
     dlchain_model t dq prev vs last next -∗
@@ -293,6 +282,16 @@ Section heapGS.
   Proof.
     iIntros "% Hmodel1 Hmodel2".
     iDestruct (dlchain_model_ne with "Hmodel1 Hmodel2") as %?; naive_solver.
+  Qed.
+  Lemma dlchain_model_persist t dq prev vs last next :
+    dlchain_model t dq prev vs last next ==∗
+    dlchain_model t DfracDiscarded prev vs last next.
+  Proof.
+    iInduction vs as [| v vs] "IH" forall (t prev); first done.
+    iIntros "(%l & %t' & -> & Hnode & Hmodel')".
+    iMod (record3_model_persist with "Hnode") as "Hnode".
+    iMod ("IH" with "Hmodel'") as "Hmodel'".
+    repeat iExists _. naive_solver.
   Qed.
 
   Lemma dlchain_prev_spec t dq prev vs last next :

@@ -147,12 +147,34 @@ Section simple_ribbon_G.
   Proof.
     apply ribbon_auth_agree, _.
   Qed.
+  Lemma simple_ribbon_auth_dfrac_ne γ1 dq1 rib1 γ2 dq2 rib2 :
+    ¬ ✓ (dq1 ⋅ dq2) →
+    simple_ribbon_auth γ1 dq1 rib1 -∗
+    simple_ribbon_auth γ2 dq2 rib2 -∗
+    ⌜γ1 ≠ γ2⌝.
+  Proof.
+    iIntros "% Hauth1 Hauth2" (->).
+    iDestruct (simple_ribbon_auth_valid_2 with "Hauth1 Hauth2") as %?; naive_solver.
+  Qed.
+  Lemma simple_ribbon_auth_ne γ1 rib1 γ2 dq2 rib2 :
+    simple_ribbon_auth γ1 (DfracOwn 1) rib1 -∗
+    simple_ribbon_auth γ2 dq2 rib2 -∗
+    ⌜γ1 ≠ γ2⌝.
+  Proof.
+    intros. iApply simple_ribbon_auth_dfrac_ne; [done.. | intros []%(exclusive_l _)].
+  Qed.
   Lemma simple_ribbon_auth_exclusive γ rib1 rib2 :
     simple_ribbon_auth γ (DfracOwn 1) rib1 -∗
     simple_ribbon_auth γ (DfracOwn 1) rib2 -∗
     False.
   Proof.
     apply ribbon_auth_exclusive, _.
+  Qed.
+  Lemma simple_ribbon_auth_persist γ dq rib :
+    simple_ribbon_auth γ dq rib ==∗
+    simple_ribbon_auth γ DfracDiscarded rib.
+  Proof.
+    apply ribbon_auth_persist.
   Qed.
 
   Lemma simple_ribbon_mapsto_valid γ i q s :
@@ -182,6 +204,22 @@ Section simple_ribbon_G.
     ⌜s1 = s2⌝.
   Proof.
     apply ribbon_mapsto_agree, _.
+  Qed.
+  Lemma simple_ribbon_mapsto_frac_ne γ1 i1 q1 s1 γ2 i2 q2 s2 :
+    ¬ ✓ (q1 ⋅ q2) →
+    simple_ribbon_mapsto γ1 i1 q1 s1 -∗
+    simple_ribbon_mapsto γ2 i2 q2 s2 -∗
+    ⌜γ1 ≠ γ2 ∨ i1 ≠ i2⌝.
+  Proof.
+    rewrite -not_and_r. iIntros "% Hmapsto1 Hmapsto2" ((-> & ->)).
+    iDestruct (simple_ribbon_mapsto_valid_2 with "Hmapsto1 Hmapsto2") as %?; naive_solver.
+  Qed.
+  Lemma simple_ribbon_mapsto_ne γ1 i1 s1 γ2 i2 dq2 s2 :
+    simple_ribbon_mapsto γ1 i1 1 s1 -∗
+    simple_ribbon_mapsto γ2 i2 dq2 s2 -∗
+    ⌜γ1 ≠ γ2 ∨ i1 ≠ i2⌝.
+  Proof.
+    intros. iApply simple_ribbon_mapsto_frac_ne; [done.. | intros []%(exclusive_l _)].
   Qed.
   Lemma simple_ribbon_mapsto_exclusive γ i s1 s2 :
     simple_ribbon_mapsto γ i 1 s1 -∗
@@ -265,12 +303,6 @@ Section simple_ribbon_G.
     apply ribbon_lb_mono.
   Qed.
 
-  Lemma simple_ribbon_auth_persist γ dq rib :
-    simple_ribbon_auth γ dq rib ==∗
-    simple_ribbon_auth γ DfracDiscarded rib.
-  Proof.
-    apply ribbon_auth_persist.
-  Qed.
   Lemma simple_ribbon_auth_alloc {γ rib} s :
     simple_ribbon_auth γ (DfracOwn 1) rib ==∗
     simple_ribbon_auth γ (DfracOwn 1) (rib ++ [s]).

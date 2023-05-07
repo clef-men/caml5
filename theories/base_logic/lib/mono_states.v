@@ -127,6 +127,22 @@ Section sts.
       iIntros "Hauth1 Hauth2".
       iDestruct (mono_states_auth_valid_2 with "Hauth1 Hauth2") as "(_ & $)".
     Qed.
+    Lemma mono_states_auth_dfrac_ne `{!AntiSymm (=) steps} γ1 dq1 ss1 γ2 dq2 ss2 :
+      ¬ ✓ (dq1 ⋅ dq2) →
+      mono_states_auth γ1 dq1 ss1 -∗
+      mono_states_auth γ2 dq2 ss2 -∗
+      ⌜γ1 ≠ γ2⌝.
+    Proof.
+      iIntros "% Hauth1 Hauth2" (->).
+      iDestruct (mono_states_auth_valid_2 with "Hauth1 Hauth2") as %?; naive_solver.
+    Qed.
+    Lemma mono_states_auth_ne `{!AntiSymm (=) steps} γ1 ss1 γ2 dq2 ss2 :
+      mono_states_auth γ1 (DfracOwn 1) ss1 -∗
+      mono_states_auth γ2 dq2 ss2 -∗
+      ⌜γ1 ≠ γ2⌝.
+    Proof.
+      intros. iApply mono_states_auth_dfrac_ne; [done.. | intros []%(exclusive_l _)].
+    Qed.
     Lemma mono_states_auth_exclusive `{!AntiSymm (=) steps} γ ss1 ss2 :
       mono_states_auth γ (DfracOwn 1) ss1 -∗
       mono_states_auth γ (DfracOwn 1) ss2 -∗
@@ -134,6 +150,12 @@ Section sts.
     Proof.
       iIntros "Hauth1 Hauth2".
       iDestruct (mono_states_auth_valid_2 with "Hauth1 Hauth2") as "(% & _)". done.
+    Qed.
+    Lemma mono_states_auth_persist γ dq ss :
+      mono_states_auth γ dq ss ==∗
+      mono_states_auth γ DfracDiscarded ss.
+    Proof.
+      iApply own_update. apply mono_states_auth_persist.
     Qed.
 
     Lemma mono_states_mapsto_valid γ k q s :
@@ -169,6 +191,22 @@ Section sts.
     Proof.
       iIntros "Hmapsto1 Hmapsto2".
       iDestruct (mono_states_mapsto_valid_2 with "Hmapsto1 Hmapsto2") as "(_ & $)".
+    Qed.
+    Lemma mono_states_mapsto_frac_ne `{!AntiSymm (=) steps} γ1 k1 q1 s1 γ2 k2 q2 s2 :
+      ¬ ✓ (q1 ⋅ q2) →
+      mono_states_mapsto γ1 k1 q1 s1 -∗
+      mono_states_mapsto γ2 k2 q2 s2 -∗
+      ⌜γ1 ≠ γ2 ∨ k1 ≠ k2⌝.
+    Proof.
+      rewrite -not_and_r. iIntros "% Hmapsto1 Hmapsto2" ((-> & ->)).
+      iDestruct (mono_states_mapsto_valid_2 with "Hmapsto1 Hmapsto2") as %?; naive_solver.
+    Qed.
+    Lemma mono_states_mapsto_ne `{!AntiSymm (=) steps} γ1 k1 s1 γ2 k2 dq2 s2 :
+      mono_states_mapsto γ1 k1 1 s1 -∗
+      mono_states_mapsto γ2 k2 dq2 s2 -∗
+      ⌜γ1 ≠ γ2 ∨ k1 ≠ k2⌝.
+    Proof.
+      intros. iApply mono_states_mapsto_frac_ne; [done.. | intros []%(exclusive_l _)].
     Qed.
     Lemma mono_states_mapsto_exclusive `{!AntiSymm (=) steps} γ k s1 s2 :
       mono_states_mapsto γ k 1 s1 -∗
@@ -223,12 +261,6 @@ Section sts.
       intros. apply own_mono, mono_states_lb_mono. done.
     Qed.
 
-    Lemma mono_states_auth_persist γ dq ss :
-      mono_states_auth γ dq ss ==∗
-      mono_states_auth γ DfracDiscarded ss.
-    Proof.
-      iApply own_update. apply mono_states_auth_persist.
-    Qed.
     Lemma mono_states_auth_alloc {γ ss} k s :
       ss !! k = None →
       mono_states_auth γ (DfracOwn 1) ss ==∗

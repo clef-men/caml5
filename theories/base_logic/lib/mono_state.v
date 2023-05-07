@@ -109,6 +109,22 @@ Section sts.
       iIntros "Hauth1 Hauth2".
       iDestruct (mono_state_auth_valid_2 with "Hauth1 Hauth2") as "(_ & $)".
     Qed.
+    Lemma mono_state_auth_dfrac_ne `{!AntiSymm (=) steps} γ1 dq1 s1 γ2 dq2 s2 :
+      ¬ ✓ (dq1 ⋅ dq2) →
+      mono_state_auth γ1 dq1 s1 -∗
+      mono_state_auth γ2 dq2 s2 -∗
+      ⌜γ1 ≠ γ2⌝.
+    Proof.
+      iIntros "% Hauth1 Hauth2" (->).
+      iDestruct (mono_state_auth_valid_2 with "Hauth1 Hauth2") as %?; naive_solver.
+    Qed.
+    Lemma mono_state_auth_ne `{!AntiSymm (=) steps} γ1 s1 γ2 dq2 s2 :
+      mono_state_auth γ1 (DfracOwn 1) s1 -∗
+      mono_state_auth γ2 dq2 s2 -∗
+      ⌜γ1 ≠ γ2⌝.
+    Proof.
+      intros. iApply mono_state_auth_dfrac_ne; [done.. | intros []%(exclusive_l _)].
+    Qed.
     Lemma mono_state_auth_exclusive `{!AntiSymm (=) steps} γ s1 s2 :
       mono_state_auth γ (DfracOwn 1) s1 -∗
       mono_state_auth γ (DfracOwn 1) s2 -∗
@@ -116,6 +132,12 @@ Section sts.
     Proof.
       iIntros "Hauth1 Hauth2".
       iDestruct (mono_state_auth_valid_2 with "Hauth1 Hauth2") as "(% & _)". done.
+    Qed.
+    Lemma mono_state_auth_persist γ dq s :
+      mono_state_auth γ dq s ==∗
+      mono_state_auth γ DfracDiscarded s.
+    Proof.
+      iApply own_update. apply mono_state_auth_persist.
     Qed.
 
     Lemma mono_state_lb_get γ q s :
@@ -140,13 +162,6 @@ Section sts.
       iIntros "Hauth1 Hauth2".
       iDestruct (own_valid_2 with "Hauth1 Hauth2") as %?%mono_state_both_dfrac_valid.
       naive_solver.
-    Qed.
-
-    Lemma mono_state_auth_persist γ dq s :
-      mono_state_auth γ dq s ==∗
-      mono_state_auth γ DfracDiscarded s.
-    Proof.
-      iApply own_update. apply mono_state_auth_persist.
     Qed.
 
     Lemma mono_state_update {γ s} s' :

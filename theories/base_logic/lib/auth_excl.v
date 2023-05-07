@@ -114,6 +114,22 @@ Section auth_excl_G.
     iIntros "H●1 H●2".
     iDestruct (auth_excl_auth_valid_2 with "H●1 H●2") as "(_ & $)".
   Qed.
+  Lemma auth_excl_auth_dfrac_ne γ1 dq1 a1 γ2 dq2 a2 :
+    ¬ ✓ (dq1 ⋅ dq2) →
+    auth_excl_auth γ1 dq1 a1 -∗
+    auth_excl_auth γ2 dq2 a2 -∗
+    ⌜γ1 ≠ γ2⌝.
+  Proof.
+    iIntros "% H●1 H●2" (->).
+    iDestruct (auth_excl_auth_valid_2 with "H●1 H●2") as "(% & _)"; naive_solver.
+  Qed.
+  Lemma auth_excl_auth_ne γ1 a1 γ2 dq2 a2 :
+    auth_excl_auth γ1 (DfracOwn 1) a1 -∗
+    auth_excl_auth γ2 dq2 a2 -∗
+    ⌜γ1 ≠ γ2⌝.
+  Proof.
+    intros. iApply auth_excl_auth_dfrac_ne; [done.. | intros []%(exclusive_l _)].
+  Qed.
   Lemma auth_excl_auth_exclusive γ a1 a2 :
     auth_excl_auth γ (DfracOwn 1) a1 -∗
     auth_excl_auth γ (DfracOwn 1) a2 -∗
@@ -121,6 +137,12 @@ Section auth_excl_G.
   Proof.
     iIntros "H●1 H●2".
     iDestruct (auth_excl_auth_valid_2 with "H●1 H●2") as "(% & _)". done.
+  Qed.
+  Lemma auth_excl_auth_persist γ dq a :
+    auth_excl_auth γ dq a ==∗
+    auth_excl_auth γ DfracDiscarded a.
+  Proof.
+    iApply own_update. apply auth_excl_auth_persist.
   Qed.
 
   Lemma auth_excl_frag_exclusive γ a1 a2 :
@@ -211,13 +233,6 @@ Section auth_excl_G.
       Qed.
     End leibniz_equiv.
   End ofe_discrete.
-
-  Lemma auth_excl_auth_persist γ dq a :
-    auth_excl_auth γ dq a ==∗
-    auth_excl_auth γ DfracDiscarded a.
-  Proof.
-    iApply own_update. apply auth_excl_auth_persist.
-  Qed.
 
   Lemma auth_excl_update {γ a b} a' b' :
     a' ≡ b' →

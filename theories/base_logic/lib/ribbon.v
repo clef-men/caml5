@@ -126,6 +126,22 @@ Section sts.
       iIntros "Hauth1 Hauth2".
       iDestruct (ribbon_auth_valid_2 with "Hauth1 Hauth2") as "(_ & $)".
     Qed.
+    Lemma ribbon_auth_dfrac_ne `{!AntiSymm (=) steps} γ1 dq1 rib1 γ2 dq2 rib2 :
+      ¬ ✓ (dq1 ⋅ dq2) →
+      ribbon_auth γ1 dq1 rib1 -∗
+      ribbon_auth γ2 dq2 rib2 -∗
+      ⌜γ1 ≠ γ2⌝.
+    Proof.
+      iIntros "% Hauth1 Hauth2" (->).
+      iDestruct (ribbon_auth_valid_2 with "Hauth1 Hauth2") as %?; naive_solver.
+    Qed.
+    Lemma ribbon_auth_ne `{!AntiSymm (=) steps} γ1 rib1 γ2 dq2 rib2 :
+      ribbon_auth γ1 (DfracOwn 1) rib1 -∗
+      ribbon_auth γ2 dq2 rib2 -∗
+      ⌜γ1 ≠ γ2⌝.
+    Proof.
+      intros. iApply ribbon_auth_dfrac_ne; [done.. | intros []%(exclusive_l _)].
+    Qed.
     Lemma ribbon_auth_exclusive `{!AntiSymm (=) steps} γ rib1 rib2 :
       ribbon_auth γ (DfracOwn 1) rib1 -∗
       ribbon_auth γ (DfracOwn 1) rib2 -∗
@@ -133,6 +149,12 @@ Section sts.
     Proof.
       iIntros "Hauth1 Hauth2".
       iDestruct (ribbon_auth_valid_2 with "Hauth1 Hauth2") as "(% & _)". done.
+    Qed.
+    Lemma ribbon_auth_persist γ dq rib :
+      ribbon_auth γ dq rib ==∗
+      ribbon_auth γ DfracDiscarded rib.
+    Proof.
+      iApply own_update. apply ribbon_auth_persist.
     Qed.
 
     Lemma ribbon_mapsto_valid γ i q s :
@@ -168,6 +190,22 @@ Section sts.
     Proof.
       iIntros "Hmapsto1 Hmapsto2".
       iDestruct (ribbon_mapsto_valid_2 with "Hmapsto1 Hmapsto2") as "(_ & $)".
+    Qed.
+    Lemma ribbon_mapsto_frac_ne `{!AntiSymm (=) steps} γ1 i1 q1 s1 γ2 i2 q2 s2 :
+      ¬ ✓ (q1 ⋅ q2) →
+      ribbon_mapsto γ1 i1 q1 s1 -∗
+      ribbon_mapsto γ2 i2 q2 s2 -∗
+      ⌜γ1 ≠ γ2 ∨ i1 ≠ i2⌝.
+    Proof.
+      rewrite -not_and_r. iIntros "% Hmapsto1 Hmapsto2" ((-> & ->)).
+      iDestruct (ribbon_mapsto_valid_2 with "Hmapsto1 Hmapsto2") as %?; naive_solver.
+    Qed.
+    Lemma ribbon_mapsto_ne `{!AntiSymm (=) steps} γ1 i1 s1 γ2 i2 dq2 s2 :
+      ribbon_mapsto γ1 i1 1 s1 -∗
+      ribbon_mapsto γ2 i2 dq2 s2 -∗
+      ⌜γ1 ≠ γ2 ∨ i1 ≠ i2⌝.
+    Proof.
+      intros. iApply ribbon_mapsto_frac_ne; [done.. | intros []%(exclusive_l _)].
     Qed.
     Lemma ribbon_mapsto_exclusive `{!AntiSymm (=) steps} γ i s1 s2 :
       ribbon_mapsto γ i 1 s1 -∗
@@ -222,12 +260,6 @@ Section sts.
       intros. apply own_mono, ribbon_lb_mono. done.
     Qed.
 
-    Lemma ribbon_auth_persist γ dq rib :
-      ribbon_auth γ dq rib ==∗
-      ribbon_auth γ DfracDiscarded rib.
-    Proof.
-      iApply own_update. apply ribbon_auth_persist.
-    Qed.
     Lemma ribbon_auth_alloc {γ rib} s :
       ribbon_auth γ (DfracOwn 1) rib ==∗
       ribbon_auth γ (DfracOwn 1) (rib ++ [s]).

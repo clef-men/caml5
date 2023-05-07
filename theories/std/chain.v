@@ -155,17 +155,6 @@ Section heapGS.
     - iApply chain_model_app_2; first done.
   Qed.
 
-  Lemma chain_model_persist t dq vs dst :
-    chain_model t dq vs dst ==∗
-    chain_model t DfracDiscarded vs dst.
-  Proof.
-    iInduction vs as [| v vs] "IH" forall (t); first done.
-    iIntros "(%l & %t' & -> & Hnode & Hmodel')".
-    iMod (record2_model_persist with "Hnode") as "Hnode".
-    iMod ("IH" with "Hmodel'") as "Hmodel'".
-    repeat iExists _. naive_solver.
-  Qed.
-
   Lemma chain_model_valid t dq vs dst :
     0 < length vs →
     chain_model t dq vs dst -∗
@@ -266,6 +255,16 @@ Section heapGS.
   Proof.
     iIntros "% Hmodel1 Hmodel2".
     iDestruct (chain_model_ne with "Hmodel1 Hmodel2") as %?; naive_solver.
+  Qed.
+  Lemma chain_model_persist t dq vs dst :
+    chain_model t dq vs dst ==∗
+    chain_model t DfracDiscarded vs dst.
+  Proof.
+    iInduction vs as [| v vs] "IH" forall (t); first done.
+    iIntros "(%l & %t' & -> & Hnode & Hmodel')".
+    iMod (record2_model_persist with "Hnode") as "Hnode".
+    iMod ("IH" with "Hmodel'") as "Hmodel'".
+    repeat iExists _. naive_solver.
   Qed.
 
   Lemma chain_cons_spec t dq vs dst v :

@@ -132,13 +132,6 @@ Section heapGS.
     apply chain_model_app_2.
   Qed.
 
-  Lemma mlst_model_persist t dq vs :
-    mlst_model t dq vs ==∗
-    mlst_model t DfracDiscarded vs.
-  Proof.
-    apply chain_model_persist.
-  Qed.
-
   Lemma mlst_model_valid t dq vs :
     0 < length vs →
     mlst_model t dq vs -∗
@@ -198,7 +191,7 @@ Section heapGS.
     mlst_model t2 dq2 vs2 -∗
     ⌜t1 ≠ t2⌝.
   Proof.
-    intros. iApply mlst_model_dfrac_ne; [done | intros []%exclusive_l; apply _].
+    intros. iApply mlst_model_dfrac_ne; [done | intros []%(exclusive_l _)].
   Qed.
   Lemma mlst_model_exclusive t vs1 vs2 :
     0 < length vs1 →
@@ -208,6 +201,12 @@ Section heapGS.
   Proof.
     iIntros "% Hmodel1 Hmodel2".
     iDestruct (mlst_model_ne with "Hmodel1 Hmodel2") as %?; naive_solver.
+  Qed.
+  Lemma mlst_model_persist t dq vs :
+    mlst_model t dq vs ==∗
+    mlst_model t DfracDiscarded vs.
+  Proof.
+    apply chain_model_persist.
   Qed.
 
   Lemma mlst_nil_spec :
