@@ -182,156 +182,168 @@ Section counter_G.
     split; [done | apply _].
   Qed.
 
-  Lemma counter_inv_lb_valid t ι ub lb :
-    counter_inv t ι (Some ub) -∗
-    counter_lb t lb -∗
-    ⌜lb ≤ ub⌝.
-  Proof.
-    iIntros "(%l & %γ & -> & #Hmeta & #Hub_auth & #Hinv) (%_l & %_γ & %Heq & #_Hmeta & #Hub_lb & #Hlb_lb)". injection Heq as <-.
-    iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
-    iDestruct (auth_natinf_max_valid with "Hub_auth Hub_lb") as %?%(inj natinf_nat). done.
-  Qed.
-  Lemma counter_lb_le t lb1 lb2 :
-    lb2 ≤ lb1 →
-    counter_lb t lb1 -∗
-    counter_lb t lb2.
-  Proof.
-    iIntros "% (%l & %γ & -> & #Hmeta & #Hub_lb & Hlb_lb)".
-    iDestruct (auth_natinf_max_lb_le with "Hub_lb") as "#Hub_lb'".
-    { apply natinf_le_proper. done. }
-    iDestruct (auth_nat_max_lb_le with "Hlb_lb") as "Hlb_lb"; first done.
-    repeat iExists _. naive_solver.
-  Qed.
-  Lemma counter_lb_get t dq n :
-    counter_model t dq n -∗
-    counter_lb t n.
-  Proof.
-    iIntros "(%l & %γ & -> & #Hmeta & #Hub_lb & Hlb_auth & Htoken_auth & Hmodel₂)".
-    iDestruct (auth_nat_max_lb_get with "Hlb_auth") as "#Hlb_lb".
-    repeat iExists _. naive_solver.
-  Qed.
+  Section counter_lb.
+    Lemma counter_inv_lb_valid t ι ub lb :
+      counter_inv t ι (Some ub) -∗
+      counter_lb t lb -∗
+      ⌜lb ≤ ub⌝.
+    Proof.
+      iIntros "(%l & %γ & -> & #Hmeta & #Hub_auth & #Hinv) (%_l & %_γ & %Heq & #_Hmeta & #Hub_lb & #Hlb_lb)". injection Heq as <-.
+      iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
+      iDestruct (auth_natinf_max_valid with "Hub_auth Hub_lb") as %?%(inj natinf_nat). done.
+    Qed.
 
-  Lemma counter_inv_token_ub t ι ub n :
-    counter_inv t ι (Some ub) -∗
-    counter_token t n -∗
-    ⌜n ≤ ub⌝.
-  Proof.
-    iIntros "(%l & %γ & -> & #Hmeta & #Hub_auth & #Hinv) (%_l & %_γ & %Heq & #_Hmeta & #Hub_lb & Htoken_frag)". injection Heq as <-.
-    iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
-    iDestruct (auth_natinf_max_valid with "Hub_auth Hub_lb") as %?%(inj natinf_nat). done.
-  Qed.
-  Lemma counter_token_exclusive t n :
-    counter_token t n -∗
-    counter_token t n -∗
-    False.
-  Proof.
-    iIntros "(%l & %γ & -> & #Hmeta & #Hub_lb & Htoken_frag1) (%_l & %_γ & %Heq & #_Hmeta & _ & Htoken_frag2)". injection Heq as <-.
-    iDestruct (meta_agree with "Hmeta _Hmeta") as %->. iClear "_Hmeta".
-    iDestruct (own_valid_2 with "Htoken_frag1 Htoken_frag2") as %?%auth_frag_op_valid%gset_disj_valid_op. set_solver.
-  Qed.
+    Lemma counter_lb_le t lb1 lb2 :
+      lb2 ≤ lb1 →
+      counter_lb t lb1 -∗
+      counter_lb t lb2.
+    Proof.
+      iIntros "% (%l & %γ & -> & #Hmeta & #Hub_lb & Hlb_lb)".
+      iDestruct (auth_natinf_max_lb_le with "Hub_lb") as "#Hub_lb'".
+      { apply natinf_le_proper. done. }
+      iDestruct (auth_nat_max_lb_le with "Hlb_lb") as "Hlb_lb"; first done.
+      repeat iExists _. naive_solver.
+    Qed.
 
-  Lemma counter_model_valid t dq n :
-    counter_model t dq n -∗
-    ⌜✓ dq⌝.
-  Proof.
-    iIntros "(%l & %γ & -> & #Hmeta & #Hub_lb & Hlb_auth & Htoken_auth & Hmodel₂)".
-    iApply (auth_excl_auth_valid with "Hmodel₂").
-  Qed.
-  Lemma counter_inv_model_valid t ι ub dq n :
-    counter_inv t ι ub -∗
-    counter_model t dq n -∗
-    ⌜if ub is Some ub then n ≤ ub else True⌝.
-  Proof.
-    iIntros "(%l & %γ & -> & #Hmeta & #Hub_auth & #Hinv) (%_l & %_γ & %Heq & #_Hmeta & #Hub_lb & Hlb_auth & Htoken_auth & Hmodel₂)". injection Heq as <-.
-    destruct ub as [ub |]; last done.
-    iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
-    iDestruct (auth_natinf_max_valid with "Hub_auth Hub_lb") as %?%(inj natinf_nat). done.
-  Qed.
-  Lemma counter_model_lb_valid t dq n lb :
-    counter_model t dq n -∗
-    counter_lb t lb -∗
-    ⌜lb ≤ n⌝.
-  Proof.
-    iIntros "(%l & %γ & -> & #Hmeta & #Hub_lb & Hlb_auth & Htoken_auth & Hmodel₂) (%_l & %_γ & %Heq & #_Hmeta & _ & #Hlb_lb)". injection Heq as <-.
-    iDestruct (meta_agree with "Hmeta _Hmeta") as %->. iClear "_Hmeta".
-    iApply (auth_nat_max_valid with "Hlb_auth Hlb_lb").
-  Qed.
-  Lemma counter_model_token_valid t dq n m :
-    counter_model t dq n -∗
-    counter_token t m -∗
-    ⌜m < n⌝.
-  Proof.
-    iIntros "(%l & %γ & -> & #Hmeta & #Hub_lb & Hlb_auth & Htoken_auth & Hmodel₂) (%_l & %_γ & %Heq & #_Hmeta & _ & Htoken_frag)". injection Heq as <-.
-    iDestruct (meta_agree with "Hmeta _Hmeta") as %->. iClear "_Hmeta".
-    iDestruct (own_valid_2 with "Htoken_auth Htoken_frag") as %(_ & Hincluded & _)%auth_both_dfrac_valid_discrete.
-    rewrite gset_disj_included -elem_of_subseteq_singleton elem_of_set_seq in Hincluded.
-    naive_solver.
-  Qed.
-  Lemma counter_model_combine t dq1 n1 dq2 n2 :
-    counter_model t dq1 n1 -∗
-    counter_model t dq2 n2 -∗
-      counter_model t (dq1 ⋅ dq2) n1 ∗
+    Lemma counter_lb_get t dq n :
+      counter_model t dq n -∗
+      counter_lb t n.
+    Proof.
+      iIntros "(%l & %γ & -> & #Hmeta & #Hub_lb & Hlb_auth & Htoken_auth & Hmodel₂)".
+      iDestruct (auth_nat_max_lb_get with "Hlb_auth") as "#Hlb_lb".
+      repeat iExists _. naive_solver.
+    Qed.
+  End counter_lb.
+
+  Section counter_token.
+    Lemma counter_inv_token_valid t ι ub n :
+      counter_inv t ι (Some ub) -∗
+      counter_token t n -∗
+      ⌜n ≤ ub⌝.
+    Proof.
+      iIntros "(%l & %γ & -> & #Hmeta & #Hub_auth & #Hinv) (%_l & %_γ & %Heq & #_Hmeta & #Hub_lb & Htoken_frag)". injection Heq as <-.
+      iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
+      iDestruct (auth_natinf_max_valid with "Hub_auth Hub_lb") as %?%(inj natinf_nat). done.
+    Qed.
+
+    Lemma counter_token_exclusive t n :
+      counter_token t n -∗
+      counter_token t n -∗
+      False.
+    Proof.
+      iIntros "(%l & %γ & -> & #Hmeta & #Hub_lb & Htoken_frag1) (%_l & %_γ & %Heq & #_Hmeta & _ & Htoken_frag2)". injection Heq as <-.
+      iDestruct (meta_agree with "Hmeta _Hmeta") as %->. iClear "_Hmeta".
+      iDestruct (own_valid_2 with "Htoken_frag1 Htoken_frag2") as %?%auth_frag_op_valid%gset_disj_valid_op. set_solver.
+    Qed.
+  End counter_token.
+
+  Section counter_model.
+    Lemma counter_inv_model_valid t ι ub dq n :
+      counter_inv t ι ub -∗
+      counter_model t dq n -∗
+      ⌜if ub is Some ub then n ≤ ub else True⌝.
+    Proof.
+      iIntros "(%l & %γ & -> & #Hmeta & #Hub_auth & #Hinv) (%_l & %_γ & %Heq & #_Hmeta & #Hub_lb & Hlb_auth & Htoken_auth & Hmodel₂)". injection Heq as <-.
+      destruct ub as [ub |]; last done.
+      iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
+      iDestruct (auth_natinf_max_valid with "Hub_auth Hub_lb") as %?%(inj natinf_nat). done.
+    Qed.
+
+    Lemma counter_model_lb_valid t dq n lb :
+      counter_model t dq n -∗
+      counter_lb t lb -∗
+      ⌜lb ≤ n⌝.
+    Proof.
+      iIntros "(%l & %γ & -> & #Hmeta & #Hub_lb & Hlb_auth & Htoken_auth & Hmodel₂) (%_l & %_γ & %Heq & #_Hmeta & _ & #Hlb_lb)". injection Heq as <-.
+      iDestruct (meta_agree with "Hmeta _Hmeta") as %->. iClear "_Hmeta".
+      iApply (auth_nat_max_valid with "Hlb_auth Hlb_lb").
+    Qed.
+
+    Lemma counter_model_token_valid t dq n m :
+      counter_model t dq n -∗
+      counter_token t m -∗
+      ⌜m < n⌝.
+    Proof.
+      iIntros "(%l & %γ & -> & #Hmeta & #Hub_lb & Hlb_auth & Htoken_auth & Hmodel₂) (%_l & %_γ & %Heq & #_Hmeta & _ & Htoken_frag)". injection Heq as <-.
+      iDestruct (meta_agree with "Hmeta _Hmeta") as %->. iClear "_Hmeta".
+      iDestruct (own_valid_2 with "Htoken_auth Htoken_frag") as %(_ & Hincluded & _)%auth_both_dfrac_valid_discrete.
+      rewrite gset_disj_included -elem_of_subseteq_singleton elem_of_set_seq in Hincluded.
+      naive_solver.
+    Qed.
+
+    Lemma counter_model_valid t dq n :
+      counter_model t dq n -∗
+      ⌜✓ dq⌝.
+    Proof.
+      iIntros "(%l & %γ & -> & #Hmeta & #Hub_lb & Hlb_auth & Htoken_auth & Hmodel₂)".
+      iApply (auth_excl_auth_valid with "Hmodel₂").
+    Qed.
+    Lemma counter_model_combine t dq1 n1 dq2 n2 :
+      counter_model t dq1 n1 -∗
+      counter_model t dq2 n2 -∗
+        counter_model t (dq1 ⋅ dq2) n1 ∗
+        ⌜n1 = n2⌝.
+    Proof.
+      iIntros "(%l & %γ & -> & #Hmeta & #Hub_lb1 & Hlb_auth1 & Htoken_auth1 & Hmodel₂1) (%_l & %_γ & %Heq & #_Hmeta & #Hub_lb2 & Hlb_auth2 & Htoken_auth2 & Hmodel₂2)". injection Heq as <-.
+      iDestruct (meta_agree with "Hmeta _Hmeta") as %->. iClear "_Hmeta".
+      iDestruct (auth_nat_max_auth_combine with "Hlb_auth1 Hlb_auth2") as "(Hlb_auth & <-)".
+      iCombine "Htoken_auth1 Htoken_auth2" as "Htoken_auth".
+      iDestruct (auth_excl_auth_combine_L with "Hmodel₂1 Hmodel₂2") as "(Hmodel₂ & _)".
+      iSplitL; last done. repeat iExists _. iFrame "#∗". done.
+    Qed.
+    Lemma counter_model_valid_2 t dq1 n1 dq2 n2 :
+      counter_model t dq1 n1 -∗
+      counter_model t dq2 n2 -∗
+      ⌜✓ (dq1 ⋅ dq2) ∧ n1 = n2⌝.
+    Proof.
+      iIntros "Hmodel1 Hmodel2".
+      iDestruct (counter_model_combine with "Hmodel1 Hmodel2") as "(Hmodel & %)".
+      iDestruct (counter_model_valid with "Hmodel") as %?.
+      done.
+    Qed.
+    Lemma counter_model_agree t dq1 n1 dq2 n2 :
+      counter_model t dq1 n1 -∗
+      counter_model t dq2 n2 -∗
       ⌜n1 = n2⌝.
-  Proof.
-    iIntros "(%l & %γ & -> & #Hmeta & #Hub_lb1 & Hlb_auth1 & Htoken_auth1 & Hmodel₂1) (%_l & %_γ & %Heq & #_Hmeta & #Hub_lb2 & Hlb_auth2 & Htoken_auth2 & Hmodel₂2)". injection Heq as <-.
-    iDestruct (meta_agree with "Hmeta _Hmeta") as %->. iClear "_Hmeta".
-    iDestruct (auth_nat_max_auth_combine with "Hlb_auth1 Hlb_auth2") as "(Hlb_auth & <-)".
-    iCombine "Htoken_auth1 Htoken_auth2" as "Htoken_auth".
-    iDestruct (auth_excl_auth_combine_L with "Hmodel₂1 Hmodel₂2") as "(Hmodel₂ & _)".
-    iSplitL; last done. repeat iExists _. iFrame "#∗". done.
-  Qed.
-  Lemma counter_model_valid_2 t dq1 n1 dq2 n2 :
-    counter_model t dq1 n1 -∗
-    counter_model t dq2 n2 -∗
-    ⌜✓ (dq1 ⋅ dq2) ∧ n1 = n2⌝.
-  Proof.
-    iIntros "Hmodel1 Hmodel2".
-    iDestruct (counter_model_combine with "Hmodel1 Hmodel2") as "(Hmodel & %)".
-    iDestruct (counter_model_valid with "Hmodel") as %?.
-    done.
-  Qed.
-  Lemma counter_model_agree t dq1 n1 dq2 n2 :
-    counter_model t dq1 n1 -∗
-    counter_model t dq2 n2 -∗
-    ⌜n1 = n2⌝.
-  Proof.
-    iIntros "Hmodel1 Hmodel2".
-    iDestruct (counter_model_combine with "Hmodel1 Hmodel2") as "(_ & <-)"; done.
-  Qed.
-  Lemma counter_model_dfrac_ne t1 dq1 n1 t2 dq2 n2 :
-    ¬ ✓ (dq1 ⋅ dq2) →
-    counter_model t1 dq1 n1 -∗
-    counter_model t2 dq2 n2 -∗
-    ⌜t1 ≠ t2⌝.
-  Proof.
-    iIntros "% Hmodel1 Hmodel2" (->).
-    iDestruct (counter_model_valid_2 with "Hmodel1 Hmodel2") as %?; naive_solver.
-  Qed.
-  Lemma counter_model_ne t1 n1 t2 dq2 n2 :
-    counter_model t1 (DfracOwn 1) n1 -∗
-    counter_model t2 dq2 n2 -∗
-    ⌜t1 ≠ t2⌝.
-  Proof.
-    intros. iApply counter_model_dfrac_ne. intros []%exclusive_l. apply _.
-  Qed.
-  Lemma counter_model_exclusive t n1 n2 :
-    counter_model t (DfracOwn 1) n1 -∗
-    counter_model t (DfracOwn 1) n2 -∗
-    False.
-  Proof.
-    iIntros "Hmodel1 Hmodel2".
-    iDestruct (counter_model_ne with "Hmodel1 Hmodel2") as %?; naive_solver.
-  Qed.
-  Lemma counter_model_persist t dq n :
-    counter_model t dq n ==∗
-    counter_model t DfracDiscarded n.
-  Proof.
-    iIntros "(%l & %γ & -> & #Hmeta & #Hub_lb & Hlb_auth & Htoken_auth & Hmodel₂)".
-    iMod (auth_nat_max_auth_persist with "Hlb_auth") as "Hlb_auth".
-    iMod (own_update with "Htoken_auth") as "Htoken_auth"; first eapply auth_update_auth_persist.
-    iMod (auth_excl_auth_persist with "Hmodel₂") as "Hmodel₂".
-    repeat iExists _. iFrame "#∗". done.
-  Qed.
+    Proof.
+      iIntros "Hmodel1 Hmodel2".
+      iDestruct (counter_model_combine with "Hmodel1 Hmodel2") as "(_ & <-)"; done.
+    Qed.
+    Lemma counter_model_dfrac_ne t1 dq1 n1 t2 dq2 n2 :
+      ¬ ✓ (dq1 ⋅ dq2) →
+      counter_model t1 dq1 n1 -∗
+      counter_model t2 dq2 n2 -∗
+      ⌜t1 ≠ t2⌝.
+    Proof.
+      iIntros "% Hmodel1 Hmodel2" (->).
+      iDestruct (counter_model_valid_2 with "Hmodel1 Hmodel2") as %?; naive_solver.
+    Qed.
+    Lemma counter_model_ne t1 n1 t2 dq2 n2 :
+      counter_model t1 (DfracOwn 1) n1 -∗
+      counter_model t2 dq2 n2 -∗
+      ⌜t1 ≠ t2⌝.
+    Proof.
+      intros. iApply counter_model_dfrac_ne. intros []%exclusive_l. apply _.
+    Qed.
+    Lemma counter_model_exclusive t n1 n2 :
+      counter_model t (DfracOwn 1) n1 -∗
+      counter_model t (DfracOwn 1) n2 -∗
+      False.
+    Proof.
+      iIntros "Hmodel1 Hmodel2".
+      iDestruct (counter_model_ne with "Hmodel1 Hmodel2") as %?; naive_solver.
+    Qed.
+    Lemma counter_model_persist t dq n :
+      counter_model t dq n ==∗
+      counter_model t DfracDiscarded n.
+    Proof.
+      iIntros "(%l & %γ & -> & #Hmeta & #Hub_lb & Hlb_auth & Htoken_auth & Hmodel₂)".
+      iMod (auth_nat_max_auth_persist with "Hlb_auth") as "Hlb_auth".
+      iMod (own_update with "Htoken_auth") as "Htoken_auth"; first eapply auth_update_auth_persist.
+      iMod (auth_excl_auth_persist with "Hmodel₂") as "Hmodel₂".
+      repeat iExists _. iFrame "#∗". done.
+    Qed.
+  End counter_model.
 
   Lemma counter_make_spec ι ub :
     {{{ True }}}
