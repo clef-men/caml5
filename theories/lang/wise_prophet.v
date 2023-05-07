@@ -156,7 +156,7 @@ Section make_wise_prophet_G.
     iIntros "* _ HΦ".
     iApply wp_fupd. wp_apply (make_wise_strong_prophet_typed_prophet.(typed_strong_prophet_wp_new_proph) with "[//]"). iIntros "%p %prophs Hp".
     iMod (agree_alloc (agree_G := wise_strong_prophet_G_full_G) prophs) as "(%γ_full & #Hfull)".
-    iMod (mono_list_alloc []) as "(%γ_past & Hpast_auth & _)".
+    iMod (mono_list_alloc []) as "(%γ_past & Hpast_auth)".
     set γ := {|
       make_wise_strong_prophet_name_full := γ_full ;
       make_wise_strong_prophet_name_past := γ_past ;
@@ -169,7 +169,7 @@ Section make_wise_prophet_G.
     iApply wp_fupd. wp_apply (wp_wand with "HΦ"). iIntros "%w HΦ".
     iDestruct "HΦ" as "(%proph & % & HΦ)".
     iExists proph. iSplitR; first done.
-    iMod (mono_list_auth_update_app [proph] with "Hpast_auth") as "(Hpast_auth & _)".
+    iMod (mono_list_auth_update_app [proph] with "Hpast_auth") as "Hpast_auth".
     iIntros "!> %prophs' -> Hp".
     iApply ("HΦ" with "[//]"). iFrame. list_simplifier. done.
   Qed.

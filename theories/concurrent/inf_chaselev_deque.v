@@ -420,8 +420,7 @@ Section inf_chaselev_deque_G.
       inf_chaselev_deque_ctl₁' γ_ctl 0 (λ _, #()) ∗
       inf_chaselev_deque_ctl₂' γ_ctl 0 (λ _, #()).
   Proof.
-    iMod (auth_excl_alloc' (auth_excl_G := inf_chaselev_deque_G_ctl_G) (0%Z, λ _, #())) as "(%γ_ctl & Hctl₁ & Hctl₂)".
-    iExists γ_ctl. iFrame. done.
+    apply auth_excl_alloc'.
   Qed.
   #[local] Lemma inf_chaselev_deque_ctl_agree γ back1 priv1 back2 priv2 :
     inf_chaselev_deque_ctl₁ γ back1 priv1 -∗
@@ -438,9 +437,7 @@ Section inf_chaselev_deque_G.
       inf_chaselev_deque_ctl₁ γ back priv ∗
       inf_chaselev_deque_ctl₂ γ back priv.
   Proof.
-    iIntros "Hctl₁ Hctl₂".
-    iMod (auth_excl_update' with "Hctl₁ Hctl₂") as "(Hctl₁ & Hctl2)".
-    iFrame. done.
+    apply auth_excl_update'.
   Qed.
 
   #[local] Lemma inf_chaselev_deque_front_alloc :
@@ -498,17 +495,14 @@ Section inf_chaselev_deque_G.
     ⊢ |==> ∃ γ_hist,
       inf_chaselev_deque_hist_auth' γ_hist [].
   Proof.
-    iMod (mono_list_alloc []) as "(%γ_hist & Hhist_auth & _)".
-    iExists γ_hist. done.
+    apply mono_list_alloc.
   Qed.
   #[local] Lemma inf_chaselev_deque_hist_mapsto_get {γ hist} i v :
     hist !! i = Some v →
     inf_chaselev_deque_hist_auth γ hist -∗
     inf_chaselev_deque_hist_mapsto γ i v.
   Proof.
-    iIntros "% Hhist_auth".
-    iDestruct (mono_list_lb_get with "Hhist_auth") as "#Hhist_mapsto".
-    iApply (mono_list_mapsto_get with "Hhist_mapsto"). done.
+    setoid_rewrite mono_list_lb_get. apply mono_list_mapsto_get.
   Qed.
   #[local] Lemma inf_chaselev_deque_hist_agree γ hist i v :
     inf_chaselev_deque_hist_auth γ hist -∗
@@ -521,8 +515,7 @@ Section inf_chaselev_deque_G.
     inf_chaselev_deque_hist_auth γ hist ==∗
     inf_chaselev_deque_hist_auth γ (hist ++ [v]).
   Proof.
-    iIntros "Hhist_auth".
-    iMod (mono_list_auth_update_app [v] with "Hhist_auth") as "($ & _)". done.
+    apply mono_list_auth_update_app.
   Qed.
 
   #[local] Lemma inf_chaselev_deque_model_alloc :
