@@ -85,12 +85,6 @@ Section heapGS.
     rec: "chunk_copy_to" "t" "sz" "t'" :=
       chunk_iteri "t" "sz" (λ: "i" "v", "t'" +ₗ "i" <- "v").
 
-  Definition chunk_clone : val :=
-    λ: "t" "sz",
-      let: "t'" := chunk_make "sz" #() in
-      chunk_copy "t" "sz" "t'" ;;
-      "t'".
-
   Definition chunk_grow : val :=
     λ: "t" "sz" "sz'" "v",
       let: "t'" := chunk_make "sz'" "v" in
@@ -101,6 +95,10 @@ Section heapGS.
       let: "t'" := chunk_make "sz'" #() in
       chunk_copy "t" "sz'" "t'" ;;
       "t'".
+
+  Definition chunk_clone : val :=
+    λ: "t" "sz",
+      chunk_shrink "t" "sz" "sz".
 
   Section chunk_model.
     Definition chunk_model l dq vs : iProp Σ :=
@@ -1432,28 +1430,6 @@ Section heapGS.
     - rewrite drop_length. lia.
   Qed.
 
-  Lemma chunk_clone_spec l dq vs (sz : Z) :
-    sz = length vs →
-    {{{
-      chunk_model l dq vs
-    }}}
-      chunk_clone #l #sz
-    {{{ l',
-      RET #l';
-      chunk_model l dq vs ∗
-      chunk_model l' (DfracOwn 1) vs
-    }}}.
-  Proof.
-    iIntros "% %Φ Hmodel HΦ".
-    wp_rec.
-    wp_smart_apply (chunk_make_spec with "[//]"); first lia. iIntros "%l' (Hmodel' & _)".
-    wp_smart_apply (chunk_copy_spec with "[$Hmodel $Hmodel']"); first done.
-    { rewrite replicate_length. lia. }
-    iIntros "(Hmodel & Hmodel')".
-    wp_pures.
-    iApply "HΦ". auto with iFrame.
-  Qed.
-
   Lemma chunk_grow_spec l dq vs (sz : Z) sz' v :
     sz = length vs →
     (sz ≤ sz')%Z →
@@ -1518,6 +1494,25 @@ Section heapGS.
     wp_pures.
     iApply "HΦ". auto with iFrame.
   Qed.
+
+  Lemma chunk_clone_spec l dq vs (sz : Z) :
+    sz = length vs →
+    {{{
+      chunk_model l dq vs
+    }}}
+      chunk_clone #l #sz
+    {{{ l',
+      RET #l';
+      chunk_model l dq vs ∗
+      chunk_model l' (DfracOwn 1) vs
+    }}}.
+  Proof.
+    iIntros "%Hsz %Φ Hmodel HΦ".
+    wp_rec.
+    wp_smart_apply (chunk_shrink_spec with "Hmodel"); [lia.. |].
+    iIntros "%l' (Hmodel & Hmodel')".
+    iApply "HΦ". rewrite Hsz Nat2Z.id firstn_all. iFrame.
+  Qed.
 End heapGS.
 
 #[global] Opaque chunk_make.
@@ -1531,9 +1526,9 @@ End heapGS.
 #[global] Opaque chunk_mapi.
 #[global] Opaque chunk_map.
 #[global] Opaque chunk_copy.
-#[global] Opaque chunk_clone.
 #[global] Opaque chunk_grow.
 #[global] Opaque chunk_shrink.
+#[global] Opaque chunk_clone.
 
 #[global] Opaque chunk_model.
 #[global] Opaque chunk_span.
