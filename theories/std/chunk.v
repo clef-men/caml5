@@ -84,6 +84,7 @@ Section heapGS.
   Definition chunk_copy : val :=
     rec: "chunk_copy_to" "t" "sz" "t'" :=
       chunk_iteri "t" "sz" (λ: "i" "v", "t'" +ₗ "i" <- "v").
+
   Definition chunk_clone : val :=
     λ: "t" "sz",
       let: "t'" := chunk_make "sz" #() in
