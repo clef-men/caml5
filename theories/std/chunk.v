@@ -81,6 +81,26 @@ Section heapGS.
     λ: "t" "sz" "fn",
       chunk_mapi "t" "sz" (λ: <> "v", "fn" "v").
 
+  Definition chunk_copy : val :=
+    rec: "chunk_copy_to" "t" "sz" "t'" :=
+      chunk_iteri "t" "sz" (λ: "i" "v", "t'" +ₗ "i" <- "v").
+  Definition chunk_clone : val :=
+    λ: "t" "sz",
+      let: "t'" := chunk_make "sz" #() in
+      chunk_copy "t" "sz" "t'" ;;
+      "t'".
+
+  Definition chunk_grow : val :=
+    λ: "t" "sz" "sz'" "v",
+      let: "t'" := chunk_make "sz'" "v" in
+      chunk_copy "t" "sz" "t'" ;;
+      "t'".
+  Definition chunk_shrink : val :=
+    λ: "t" "sz" "sz'",
+      let: "t'" := chunk_make "sz'" #() in
+      chunk_copy "t" "sz'" "t'" ;;
+      "t'".
+
   Section chunk_model.
     Definition chunk_model l dq vs : iProp Σ :=
       [∗ list] i ↦ v ∈ vs, (l +ₗ i) ↦{dq} v.
@@ -535,43 +555,12 @@ Section heapGS.
     wp_rec. wp_pures.
     case_decide.
     - rewrite bool_decide_eq_true_2 //.
-      wp_pures.
-      wp_apply (wp_allocN with "[//]"); first done. iIntros "%l (H↦ & Hmeta)".
+      wp_smart_apply (wp_allocN with "[//]"); first done. iIntros "%l (H↦ & Hmeta)".
       destruct (Z.to_nat sz) eqn:Heq; first lia. iDestruct "Hmeta" as "(Hmeta & _)". rewrite loc_add_0.
       iApply "HΦ". iFrame. rewrite /array //.
     - rewrite bool_decide_eq_false_2 //.
       wp_pures.
       iApply "HΦ". rewrite right_id /chunk_model Z2Nat.nonpos //=. lia.
-  Qed.
-
-  Lemma chunk_get_spec l i dq vs v E :
-    (0 ≤ i)%Z →
-    vs !! Z.to_nat i = Some v →
-    chunk_model l dq vs -∗
-    WP !#(l +ₗ i) @ E {{ res,
-      ⌜res = v⌝ ∗
-      chunk_model l dq vs
-    }}.
-  Proof.
-    iIntros "% % Hmodel".
-    iDestruct (chunk_model_lookup_acc with "Hmodel") as "(H↦ & Hmodel)"; first done.
-    rewrite (Z2Nat.id i); last done. wp_load.
-    iSplitR; first done. iApply ("Hmodel" with "H↦").
-  Qed.
-
-  Lemma chunk_set_spec l i vs v E :
-    (0 ≤ i < length vs)%Z →
-    chunk_model l (DfracOwn 1) vs -∗
-    WP #(l +ₗ i) <- v @ E {{ res,
-      ⌜res = #()⌝ ∗
-      chunk_model l (DfracOwn 1) (<[Z.to_nat i := v]> vs)
-    }}.
-  Proof.
-    iIntros "% Hmodel".
-    iDestruct (chunk_model_update with "Hmodel") as "(H↦ & Hmodel)".
-    { destruct (nth_lookup_or_length vs (Z.to_nat i) inhabitant); [done | lia]. }
-    rewrite (Z2Nat.id i); last naive_solver. wp_store.
-    iSplitR; first done. iApply ("Hmodel" with "H↦").
   Qed.
 
   #[local] Lemma chunk_init_aux_spec i vs_done k Ψ l sz fn :
@@ -603,8 +592,7 @@ Section heapGS.
     rewrite loc_add_assoc Z.add_1_r -Nat2Z.inj_succ.
     iDestruct "Hfn" as "[Hfn Hfn']".
     rewrite bool_decide_eq_false_2; last naive_solver lia.
-    wp_pures.
-    wp_apply (wp_wand with "(Hfn [//] HΨ)"). iIntros "%v HΨ".
+    wp_smart_apply (wp_wand with "(Hfn [//] HΨ)"). iIntros "%v HΨ".
     wp_store. wp_pures.
     rewrite Z.add_1_r -Nat2Z.inj_succ.
     iApply ("IH" $! _ (vs_done ++ [v]) with "[] [] Hmodel HΨ Hfn'").
@@ -635,10 +623,9 @@ Section heapGS.
     }}}.
   Proof.
     iIntros "% %Φ (HΨ & Hfn) HΦ".
-    wp_rec. wp_pures.
-    wp_apply (chunk_make_spec with "[//]"); first done. iIntros "%l (Hmodel & Hmeta)".
-    wp_pures.
-    wp_apply (chunk_init_aux_spec 0 [] with "[Hmodel HΨ $Hfn] [Hmeta HΦ]"); [done | lia | |].
+    wp_rec.
+    wp_smart_apply (chunk_make_spec with "[//]"); first done. iIntros "%l (Hmodel & Hmeta)".
+    wp_smart_apply (chunk_init_aux_spec 0 [] with "[Hmodel HΨ $Hfn] [Hmeta HΦ]"); [done | lia | |].
     { iFrame. rewrite loc_add_0 //. }
     iIntros "!> %vs (%Hsz & Hmodel & HΨ)".
     wp_pures.
@@ -714,6 +701,42 @@ Section heapGS.
     iApply ("Hfn" with "[//]"). auto.
   Qed.
 
+  Lemma chunk_get_spec l i dq vs v E :
+    (0 ≤ i)%Z →
+    vs !! Z.to_nat i = Some v →
+    {{{
+      chunk_model l dq vs
+    }}}
+      !#(l +ₗ i) @ E
+    {{{
+      RET v;
+      chunk_model l dq vs
+    }}}.
+  Proof.
+    iIntros "% % %Φ Hmodel HΦ".
+    iDestruct (chunk_model_lookup_acc with "Hmodel") as "(H↦ & Hmodel)"; first done.
+    rewrite (Z2Nat.id i); last done. wp_load.
+    iApply "HΦ". iApply ("Hmodel" with "H↦").
+  Qed.
+
+  Lemma chunk_set_spec l i vs v E :
+    (0 ≤ i < length vs)%Z →
+    {{{
+      chunk_model l (DfracOwn 1) vs
+    }}}
+      #(l +ₗ i) <- v @ E
+    {{{
+      RET #();
+      chunk_model l (DfracOwn 1) (<[Z.to_nat i := v]> vs)
+    }}}.
+  Proof.
+    iIntros "% %Φ Hmodel HΦ".
+    iDestruct (chunk_model_update with "Hmodel") as "(H↦ & Hmodel)".
+    { destruct (nth_lookup_or_length vs (Z.to_nat i) inhabitant); [done | lia]. }
+    rewrite (Z2Nat.id i); last naive_solver. wp_store.
+    iApply "HΦ". iApply ("Hmodel" with "H↦").
+  Qed.
+
   #[local] Lemma chunk_foldli_aux_spec i vs_done vs_todo Ψ l dq sz acc fn :
     i = length vs_done →
     (sz = i + length vs_todo)%Z →
@@ -776,8 +799,8 @@ Section heapGS.
     }}}.
   Proof.
     iIntros "% %Φ (Hmodel & HΨ & Hfn) HΦ".
-    wp_rec. wp_pures.
-    wp_apply (chunk_foldli_aux_spec 0 [] vs Ψ with "[Hmodel $HΨ $Hfn]"); [done | lia | |].
+    wp_rec.
+    wp_smart_apply (chunk_foldli_aux_spec 0 [] vs Ψ with "[Hmodel $HΨ $Hfn]"); [done | lia | |].
     { rewrite loc_add_0 //. }
     iIntros "%acc' (Hmodel & HΨ)". rewrite loc_add_0.
     iApply "HΦ". iFrame.
@@ -822,11 +845,10 @@ Section heapGS.
     }}}.
   Proof.
     iIntros "% %Φ (Hmodel & HΨ & Hfn) HΦ".
-    wp_rec. wp_pures.
-    wp_apply (chunk_foldli_spec Ψ with "[$Hmodel $HΨ Hfn]"); try done.
+    wp_rec.
+    wp_smart_apply (chunk_foldli_spec Ψ with "[$Hmodel $HΨ Hfn]"); try done.
     iApply (big_sepL_mono with "Hfn"). clear. iIntros "%i %v % Hfn %acc HΨ".
-    wp_pures.
-    wp_apply ("Hfn" with "HΨ").
+    wp_smart_apply ("Hfn" with "HΨ").
   Qed.
   Lemma chunk_foldl_spec' Ψ l dq vs (sz : Z) acc fn :
     sz = length vs →
@@ -911,9 +933,9 @@ Section heapGS.
     }}}.
   Proof.
     iIntros "% %Φ (Hmodel & HΨ & Hfn) HΦ".
-    wp_rec. wp_pures.
     rename sz into _sz. destruct (Z_of_nat_complete _sz) as (sz & ->); first lia. simplify.
-    wp_apply (chunk_foldri_aux_spec _ vs [] Ψ with "[$Hmodel $HΨ Hfn]"); first done.
+    wp_rec.
+    wp_smart_apply (chunk_foldri_aux_spec _ vs [] Ψ with "[$Hmodel $HΨ Hfn]"); first done.
     { setoid_rewrite (right_id [] (++)). done. }
     iIntros "%acc' (Hmodel & HΨ)".
     iApply "HΦ". iFrame. rewrite right_id //.
@@ -958,11 +980,10 @@ Section heapGS.
     }}}.
   Proof.
     iIntros "% %Φ (Hmodel & HΨ & Hfn) HΦ".
-    wp_rec. wp_pures.
-    wp_apply (chunk_foldri_spec Ψ with "[$Hmodel $HΨ Hfn]"); try done.
+    wp_rec.
+    wp_smart_apply (chunk_foldri_spec Ψ with "[$Hmodel $HΨ Hfn]"); try done.
     iApply (big_sepL_mono with "Hfn"). clear. iIntros "%i %v % Hfn %acc HΨ".
-    wp_pures.
-    wp_apply ("Hfn" with "HΨ").
+    wp_smart_apply ("Hfn" with "HΨ").
   Qed.
   Lemma chunk_foldr_spec' Ψ l dq vs (sz : Z) acc fn :
     sz = length vs →
@@ -1004,8 +1025,8 @@ Section heapGS.
     }}}.
   Proof.
     iIntros "% %Φ (Hmodel & HΨ & Hfn) HΦ".
-    wp_rec. wp_pures.
-    wp_apply (chunk_foldli_spec (λ vs acc, ⌜acc = #()⌝ ∗ Ψ vs)%I with "[$Hmodel $HΨ Hfn]"); first done.
+    wp_rec.
+    wp_smart_apply (chunk_foldli_spec (λ vs acc, ⌜acc = #()⌝ ∗ Ψ vs)%I with "[$Hmodel $HΨ Hfn]"); first done.
     { iSplit; first done.
       iApply (big_sepL_mono with "Hfn"). iIntros "%i %v % Hfn %acc (-> & HΨ)".
       wp_pures.
@@ -1099,11 +1120,10 @@ Section heapGS.
     }}}.
   Proof.
     iIntros "% %Φ (Hmodel & HΨ & Hfn) HΦ".
-    wp_rec. wp_pures.
-    wp_apply (chunk_iteri_spec Ψ with "[$Hmodel $HΨ Hfn]"); try done.
+    wp_rec.
+    wp_smart_apply (chunk_iteri_spec Ψ with "[$Hmodel $HΨ Hfn]"); try done.
     iApply (big_sepL_mono with "Hfn"). clear. iIntros "%i %v % Hfn HΨ".
-    wp_pures.
-    wp_apply ("Hfn" with "HΨ").
+    wp_smart_apply ("Hfn" with "HΨ").
   Qed.
   Lemma chunk_iter_spec' Ψ l dq vs (sz : Z) fn :
     sz = length vs →
@@ -1190,12 +1210,12 @@ Section heapGS.
     }}}.
   Proof.
     iIntros "%Hsz %Φ (Hmodel & HΨ & Hfn) HΦ".
-    wp_rec. wp_pures.
+    wp_rec.
     pose Ψ' ws := (
       let vs := take (length ws) vs in
       Ψ vs ws ∗ chunk_model l dq vs
     )%I.
-    wp_apply (chunk_init_spec Ψ' with "[Hmodel $HΨ Hfn]"); first lia.
+    wp_smart_apply (chunk_init_spec Ψ' with "[Hmodel $HΨ Hfn]"); first lia.
     { iSplit; first rewrite /chunk_model take_0 //.
       rename sz into _sz. destruct (Z_of_nat_complete _sz) as (sz & ->); first lia. rewrite Nat2Z.id.
       iApply (big_sepL_seq_index vs); first naive_solver.
@@ -1302,11 +1322,10 @@ Section heapGS.
     }}}.
   Proof.
     iIntros "% %Φ (Hmodel & HΨ & Hfn) HΦ".
-    wp_rec. wp_pures.
-    wp_apply (chunk_mapi_spec Ψ with "[$Hmodel $HΨ Hfn]"); try done.
+    wp_rec.
+    wp_smart_apply (chunk_mapi_spec Ψ with "[$Hmodel $HΨ Hfn]"); try done.
     iApply (big_sepL_mono with "Hfn"). clear. iIntros "%i %v % Hfn %w % HΨ".
-    wp_pures.
-    wp_apply ("Hfn" with "HΨ").
+    wp_smart_apply ("Hfn" with "HΨ").
   Qed.
   Lemma chunk_map_spec' Ψ l dq vs (sz : Z) fn :
     sz = length vs →
@@ -1378,6 +1397,126 @@ Section heapGS.
     iApply big_sepL_intro. clear. iIntros "!> %i %v %".
     iApply "Hfn"; last auto. rewrite elem_of_list_lookup. naive_solver.
   Qed.
+
+  Lemma chunk_copy_spec l dq vs (sz : Z) l' vs' :
+    sz = length vs →
+    sz = length vs' →
+    {{{
+      chunk_model l dq vs ∗
+      chunk_model l' (DfracOwn 1) vs'
+    }}}
+      chunk_copy #l #sz #l'
+    {{{
+      RET #();
+      chunk_model l dq vs ∗
+      chunk_model l' (DfracOwn 1) vs
+    }}}.
+  Proof.
+    iIntros (-> Hsz%(inj _)) "%Φ (Hmodel & Hmodel') HΦ".
+    wp_rec.
+    set (Ψ vs := chunk_model l' (DfracOwn 1) (vs ++ drop (length vs) vs')).
+    wp_smart_apply (chunk_iteri_spec' Ψ with "[$Hmodel Hmodel']"); first done; last first.
+    { iIntros "(Hmodel & HΨ)".
+      iApply "HΦ". iFrame. rewrite /Ψ Hsz drop_all right_id //.
+    }
+    iFrame. clear- Hsz. iIntros "%i %v !> %Φ (%Hlookup & HΨ) HΦ".
+    pose proof Hlookup as Hi%lookup_lt_Some.
+    wp_smart_apply (chunk_set_spec with "HΨ").
+    { rewrite app_length take_length_le; last lia. rewrite drop_length. lia. }
+    iIntros "Hmodel'".
+    iApply "HΦ".
+    rewrite /Ψ Nat2Z.id app_length -assoc Nat.add_1_r insert_app_r_alt take_length_le; [| lia..].
+    rewrite Nat.sub_diag insert_take_drop.
+    - rewrite drop_drop Nat.add_1_r //.
+    - rewrite drop_length. lia.
+  Qed.
+
+  Lemma chunk_clone_spec l dq vs (sz : Z) :
+    sz = length vs →
+    {{{
+      chunk_model l dq vs
+    }}}
+      chunk_clone #l #sz
+    {{{ l',
+      RET #l';
+      chunk_model l dq vs ∗
+      chunk_model l' (DfracOwn 1) vs
+    }}}.
+  Proof.
+    iIntros "% %Φ Hmodel HΦ".
+    wp_rec.
+    wp_smart_apply (chunk_make_spec with "[//]"); first lia. iIntros "%l' (Hmodel' & _)".
+    wp_smart_apply (chunk_copy_spec with "[$Hmodel $Hmodel']"); first done.
+    { rewrite replicate_length. lia. }
+    iIntros "(Hmodel & Hmodel')".
+    wp_pures.
+    iApply "HΦ". auto with iFrame.
+  Qed.
+
+  Lemma chunk_grow_spec l dq vs (sz : Z) sz' v :
+    sz = length vs →
+    (sz ≤ sz')%Z →
+    {{{
+      chunk_model l dq vs
+    }}}
+      chunk_grow #l #sz #sz' v
+    {{{ l',
+      RET #l';
+      chunk_model l dq vs ∗
+      chunk_model l' (DfracOwn 1) (vs ++ replicate (Z.to_nat (sz' - sz)) v)
+    }}}.
+  Proof.
+    iIntros "%Hsz %Hsz' %Φ Hmodel HΦ".
+    rename sz into _sz. destruct (Z_of_nat_complete _sz) as (sz & ->); first lia.
+    rename sz' into _sz'. destruct (Z_of_nat_complete _sz') as (sz' & ->); first lia.
+    destruct (Nat.le_exists_sub sz sz') as (dsz & Heq & _); first lia.
+    rewrite (comm Nat.add) in Heq. subst sz'.
+    wp_rec.
+    wp_smart_apply (chunk_make_spec with "[//]"); first lia. iIntros "%l' (Hmodel' & _)".
+    rewrite Nat2Z.id replicate_add.
+    iDestruct (chunk_model_app_2 with "Hmodel'") as "(Hmodel'1 & Hmodel'2)"; first done.
+    wp_smart_apply (chunk_copy_spec with "[$Hmodel $Hmodel'1]"); first done.
+    { rewrite replicate_length. lia. }
+    iIntros "(Hmodel & Hmodel'1)".
+    rewrite -Nat2Z.inj_sub; last lia. rewrite Nat2Z.id Nat.sub_add' replicate_length Hsz.
+    iDestruct (chunk_model_app_1 with "Hmodel'1 Hmodel'2") as "Hmodel'"; first done.
+    wp_pures.
+    iApply "HΦ". auto with iFrame.
+  Qed.
+
+  Lemma chunk_shrink_spec l dq vs (sz : Z) sz' :
+    sz = length vs →
+    (0 ≤ sz' ≤ sz)%Z →
+    {{{
+      chunk_model l dq vs
+    }}}
+      chunk_shrink #l #sz #sz'
+    {{{ l',
+      RET #l';
+      chunk_model l dq vs ∗
+      chunk_model l' (DfracOwn 1) (take (Z.to_nat sz') vs)
+    }}}.
+  Proof.
+    iIntros "%Hsz %Hsz' %Φ Hmodel HΦ".
+    rename sz into _sz. destruct (Z_of_nat_complete _sz) as (sz & ->); first lia.
+    rename sz' into _sz'. destruct (Z_of_nat_complete _sz') as (sz' & ->); first lia.
+    destruct (Nat.le_exists_sub sz' sz) as (dsz & Heq & _); first lia.
+    rewrite (comm Nat.add) in Heq. subst sz.
+    wp_rec.
+    wp_smart_apply (chunk_make_spec with "[//]"); first lia. iIntros "%l' (Hmodel' & _)".
+    rewrite Nat2Z.id -{1}(take_drop sz' vs).
+    iDestruct (chunk_model_app_2 with "Hmodel") as "(Hmodel1 & Hmodel2)"; first done.
+    wp_smart_apply (chunk_copy_spec with "[$Hmodel1 $Hmodel']").
+    { rewrite take_length_le; lia. }
+    { rewrite replicate_length. lia. }
+    iIntros "(Hmodel1 & Hmodel')".
+    rewrite take_length_le; last lia.
+    iDestruct (chunk_model_app_1 with "Hmodel1 Hmodel2") as "Hmodel".
+    { rewrite take_length_le; lia. }
+    rewrite take_drop.
+    wp_pures.
+    iApply "HΦ". auto with iFrame.
+  Qed.
 End heapGS.
 
 #[global] Opaque chunk_make.
@@ -1390,6 +1529,10 @@ End heapGS.
 #[global] Opaque chunk_iter.
 #[global] Opaque chunk_mapi.
 #[global] Opaque chunk_map.
+#[global] Opaque chunk_copy.
+#[global] Opaque chunk_clone.
+#[global] Opaque chunk_grow.
+#[global] Opaque chunk_shrink.
 
 #[global] Opaque chunk_model.
 #[global] Opaque chunk_span.
