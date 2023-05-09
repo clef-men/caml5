@@ -268,7 +268,7 @@ Section inf_chaselev_deque_G.
     ⌜t = #l⌝ ∗
     (* metadata *)
     meta l nroot γ ∗
-    (* modellic values *)
+    (* model values *)
     inf_chaselev_deque_model₂ γ model.
 
   Definition inf_chaselev_deque_owner t : iProp Σ :=
@@ -380,7 +380,7 @@ Section inf_chaselev_deque_G.
     inf_chaselev_deque_front_auth γ front ∗
     (* data model *)
     array.(inf_array_model') data (hist ++ model) priv ∗
-    (* modellic values *)
+    (* model values *)
     inf_chaselev_deque_model₁ γ model ∗
     ⌜length model = Z.to_nat (back - front)⌝ ∗
     (* prophet model *)
@@ -1099,7 +1099,7 @@ Section inf_chaselev_deque_G.
     iMod "HΦ" as "(%_model & (%_l & %_γ & %Heq & _Hmeta & Hmodel₂) & _ & HΦ)". injection Heq as <-.
     iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
     iDestruct (inf_chaselev_deque_model_agree with "Hmodel₁ Hmodel₂") as %<-.
-    (* update modellic values *)
+    (* update model values *)
     set (model' := model ++ [v]).
     iMod (inf_chaselev_deque_model_update model' with "Hmodel₁ Hmodel₂") as "(Hmodel₁ & Hmodel₂)".
     (* end transaction *)
@@ -1270,7 +1270,7 @@ Section inf_chaselev_deque_G.
     }
     (* we are in state 2 *)
     unfold_state. iDestruct "Hstate" as "[(%Hstate & _) | [(_ & Hhist_auth & %Hhist & Hstate) | (_ & [(%Hstate & _) | (%Hstate & _)])]]"; try lia.
-    (* hence there is at least one modellic value *)
+    (* hence there is at least one model value *)
     destruct model as [| v model]; first naive_solver lia.
     (* emit history fragment at [front1] *)
     iDestruct (inf_chaselev_deque_hist_mapsto_get front1 v with "Hhist_auth") as "#Hhist_mapsto".
@@ -1393,7 +1393,7 @@ Section inf_chaselev_deque_G.
       (* begin transaction *)
       iMod "HΦ'" as "(%_model & Hmodel₂ & _ & HΦ')".
       iDestruct (inf_chaselev_deque_model_agree with "Hmodel₁ Hmodel₂") as %<-.
-      (* update modellic values *)
+      (* update model values *)
       destruct model as [| _v model]; first naive_solver lia.
       iAssert ⌜_v = v⌝%I as %->.
       { iDestruct (inf_chaselev_deque_hist_agree with "Hhist_auth Hhist_mapsto") as %Hlookup.
@@ -1442,7 +1442,7 @@ Section inf_chaselev_deque_G.
     - iDestruct "Hstate" as "(-> & Hlock & Hhist_auth & %Hhist & %id' & %Φ' & %Hprophs3 & Hwinner₁ & Hwinner₂ & HΦ')".
       iDestruct (inf_chaselev_deque_winner_agree (SOMEV v) with "Hwinner₁ Hwinner₂") as "(_ & HΦ & Hwinner₁ & Hwinner₂)".
       iModIntro. iIntros "%prophs3' -> Hprophet_model".
-      (* we know there is no modellic value and [hist !!! front1 = v] *)
+      (* we know there is no model value and [hist !!! front1 = v] *)
       destruct (nil_or_length_pos model) as [-> |]; last lia.
       iAssert ⌜hist !!! front1 = v⌝%I as %->.
       { iDestruct (inf_chaselev_deque_hist_agree with "Hhist_auth Hhist_mapsto") as %Hlookup.
@@ -1523,7 +1523,7 @@ Section inf_chaselev_deque_G.
     iMod (inf_chaselev_deque_ctl_update (back - 1) priv with "Hctl₁ Hctl₂") as "(Hctl₁ & Hctl₂)".
     (* branching 1 *)
     (* we have lock, hence we are in state 1 or in state 2 *)
-    (* if we are in state 2, there is either one modellic value or strictly more than one modellic value *)
+    (* if we are in state 2, there is either one model value or strictly more than one model value *)
     iDestruct (inf_chaselev_deque_lock_state with "Hlock Hstate") as "(Hlock & [Hstate | Hstate])";
       iDestruct "Hstate" as "(%Hstate & Hhist_auth & %Hhist & Hstate)";
       last (destruct (Z.lt_total (S front2) back) as [Hstate' | [Hstate' |]]; last lia).
@@ -1532,7 +1532,7 @@ Section inf_chaselev_deque_G.
     - subst back.
       (* emit front fragment at [front2] *)
       iDestruct (inf_chaselev_deque_front_lb_get with "Hfront_auth") as "#Hfront_lb".
-      (* hence there is no modellic value *)
+      (* hence there is no model value *)
       destruct (nil_or_length_pos model) as [-> |]; last lia.
       (* begin transaction *)
       iMod "HΦ" as "(%_model & (%_l & %_γ & %Heq & #_Hmeta & Hmodel₂) & _ & HΦ)". injection Heq as <-.
@@ -1599,7 +1599,7 @@ Section inf_chaselev_deque_G.
       iApply "HΦ". repeat iExists _. iFrame "#∗". done.
 
     (* branch 1.2: front2 + 1 < back; no conflict *)
-    - (* there is stricly more than one modellic value *)
+    - (* there is stricly more than one model value *)
       generalize dependent model. refine (rev_ind _ _ _); simpl; [lia | intros v model _ Hmodel].
       destruct model as [| w model]; rewrite app_length /= in Hmodel; first lia.
       (* update data model *)
@@ -1612,7 +1612,7 @@ Section inf_chaselev_deque_G.
       iMod "HΦ" as "(%_model & (%_l & %_γ & %Heq & #_Hmeta & Hmodel₂) & (_ & HΦ))". injection Heq as <-.
       iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
       iDestruct (inf_chaselev_deque_model_agree with "Hmodel₁ Hmodel₂") as %<-.
-      (* update modellic values *)
+      (* update model values *)
       iMod (inf_chaselev_deque_model_update (w :: model) with "Hmodel₁ Hmodel₂") as "(Hmodel₁ & Hmodel₂)".
       (* end transaction *)
       iMod ("HΦ" with "[Hmodel₂]") as "HΦ".
@@ -1706,7 +1706,7 @@ Section inf_chaselev_deque_G.
         (* emit front fragment at [front3 + 1] *)
         iClear "Hfront_lb".
         iDestruct (inf_chaselev_deque_front_lb_get with "Hfront_auth") as "#Hfront_lb".
-        (* we know there is no modellic value *)
+        (* we know there is no model value *)
         destruct (nil_or_length_pos model) as [-> |]; last lia.
         (* update history values *)
         set (hist' := hist ++ [v]).
@@ -1781,7 +1781,7 @@ Section inf_chaselev_deque_G.
         iMod "HΦ" as "(%_model & (%_l & %_γ & %Heq & _Hmeta & Hmodel₂) & _ & HΦ)". injection Heq as <-.
         iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
         iDestruct (inf_chaselev_deque_model_agree with "Hmodel₁ Hmodel₂") as %<-.
-        (* update modellic values *)
+        (* update model values *)
         iMod (inf_chaselev_deque_model_update [] with "Hmodel₁ Hmodel₂") as "(Hmodel₁ & Hmodel₂)".
         iDestruct "Hstate" as "(% & % & % & Hwinner₁ & Hwinner₂)".
         (* end transaction *)
@@ -1849,7 +1849,7 @@ Section inf_chaselev_deque_G.
         iMod "HΦ" as "(%_model & (%_l & %_γ & %Heq & _Hmeta & Hmodel₂) & _ & HΦ)". injection Heq as <-.
         iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
         iDestruct (inf_chaselev_deque_model_agree with "Hmodel₁ Hmodel₂") as %<-.
-        (* update modellic values *)
+        (* update model values *)
         iMod (inf_chaselev_deque_model_update [] with "Hmodel₁ Hmodel₂") as "(Hmodel₁ & Hmodel₂)".
         (* end transaction *)
         iMod ("HΦ" with "[Hmodel₂]") as "HΦ".
@@ -1978,7 +1978,7 @@ Section inf_chaselev_deque_G.
           iMod "HΦ" as "(%_model & (%_l & %_γ & %Heq & _Hmeta & Hmodel₂) & _ & HΦ)". injection Heq as <-.
           iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
           iDestruct (inf_chaselev_deque_model_agree with "Hmodel₁ Hmodel₂") as %<-.
-          (* update modellic values *)
+          (* update model values *)
           iMod (inf_chaselev_deque_model_update [] with "Hmodel₁ Hmodel₂") as "(Hmodel₁ & Hmodel₂)".
           (* end transaction *)
           iMod ("HΦ" with "[Hmodel₂]") as "HΦ".
@@ -2041,7 +2041,7 @@ Section inf_chaselev_deque_G.
           (* begin transaction *)
           iMod "HΦ'" as "(%_model & Hmodel₂ & _ & HΦ')".
           iDestruct (inf_chaselev_deque_model_agree with "Hmodel₁ Hmodel₂") as %<-.
-          (* update modellic values *)
+          (* update model values *)
           iMod (inf_chaselev_deque_model_update [] with "Hmodel₁ Hmodel₂") as "(Hmodel₁ & Hmodel₂)".
           (* end transaction *)
           iMod ("HΦ'" $! v with "[$Hmodel₂ //]") as "HΦ'".
