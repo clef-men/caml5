@@ -1396,7 +1396,8 @@ Section inf_chaselev_deque_G.
       (* update model values *)
       destruct model as [| _v model]; first naive_solver lia.
       iAssert ⌜_v = v⌝%I as %->.
-      { iDestruct (inf_chaselev_deque_hist_agree with "Hhist_auth Hhist_mapsto") as %Hlookup.
+      { (* exploit history fragment *)
+        iDestruct (inf_chaselev_deque_hist_agree with "Hhist_auth Hhist_mapsto") as %Hlookup.
         iPureIntro.
         rewrite lookup_app_r in Hlookup; last lia.
         rewrite list_lookup_singleton_Some in Hlookup. naive_solver.
@@ -1445,7 +1446,8 @@ Section inf_chaselev_deque_G.
       (* we know there is no model value and [hist !!! front1 = v] *)
       destruct (nil_or_length_pos model) as [-> |]; last lia.
       iAssert ⌜hist !!! front1 = v⌝%I as %->.
-      { iDestruct (inf_chaselev_deque_hist_agree with "Hhist_auth Hhist_mapsto") as %Hlookup.
+      { (* exploit history fragment *)
+        iDestruct (inf_chaselev_deque_hist_agree with "Hhist_auth Hhist_mapsto") as %Hlookup.
         iPureIntro. apply list_lookup_total_correct. done.
       }
       (* update front *)
@@ -1914,6 +1916,7 @@ Section inf_chaselev_deque_G.
         (* we are in state 3.1 *)
         iDestruct (inf_chaselev_deque_winner₂_state' with "Hwinner₂ Hstate") as "(>-> & Hlock & >Hhist_auth & >%Hhist & %id' & %Ψ' & >%Hprophs4 & Hwinner₁ & Hwinner₂ & HΨ')".
         iDestruct (inf_chaselev_deque_winner_agree (SOMEV v) with "Hwinner₁ Hwinner₂") as "(_ & HΨ & Hwinner₁ & Hwinner₂)".
+        (* exploit history fragment *)
         iDestruct (inf_chaselev_deque_hist_agree with "Hhist_auth Hhist_mapsto") as %->%list_lookup_total_correct.
         (* do resolve *)
         wp_apply (inf_chaselev_deque_prophet.(wise_prophet_wp_resolve) (front2, id) with "Hprophet_model"); [done.. |].
@@ -2078,6 +2081,7 @@ Section inf_chaselev_deque_G.
           unfold_state. iDestruct "Hstate" as "[Hstate | [Hstate | Hstate]]";
             [iDestruct "Hstate" as "(%Hstate & Hhist_auth & %Hhist & Hstate)".. |].
           { simplify- front3.
+            (* exploit history fragment *)
             iDestruct (inf_chaselev_deque_hist_agree with "Hhist_auth Hhist_mapsto") as %?%lookup_lt_Some.
             lia.
           } {
