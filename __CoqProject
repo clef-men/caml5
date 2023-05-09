@@ -79,6 +79,7 @@ theories/std/mutex.v
 theories/std/condition.v
 
 theories/concurrent/base.v
+theories/concurrent/domain.v
 theories/concurrent/counter.v
 theories/concurrent/mpmc_stack.v
 theories/concurrent/mpmc_queue.v
@@ -88,9 +89,9 @@ theories/concurrent/mpsc_stack.v
 theories/concurrent/mpsc_queue.v
 theories/concurrent/spsc_stack.v
 theories/concurrent/spsc_queue.v
+theories/concurrent/treiber_stack.v
+theories/concurrent/inf_spsc_queue_1.v
 theories/concurrent/ws_deque.v
 theories/concurrent/ws_bag.v
 theories/concurrent/ws_deques.v
-theories/concurrent/treiber_stack.v
 theories/concurrent/inf_chaselev_deque.v
-theories/concurrent/domain.v
