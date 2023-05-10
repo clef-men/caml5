@@ -21,6 +21,10 @@ def parse(line):
     if match :
         output('-Q {} {}'.format(match['src'], match['dst']))
         return
+    match = re.match(r'-w\s+(?P<warning>\S+)', line)
+    if match :
+        output('-arg -w -arg {}'.format(match['warning']))
+        return
     match = re.match(r'-(?P<opt>\S+)', line)
     if match :
         output('-arg {}'.format(match['opt']))

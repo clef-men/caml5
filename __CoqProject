@@ -1,3 +1,5 @@
+-w -redundant-canonical-projection
+
 theories -> caml5
 
 theories/prelude.v
