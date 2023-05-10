@@ -75,11 +75,11 @@ theories/std/queue.v
 theories/std/dlchain.v
 theories/std/deque.v
 theories/std/random.v
-theories/std/mutex.v
-theories/std/condition.v
 
 theories/concurrent/base.v
 theories/concurrent/domain.v
+theories/concurrent/mutex.v
+theories/concurrent/condition.v
 theories/concurrent/counter.v
 theories/concurrent/mpmc_stack.v
 theories/concurrent/mpmc_queue.v

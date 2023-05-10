@@ -3,7 +3,7 @@ From caml5 Require Import
 From caml5.lang Require Import
   notations
   proofmode.
-From caml5.std Require Export
+From caml5.concurrent Require Export
   base.
 
 Implicit Types t : val.
