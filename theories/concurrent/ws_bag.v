@@ -79,8 +79,11 @@ Record ws_bag `{!heapGS Σ} {unboxed : bool} := {
     >>>
       ws_bag_pop t @ ↑ι
     <<< ∃∃ o,
-      (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_model t γ 0) ∨
-      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_model t γ sz')
+        ⌜sz = 0 ∧ o = None⌝ ∗
+        ws_bag_model t γ 0
+      ∨ ∃ sz' v,
+        ⌜sz = S sz' ∧ o = Some v⌝ ∗
+        ws_bag_model t γ sz'
     | RET from_option (λ v, SOMEV v) NONEV o;
       ws_bag_owner t γ ∗
       from_option Ψ True o
@@ -93,8 +96,11 @@ Record ws_bag `{!heapGS Σ} {unboxed : bool} := {
     >>>
       ws_bag_steal t @ ↑ι
     <<< ∃∃ o,
-      (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_model t γ 0) ∨
-      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_model t γ sz')
+        ⌜sz = 0 ∧ o = None⌝ ∗
+        ws_bag_model t γ 0
+      ∨ ∃ sz' v,
+        ⌜sz = S sz' ∧ o = Some v⌝ ∗
+        ws_bag_model t γ sz'
     | RET from_option (λ v, SOMEV v) NONEV o;
       from_option Ψ True o
     >>> ;

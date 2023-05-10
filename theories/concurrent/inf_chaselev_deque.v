@@ -1146,10 +1146,12 @@ Section inf_chaselev_deque_G.
     | ∀∀ model, inf_chaselev_deque_model t model
     >>>
       inf_chaselev_deque_steal t @ ↑ι
-    <<<
-      ∃∃ o,
-      (⌜model = [] ∧ o = InjLV #()⌝ ∗ inf_chaselev_deque_model t []) ∨
-      (∃ v model', ⌜model = v :: model' ∧ o = SOMEV v⌝ ∗ inf_chaselev_deque_model t model')
+    <<< ∃∃ o,
+        ⌜model = [] ∧ o = InjLV #()⌝ ∗
+        inf_chaselev_deque_model t []
+      ∨ ∃ v model',
+        ⌜model = v :: model' ∧ o = SOMEV v⌝ ∗
+        inf_chaselev_deque_model t model'
     | RET o; True
     >>>.
   Proof.
@@ -1483,10 +1485,12 @@ Section inf_chaselev_deque_G.
     | ∀∀ model, inf_chaselev_deque_model t model
     >>>
       inf_chaselev_deque_pop t @ ↑ι
-    <<<
-      ∃∃ o,
-      (⌜model = [] ∧ o = NONEV⌝ ∗ inf_chaselev_deque_model t []) ∨
-      (∃ model' v, ⌜model = model' ++ [v] ∧ o = SOMEV v⌝ ∗ inf_chaselev_deque_model t model')
+    <<< ∃∃ o,
+        ⌜model = [] ∧ o = NONEV⌝ ∗
+        inf_chaselev_deque_model t []
+      ∨ ∃ model' v,
+        ⌜model = model' ++ [v] ∧ o = SOMEV v⌝ ∗
+        inf_chaselev_deque_model t model'
     | RET o; inf_chaselev_deque_owner t
     >>>.
   Proof.
