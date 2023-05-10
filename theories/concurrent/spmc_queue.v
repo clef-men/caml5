@@ -104,53 +104,46 @@ Proof.
   solve_inG.
 Qed.
 
-Section spmc_queue_of_mpmc_queue.
-  Context `{spmc_queue_of_mpmc_queue_G : SpmcQueueOfMpmcQueueG Σ}.
-  Context {unboxed} (mpmc_queue : mpmc_queue Σ unboxed).
+Program Coercion spmc_queue_of_mpmc_queue
+  `{spmc_queue_of_mpmc_queue_G : SpmcQueueOfMpmcQueueG Σ}
+  {unboxed} (mpmc_queue : mpmc_queue Σ unboxed)
+  : spmc_queue Σ unboxed
+:= {|
+  spmc_queue_make :=
+    mpmc_queue.(mpmc_queue_make) ;
+  spmc_queue_push :=
+    mpmc_queue.(mpmc_queue_push) ;
+  spmc_queue_pop :=
+    mpmc_queue.(mpmc_queue_pop) ;
 
-  Notation "γ .(base)" := γ.1
-  ( at level 5
-  ) : stdpp_scope.
-  Notation "γ .(producer)" := γ.2
-  ( at level 5
-  ) : stdpp_scope.
-
-  Program Definition spmc_queue_of_mpmc_queue : spmc_queue Σ unboxed := {|
-    spmc_queue_make :=
-      mpmc_queue.(mpmc_queue_make) ;
-    spmc_queue_push :=
-      mpmc_queue.(mpmc_queue_push) ;
-    spmc_queue_pop :=
-      mpmc_queue.(mpmc_queue_pop) ;
-
-    spmc_queue_name :=
-      mpmc_queue.(mpmc_queue_name) * gname ;
-    spmc_queue_inv t γ ι :=
-      mpmc_queue.(mpmc_queue_inv) t γ.(base) ι ;
-    spmc_queue_model t γ :=
-      mpmc_queue.(mpmc_queue_model) t γ.(base) ;
-    spmc_queue_producer _ γ :=
-      excl γ.(producer) () ;
-  |}.
-  Next Obligation.
-    intros. apply excl_exclusive.
-  Qed.
-  Next Obligation.
-    iIntros "%ι %Φ _ HΦ".
-    iMod excl_alloc as "(%γ_producer & Hproducer)".
-    wp_apply (mpmc_queue_make_spec with "[//]"). iIntros "%t %γ_base (Hinv & Hmodel)".
-    iApply ("HΦ" $! t (γ_base, γ_producer)). iFrame.
-  Qed.
-  Next Obligation.
-    iIntros "%t %γ %ι %v !> %Φ (Hinv & Hproducer) HΦ".
-    wp_apply (mpmc_queue_push_spec with "Hinv").
-    iApply (atomic_update_wand with "[Hproducer] HΦ").
-    iIntros "_ HΦ _". iApply "HΦ". done.
-  Qed.
-  Next Obligation.
-    intros. apply mpmc_queue_pop_spec.
-  Qed.
-  Next Obligation.
-    destruct unboxed; last done. eauto using mpmc_queue.(mpmc_queue_unboxed).
-  Qed.
-End spmc_queue_of_mpmc_queue.
+  spmc_queue_name :=
+    mpmc_queue.(mpmc_queue_name) * gname ;
+  spmc_queue_inv t γ ι :=
+    mpmc_queue.(mpmc_queue_inv) t γ.1 ι ;
+  spmc_queue_model t γ :=
+    mpmc_queue.(mpmc_queue_model) t γ.1 ;
+  spmc_queue_producer _ γ :=
+    excl γ.2 () ;
+|}.
+Next Obligation.
+  intros. apply excl_exclusive.
+Qed.
+Next Obligation.
+  iIntros "* _ HΦ".
+  iMod excl_alloc as "(%γ_producer & Hproducer)".
+  wp_apply (mpmc_queue_make_spec with "[//]"). iIntros "%t %γ_base (Hinv & Hmodel)".
+  iApply ("HΦ" $! t (γ_base, γ_producer)). iFrame.
+Qed.
+Next Obligation.
+  iIntros "* !> %Φ (Hinv & Hproducer) HΦ".
+  wp_apply (mpmc_queue_push_spec with "Hinv").
+  iApply (atomic_update_wand with "[Hproducer] HΦ").
+  iIntros "_ HΦ _". iApply "HΦ". done.
+Qed.
+Next Obligation.
+  intros. apply mpmc_queue_pop_spec.
+Qed.
+Next Obligation.
+  intros. destruct unboxed; last done.
+  eauto using mpmc_queue.(mpmc_queue_unboxed).
+Qed.

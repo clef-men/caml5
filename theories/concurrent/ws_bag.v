@@ -979,5 +979,8 @@ Proof.
   solve_inG.
 Qed.
 
-Definition ws_bag_of_mpmc_queue `{ws_bag_of_mpmc_queue_G : WsBagOfMpmcQueueG Σ} {unboxed} (mpmc_queue : mpmc_queue Σ unboxed) :=
+Definition ws_bag_of_mpmc_queue
+  `{ws_bag_of_mpmc_queue_G : WsBagOfMpmcQueueG Σ}
+  {unboxed} (mpmc_queue : mpmc_queue Σ unboxed)
+:=
   ws_bag_of_spmc_queue (spmc_queue_of_mpmc_queue mpmc_queue).

@@ -116,61 +116,54 @@ Proof.
   solve_inG.
 Qed.
 
-Section spsc_stack_of_spmc_stack.
-  Context `{spsc_stack_of_spmc_stack_G : SpscStackOfSpmcStackG Σ}.
-  Context {unboxed} (spmc_stack : spmc_stack Σ unboxed).
+Program Coercion spsc_stack_of_spmc_stack
+  `{spsc_stack_of_spmc_stack_G : SpscStackOfSpmcStackG Σ}
+  {unboxed} (spmc_stack : spmc_stack Σ unboxed)
+  : spsc_stack Σ unboxed
+:= {|
+  spsc_stack_make :=
+    spmc_stack.(spmc_stack_make) ;
+  spsc_stack_push :=
+    spmc_stack.(spmc_stack_push) ;
+  spsc_stack_pop :=
+    spmc_stack.(spmc_stack_pop) ;
 
-  Notation "γ .(base)" := γ.1
-  ( at level 5
-  ) : stdpp_scope.
-  Notation "γ .(consumer)" := γ.2
-  ( at level 5
-  ) : stdpp_scope.
-
-  Program Definition spsc_stack_of_spmc_stack : spsc_stack Σ unboxed := {|
-    spsc_stack_make :=
-      spmc_stack.(spmc_stack_make) ;
-    spsc_stack_push :=
-      spmc_stack.(spmc_stack_push) ;
-    spsc_stack_pop :=
-      spmc_stack.(spmc_stack_pop) ;
-
-    spsc_stack_name :=
-      spmc_stack.(spmc_stack_name) * gname ;
-    spsc_stack_inv t γ ι :=
-      spmc_stack.(spmc_stack_inv) t γ.(base) ι ;
-    spsc_stack_model t γ :=
-      spmc_stack.(spmc_stack_model) t γ.(base) ;
-    spsc_stack_producer t γ :=
-      spmc_stack.(spmc_stack_producer) t γ.(base) ;
-    spsc_stack_consumer _ γ :=
-      excl γ.(consumer) () ;
-  |}.
-  Next Obligation.
-    intros. apply spmc_stack_producer_exclusive.
-  Qed.
-  Next Obligation.
-    intros. apply excl_exclusive.
-  Qed.
-  Next Obligation.
-    iIntros "%ι %Φ _ HΦ".
-    iMod excl_alloc as "(%γ_consumer & Hconsumer)".
-    wp_apply (spmc_stack_make_spec with "[//]"). iIntros "%t %γ_base (Hinv & Hmodel & Hproducer)".
-    iApply ("HΦ" $! t (γ_base, γ_consumer)). iFrame.
-  Qed.
-  Next Obligation.
-    intros. apply spmc_stack_push_spec.
-  Qed.
-  Next Obligation.
-    iIntros "%t %γ %ι !> %Φ (Hinv & Hconsumer) HΦ".
-    wp_apply (spmc_stack_pop_spec with "Hinv").
-    iApply (atomic_update_wand with "[Hconsumer] HΦ").
-    iIntros "_ %v HΦ _". iApply "HΦ". done.
-  Qed.
-  Next Obligation.
-    destruct unboxed; last done. eauto using spmc_stack.(spmc_stack_unboxed).
-  Qed.
-End spsc_stack_of_spmc_stack.
+  spsc_stack_name :=
+    spmc_stack.(spmc_stack_name) * gname ;
+  spsc_stack_inv t γ ι :=
+    spmc_stack.(spmc_stack_inv) t γ.1 ι ;
+  spsc_stack_model t γ :=
+    spmc_stack.(spmc_stack_model) t γ.1 ;
+  spsc_stack_producer t γ :=
+    spmc_stack.(spmc_stack_producer) t γ.1 ;
+  spsc_stack_consumer _ γ :=
+    excl γ.2 () ;
+|}.
+Next Obligation.
+  intros. apply spmc_stack_producer_exclusive.
+Qed.
+Next Obligation.
+  intros. apply excl_exclusive.
+Qed.
+Next Obligation.
+  iIntros "* _ HΦ".
+  iMod excl_alloc as "(%γ_consumer & Hconsumer)".
+  wp_apply (spmc_stack_make_spec with "[//]"). iIntros "%t %γ_base (Hinv & Hmodel & Hproducer)".
+  iApply ("HΦ" $! t (γ_base, γ_consumer)). iFrame.
+Qed.
+Next Obligation.
+  intros. apply spmc_stack_push_spec.
+Qed.
+Next Obligation.
+  iIntros "* !> %Φ (Hinv & Hconsumer) HΦ".
+  wp_apply (spmc_stack_pop_spec with "Hinv").
+  iApply (atomic_update_wand with "[Hconsumer] HΦ").
+  iIntros "_ %v HΦ _". iApply "HΦ". done.
+Qed.
+Next Obligation.
+  intros. destruct unboxed; last done.
+  eauto using spmc_stack.(spmc_stack_unboxed).
+Qed.
 
 Class SpscStackOfMpscStackG Σ `{!heapGS Σ} := {
   spsc_stack_of_mpsc_stack_G_producer_G : ExclG Σ unitO ;
@@ -187,61 +180,54 @@ Proof.
   solve_inG.
 Qed.
 
-Section spsc_stack_of_mpsc_stack.
-  Context `{spsc_stack_of_mpsc_stack_G : SpscStackOfMpscStackG Σ}.
-  Context {unboxed} (mpsc_stack : mpsc_stack Σ unboxed).
+Program Coercion spsc_stack_of_mpsc_stack
+  `{spsc_stack_of_mpsc_stack_G : SpscStackOfMpscStackG Σ}
+  {unboxed} (mpsc_stack : mpsc_stack Σ unboxed)
+  : spsc_stack Σ unboxed
+:= {|
+  spsc_stack_make :=
+    mpsc_stack.(mpsc_stack_make) ;
+  spsc_stack_push :=
+    mpsc_stack.(mpsc_stack_push) ;
+  spsc_stack_pop :=
+    mpsc_stack.(mpsc_stack_pop) ;
 
-  Notation "γ .(base)" := γ.1
-  ( at level 5
-  ) : stdpp_scope.
-  Notation "γ .(producer)" := γ.2
-  ( at level 5
-  ) : stdpp_scope.
-
-  Program Definition spsc_stack_of_mpsc_stack : spsc_stack Σ unboxed := {|
-    spsc_stack_make :=
-      mpsc_stack.(mpsc_stack_make) ;
-    spsc_stack_push :=
-      mpsc_stack.(mpsc_stack_push) ;
-    spsc_stack_pop :=
-      mpsc_stack.(mpsc_stack_pop) ;
-
-    spsc_stack_name :=
-      mpsc_stack.(mpsc_stack_name) * gname ;
-    spsc_stack_inv t γ ι :=
-      mpsc_stack.(mpsc_stack_inv) t γ.(base) ι ;
-    spsc_stack_model t γ :=
-      mpsc_stack.(mpsc_stack_model) t γ.(base) ;
-    spsc_stack_producer _ γ :=
-      excl γ.(producer) () ;
-    spsc_stack_consumer t γ :=
-      mpsc_stack.(mpsc_stack_consumer) t γ.(base) ;
-  |}.
-  Next Obligation.
-    intros. apply excl_exclusive.
-  Qed.
-  Next Obligation.
-    intros. apply mpsc_stack_consumer_exclusive.
-  Qed.
-  Next Obligation.
-    iIntros "%ι %Φ _ HΦ".
-    iMod excl_alloc as "(%γ_producer & Hproducer)".
-    wp_apply (mpsc_stack_make_spec with "[//]"). iIntros "%t %γ_base (Hinv & Hmodel & Hconsumer)".
-    iApply ("HΦ" $! t (γ_base, γ_producer)). iFrame.
-  Qed.
-  Next Obligation.
-    iIntros "%t %γ %ι %v !> %Φ (Hinv & Hproducer) HΦ".
-    wp_apply (mpsc_stack_push_spec with "Hinv").
-    iApply (atomic_update_wand with "[Hproducer] HΦ").
-    iIntros "_ HΦ _". iApply "HΦ". done.
-  Qed.
-  Next Obligation.
-    intros. apply mpsc_stack_pop_spec.
-  Qed.
-  Next Obligation.
-    destruct unboxed; last done. eauto using mpsc_stack.(mpsc_stack_unboxed).
-  Qed.
-End spsc_stack_of_mpsc_stack.
+  spsc_stack_name :=
+    mpsc_stack.(mpsc_stack_name) * gname ;
+  spsc_stack_inv t γ ι :=
+    mpsc_stack.(mpsc_stack_inv) t γ.1 ι ;
+  spsc_stack_model t γ :=
+    mpsc_stack.(mpsc_stack_model) t γ.1 ;
+  spsc_stack_producer _ γ :=
+    excl γ.2 () ;
+  spsc_stack_consumer t γ :=
+    mpsc_stack.(mpsc_stack_consumer) t γ.1 ;
+|}.
+Next Obligation.
+  intros. apply excl_exclusive.
+Qed.
+Next Obligation.
+  intros. apply mpsc_stack_consumer_exclusive.
+Qed.
+Next Obligation.
+  iIntros "* _ HΦ".
+  iMod excl_alloc as "(%γ_producer & Hproducer)".
+  wp_apply (mpsc_stack_make_spec with "[//]"). iIntros "%t %γ_base (Hinv & Hmodel & Hconsumer)".
+  iApply ("HΦ" $! t (γ_base, γ_producer)). iFrame.
+Qed.
+Next Obligation.
+  iIntros "* !> %Φ (Hinv & Hproducer) HΦ".
+  wp_apply (mpsc_stack_push_spec with "Hinv").
+  iApply (atomic_update_wand with "[Hproducer] HΦ").
+  iIntros "_ HΦ _". iApply "HΦ". done.
+Qed.
+Next Obligation.
+  intros. apply mpsc_stack_pop_spec.
+Qed.
+Next Obligation.
+  intros. destruct unboxed; last done.
+  eauto using mpsc_stack.(mpsc_stack_unboxed).
+Qed.
 
 Class SpscStackOfMpmcStackG Σ `{!heapGS Σ} := {
   spsc_stack_of_mpmc_stack_G_mpmc_stack_G : SpmcStackOfMpmcStackG Σ ;
@@ -263,5 +249,8 @@ Proof.
   solve_inG.
 Qed.
 
-Definition spsc_stack_of_mpmc_stack `{spsc_stack_of_mpmc_stack_G : SpscStackOfMpmcStackG Σ} {unboxed} {mpmc_stack : mpmc_stack Σ unboxed} :=
+Coercion spsc_stack_of_mpmc_stack
+  `{spsc_stack_of_mpmc_stack_G : SpscStackOfMpmcStackG Σ}
+  {unboxed} {mpmc_stack : mpmc_stack Σ unboxed}
+:=
   spsc_stack_of_spmc_stack (spmc_stack_of_mpmc_stack mpmc_stack).

@@ -1,4 +1,6 @@
 -w -redundant-canonical-projection
+-w -uniform-inheritance
+-w -ambiguous-paths
 
 theories -> caml5
 
