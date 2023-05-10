@@ -348,7 +348,11 @@ Section counter_G.
   Lemma counter_make_spec ι ub :
     {{{ True }}}
       counter_make #()
-    {{{ t, RET t; counter_inv t ι ub ∗ counter_model t (DfracOwn 1) 0 }}}.
+    {{{ t,
+      RET t;
+      counter_inv t ι ub ∗
+      counter_model t (DfracOwn 1) 0
+    }}}.
   Proof.
     iIntros "%Φ _ HΦ".
     wp_rec. iApply wp_fupd. wp_apply (wp_alloc with "[//]"). iIntros "%l (Hl & Hmeta)".
@@ -374,11 +378,14 @@ Section counter_G.
   Lemma counter_incr_spec t ι ub :
     <<<
       counter_inv t ι ub
-    | ∀∀ n, counter_model t (DfracOwn 1) n ∗ if ub is Some ub then ⌜n < ub⌝ else True
+    | ∀∀ n,
+      counter_model t (DfracOwn 1) n ∗
+      if ub is Some ub then ⌜n < ub⌝ else True
     >>>
       counter_incr t @ ↑ι
     <<<
-      counter_model t (DfracOwn 1) (S n) ∗ counter_token t n
+      counter_model t (DfracOwn 1) (S n) ∗
+      counter_token t n
     | RET #n; True
     >>>.
   Proof.
