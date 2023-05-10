@@ -46,8 +46,7 @@ Record ws_deques `{!heapGS Σ} `{!CounterG Σ} {unboxed : bool} := {
       counter_token cntr i
     | ∀∀ vss, ws_deques_model t γ vss
     >>>
-      ws_deques_push t #i' v
-      @ ↑ ι
+      ws_deques_push t #i' v @ ↑ι
     <<< ∃∃ vs,
       ⌜vss !! i = Some vs⌝ ∗
       ws_deques_model t γ (<[i := vs ++ [v]]> vss)
@@ -61,8 +60,7 @@ Record ws_deques `{!heapGS Σ} `{!CounterG Σ} {unboxed : bool} := {
       counter_token cntr i
     | ∀∀ vss, ws_deques_model t γ vss
     >>>
-      ws_deques_pop t #i'
-      @ ↑ ι
+      ws_deques_pop t #i' @ ↑ι
     <<< ∃∃ vs o,
       ⌜vss !! i = Some vs⌝ ∗
       ( ⌜vs = [] ∧ o = NONEV⌝ ∗
@@ -80,8 +78,7 @@ Record ws_deques `{!heapGS Σ} `{!CounterG Σ} {unboxed : bool} := {
       ws_deques_inv t γ ι cntr sz
     | ∀∀ vss, ws_deques_model t γ vss
     >>>
-      ws_deques_steal t #i
-      @ ↑ ι
+      ws_deques_steal t #i @ ↑ι
     <<< ∃∃ vs o,
       let i := Z.to_nat i in
       ⌜vss !! i = Some vs⌝ ∗
