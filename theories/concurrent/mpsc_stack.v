@@ -52,26 +52,26 @@ Record mpsc_stack `{!heapGS Σ} {unboxed : bool} := {
 
   mpsc_stack_push_spec t γ ι v :
     <<<
-      mpsc_stack_inv t γ ι |
-      ∀∀ vs, mpsc_stack_model t γ vs
+      mpsc_stack_inv t γ ι
+    | ∀∀ vs, mpsc_stack_model t γ vs
     >>>
       mpsc_stack_push t v @ ↑ι
     <<<
-      mpsc_stack_model t γ (v :: vs) |
-      RET #(); True
+      mpsc_stack_model t γ (v :: vs)
+    | RET #(); True
     >>> ;
 
   mpsc_stack_pop_spec t γ ι :
     <<<
       mpsc_stack_inv t γ ι ∗
-      mpsc_stack_consumer t γ |
-      ∀∀ vs, mpsc_stack_model t γ vs
+      mpsc_stack_consumer t γ
+    | ∀∀ vs, mpsc_stack_model t γ vs
     >>>
       mpsc_stack_pop t @ ↑ι
     <<< ∃∃ o,
       (⌜vs = [] ∧ o = NONEV⌝ ∗ mpsc_stack_model t γ []) ∨
-      (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ mpsc_stack_model t γ vs') |
-      RET o; mpsc_stack_consumer t γ
+      (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ mpsc_stack_model t γ vs')
+    | RET o; mpsc_stack_consumer t γ
     >>> ;
 
   mpsc_stack_unboxed :

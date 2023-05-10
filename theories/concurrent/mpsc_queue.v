@@ -52,26 +52,26 @@ Record mpsc_queue `{!heapGS Σ} {unboxed : bool} := {
 
   mpsc_queue_push_spec t γ ι v :
     <<<
-      mpsc_queue_inv t γ ι |
-      ∀∀ vs, mpsc_queue_model t γ vs
+      mpsc_queue_inv t γ ι
+    | ∀∀ vs, mpsc_queue_model t γ vs
     >>>
       mpsc_queue_push t v @ ↑ι
     <<<
-      mpsc_queue_model t γ (v :: vs) |
-      RET #(); True
+      mpsc_queue_model t γ (v :: vs)
+    | RET #(); True
     >>> ;
 
   mpsc_queue_pop_spec t γ ι :
     <<<
       mpsc_queue_inv t γ ι ∗
-      mpsc_queue_consumer t γ |
-      ∀∀ vs, mpsc_queue_model t γ vs
+      mpsc_queue_consumer t γ
+    | ∀∀ vs, mpsc_queue_model t γ vs
     >>>
       mpsc_queue_pop t @ ↑ι
     <<< ∃∃ o,
       (⌜vs = [] ∧ o = NONEV⌝ ∗ mpsc_queue_model t γ []) ∨
-      (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ mpsc_queue_model t γ vs') |
-      RET o; mpsc_queue_consumer t γ
+      (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ mpsc_queue_model t γ vs')
+    | RET o; mpsc_queue_consumer t γ
     >>> ;
 
   mpsc_queue_unboxed :

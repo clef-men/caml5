@@ -62,40 +62,40 @@ Record ws_bag `{!heapGS Σ} {unboxed : bool} := {
   ws_bag_push_spec t γ ι Ψ v :
     <<<
       ws_bag_inv t γ ι Ψ ∗
-      ws_bag_owner t γ ∗ Ψ v |
-      ∀∀ sz, ws_bag_model t γ sz
+      ws_bag_owner t γ ∗ Ψ v
+    | ∀∀ sz, ws_bag_model t γ sz
     >>>
       ws_bag_push t v @ ↑ι
     <<<
-      ws_bag_model t γ (S sz) |
-      RET #(); ws_bag_owner t γ
+      ws_bag_model t γ (S sz)
+    | RET #(); ws_bag_owner t γ
     >>> ;
 
   ws_bag_pop_spec t γ ι Ψ :
     <<<
       ws_bag_inv t γ ι Ψ ∗
-      ws_bag_owner t γ |
-      ∀∀ sz, ws_bag_model t γ sz
+      ws_bag_owner t γ
+    | ∀∀ sz, ws_bag_model t γ sz
     >>>
       ws_bag_pop t @ ↑ι
     <<< ∃∃ o,
       (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_model t γ 0) ∨
-      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_model t γ sz') |
-      RET from_option (λ v, SOMEV v) NONEV o;
+      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_model t γ sz')
+    | RET from_option (λ v, SOMEV v) NONEV o;
       ws_bag_owner t γ ∗
       from_option Ψ True o
     >>> ;
 
   ws_bag_steal_spec t γ ι Ψ :
     <<<
-      ws_bag_inv t γ ι Ψ |
-      ∀∀ sz, ws_bag_model t γ sz
+      ws_bag_inv t γ ι Ψ
+    | ∀∀ sz, ws_bag_model t γ sz
     >>>
       ws_bag_steal t @ ↑ι
     <<< ∃∃ o,
       (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_model t γ 0) ∨
-      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_model t γ sz') |
-      RET from_option (λ v, SOMEV v) NONEV o;
+      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_model t γ sz')
+    | RET from_option (λ v, SOMEV v) NONEV o;
       from_option Ψ True o
     >>> ;
 
@@ -257,13 +257,13 @@ Section ws_bag_of_ws_deque.
     <<<
       ws_bag_of_ws_deque_inv t γ ι Ψ ∗
       ws_bag_of_ws_deque_owner t γ ∗
-      Ψ v |
-      ∀∀ sz, ws_bag_of_ws_deque_model t γ sz
+      Ψ v
+    | ∀∀ sz, ws_bag_of_ws_deque_model t γ sz
     >>>
       ws_bag_of_ws_deque_push t v @ ↑ι
     <<<
-      ws_bag_of_ws_deque_model t γ (S sz) |
-      RET #(); ws_bag_of_ws_deque_owner t γ
+      ws_bag_of_ws_deque_model t γ (S sz)
+    | RET #(); ws_bag_of_ws_deque_owner t γ
     >>>.
   Proof.
     iIntros "!> %Φ ((#Hbase_inv & #Hextra_inv) & Howner & Hv) HΦ".
@@ -287,14 +287,14 @@ Section ws_bag_of_ws_deque.
   #[local] Lemma ws_bag_of_ws_deque_pop_spec t γ ι Ψ :
     <<<
       ws_bag_of_ws_deque_inv t γ ι Ψ ∗
-      ws_bag_of_ws_deque_owner t γ |
-      ∀∀ sz, ws_bag_of_ws_deque_model t γ sz
+      ws_bag_of_ws_deque_owner t γ
+    | ∀∀ sz, ws_bag_of_ws_deque_model t γ sz
     >>>
       ws_bag_of_ws_deque_pop t @ ↑ι
     <<< ∃∃ o,
       (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_of_ws_deque_model t γ 0) ∨
-      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_ws_deque_model t γ sz') |
-      RET from_option (λ v, SOMEV v) NONEV o;
+      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_ws_deque_model t γ sz')
+    | RET from_option (λ v, SOMEV v) NONEV o;
       ws_bag_of_ws_deque_owner t γ ∗
       from_option Ψ True o
     >>>.
@@ -330,14 +330,14 @@ Section ws_bag_of_ws_deque.
 
   #[local] Lemma ws_bag_of_ws_deque_steal_spec t γ ι Ψ :
     <<<
-      ws_bag_of_ws_deque_inv t γ ι Ψ |
-      ∀∀ sz, ws_bag_of_ws_deque_model t γ sz
+      ws_bag_of_ws_deque_inv t γ ι Ψ
+    | ∀∀ sz, ws_bag_of_ws_deque_model t γ sz
     >>>
       ws_bag_of_ws_deque_steal t @ ↑ι
     <<< ∃∃ o,
       (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_of_ws_deque_model t γ 0) ∨
-      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_ws_deque_model t γ sz') |
-      RET from_option (λ v, SOMEV v) NONEV o;
+      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_ws_deque_model t γ sz')
+    | RET from_option (λ v, SOMEV v) NONEV o;
       from_option Ψ True o
     >>>.
   Proof.
@@ -526,13 +526,13 @@ Section ws_bag_of_spmc_stack.
     <<<
       ws_bag_of_spmc_stack_inv t γ ι Ψ ∗
       ws_bag_of_spmc_stack_owner t γ ∗
-      Ψ v |
-      ∀∀ sz, ws_bag_of_spmc_stack_model t γ sz
+      Ψ v
+    | ∀∀ sz, ws_bag_of_spmc_stack_model t γ sz
     >>>
       ws_bag_of_spmc_stack_push t v @ ↑ι
     <<<
-      ws_bag_of_spmc_stack_model t γ (S sz) |
-      RET #(); ws_bag_of_spmc_stack_owner t γ
+      ws_bag_of_spmc_stack_model t γ (S sz)
+    | RET #(); ws_bag_of_spmc_stack_owner t γ
     >>>.
   Proof.
     iIntros "!> %Φ ((#Hbase_inv & #Hextra_inv) & Howner & Hv) HΦ".
@@ -556,14 +556,14 @@ Section ws_bag_of_spmc_stack.
   #[local] Lemma ws_bag_of_spmc_stack_pop_spec t γ ι Ψ :
     <<<
       ws_bag_of_spmc_stack_inv t γ ι Ψ ∗
-      ws_bag_of_spmc_stack_owner t γ |
-      ∀∀ sz, ws_bag_of_spmc_stack_model t γ sz
+      ws_bag_of_spmc_stack_owner t γ
+    | ∀∀ sz, ws_bag_of_spmc_stack_model t γ sz
     >>>
       ws_bag_of_spmc_stack_pop t @ ↑ι
     <<< ∃∃ o,
       (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_of_spmc_stack_model t γ 0) ∨
-      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_spmc_stack_model t γ sz') |
-      RET from_option (λ v, SOMEV v) NONEV o;
+      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_spmc_stack_model t γ sz')
+    | RET from_option (λ v, SOMEV v) NONEV o;
       ws_bag_of_spmc_stack_owner t γ ∗
       from_option Ψ True o
     >>>.
@@ -598,14 +598,14 @@ Section ws_bag_of_spmc_stack.
 
   #[local] Lemma ws_bag_of_spmc_stack_steal_spec t γ ι Ψ :
     <<<
-      ws_bag_of_spmc_stack_inv t γ ι Ψ |
-      ∀∀ sz, ws_bag_of_spmc_stack_model t γ sz
+      ws_bag_of_spmc_stack_inv t γ ι Ψ
+    | ∀∀ sz, ws_bag_of_spmc_stack_model t γ sz
     >>>
       ws_bag_of_spmc_stack_steal t @ ↑ι
     <<< ∃∃ o,
       (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_of_spmc_stack_model t γ 0) ∨
-      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_spmc_stack_model t γ sz') |
-      RET from_option (λ v, SOMEV v) NONEV o;
+      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_spmc_stack_model t γ sz')
+    | RET from_option (λ v, SOMEV v) NONEV o;
       from_option Ψ True o
     >>>.
   Proof.
@@ -817,13 +817,13 @@ Section ws_bag_of_spmc_queue.
     <<<
       ws_bag_of_spmc_queue_inv t γ ι Ψ ∗
       ws_bag_of_spmc_queue_owner t γ ∗
-      Ψ v |
-      ∀∀ sz, ws_bag_of_spmc_queue_model t γ sz
+      Ψ v
+    | ∀∀ sz, ws_bag_of_spmc_queue_model t γ sz
     >>>
       ws_bag_of_spmc_queue_push t v @ ↑ι
     <<<
-      ws_bag_of_spmc_queue_model t γ (S sz) |
-      RET #(); ws_bag_of_spmc_queue_owner t γ
+      ws_bag_of_spmc_queue_model t γ (S sz)
+    | RET #(); ws_bag_of_spmc_queue_owner t γ
     >>>.
   Proof.
     iIntros "!> %Φ ((#Hbase_inv & #Hextra_inv) & Howner & Hv) HΦ".
@@ -847,14 +847,14 @@ Section ws_bag_of_spmc_queue.
   #[local] Lemma ws_bag_of_spmc_queue_pop_spec t γ ι Ψ :
     <<<
       ws_bag_of_spmc_queue_inv t γ ι Ψ ∗
-      ws_bag_of_spmc_queue_owner t γ |
-      ∀∀ sz, ws_bag_of_spmc_queue_model t γ sz
+      ws_bag_of_spmc_queue_owner t γ
+    | ∀∀ sz, ws_bag_of_spmc_queue_model t γ sz
     >>>
       ws_bag_of_spmc_queue_pop t @ ↑ι
     <<< ∃∃ o,
       (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_of_spmc_queue_model t γ 0) ∨
-      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_spmc_queue_model t γ sz') |
-      RET from_option (λ v, SOMEV v) NONEV o;
+      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_spmc_queue_model t γ sz')
+    | RET from_option (λ v, SOMEV v) NONEV o;
       ws_bag_of_spmc_queue_owner t γ ∗
       from_option Ψ True o
     >>>.
@@ -890,14 +890,14 @@ Section ws_bag_of_spmc_queue.
 
   #[local] Lemma ws_bag_of_spmc_queue_steal_spec t γ ι Ψ :
     <<<
-      ws_bag_of_spmc_queue_inv t γ ι Ψ |
-      ∀∀ sz, ws_bag_of_spmc_queue_model t γ sz
+      ws_bag_of_spmc_queue_inv t γ ι Ψ
+    | ∀∀ sz, ws_bag_of_spmc_queue_model t γ sz
     >>>
       ws_bag_of_spmc_queue_steal t @ ↑ι
     <<< ∃∃ o,
       (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_of_spmc_queue_model t γ 0) ∨
-      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_spmc_queue_model t γ sz') |
-      RET from_option (λ v, SOMEV v) NONEV o;
+      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_spmc_queue_model t γ sz')
+    | RET from_option (λ v, SOMEV v) NONEV o;
       from_option Ψ True o
     >>>.
   Proof.

@@ -373,13 +373,13 @@ Section counter_G.
 
   Lemma counter_incr_spec t ι ub :
     <<<
-      counter_inv t ι ub |
-      ∀∀ n, counter_model t (DfracOwn 1) n ∗ if ub is Some ub then ⌜n < ub⌝ else True
+      counter_inv t ι ub
+    | ∀∀ n, counter_model t (DfracOwn 1) n ∗ if ub is Some ub then ⌜n < ub⌝ else True
     >>>
       counter_incr t @ ↑ι
     <<<
-      counter_model t (DfracOwn 1) (S n) ∗ counter_token t n |
-      RET #n; True
+      counter_model t (DfracOwn 1) (S n) ∗ counter_token t n
+    | RET #n; True
     >>>.
   Proof.
     iIntros "!> %Φ (%l & %γ & -> & #Hmeta & #Hub_auth & #Hinv) HΦ".
@@ -414,13 +414,13 @@ Section counter_G.
 
   Lemma counter_get_spec t ι ub :
     <<<
-      counter_inv t ι ub |
-      ∀∀ dq n, counter_model t dq n
+      counter_inv t ι ub
+    | ∀∀ dq n, counter_model t dq n
     >>>
       counter_get t @ ↑ι
     <<<
-      counter_model t dq n |
-      RET #n; if ub is Some ub then ⌜n ≤ ub⌝ else True
+      counter_model t dq n
+    | RET #n; if ub is Some ub then ⌜n ≤ ub⌝ else True
     >>>.
   Proof.
     iIntros "!> %Φ (%l & %γ & -> & #Hmeta & #Hub_auth & #Hinv) HΦ".

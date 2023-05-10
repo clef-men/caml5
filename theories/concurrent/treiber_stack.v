@@ -100,7 +100,11 @@ Section treiber_stack_G.
   Lemma treiber_stack_make_spec ι :
     {{{ True }}}
       treiber_stack_make #()
-    {{{ t, RET t; treiber_stack_inv t ι ∗ treiber_stack_model t [] }}}.
+    {{{ t,
+      RET t;
+      treiber_stack_inv t ι ∗
+      treiber_stack_model t []
+    }}}.
   Proof.
     iIntros "%Φ _ HΦ".
     wp_rec.
@@ -114,9 +118,15 @@ Section treiber_stack_G.
   Qed.
 
   Lemma treiber_stack_push_spec t ι v :
-    <<< treiber_stack_inv t ι | ∀∀ vs, treiber_stack_model t vs >>>
+    <<<
+      treiber_stack_inv t ι
+    | ∀∀ vs, treiber_stack_model t vs
+    >>>
       treiber_stack_push t v @ ↑ι
-    <<< treiber_stack_model t (v :: vs) | RET #(); True >>>.
+    <<<
+      treiber_stack_model t (v :: vs)
+    | RET #(); True
+    >>>.
   Proof.
     iIntros "!> %Φ (%l & %γ & -> & #Hmeta & #Hinv) HΦ".
     iLöb as "HLöb".
@@ -159,12 +169,15 @@ Section treiber_stack_G.
   Qed.
 
   Lemma treiber_stack_pop_spec t ι :
-    <<< treiber_stack_inv t ι | ∀∀ vs, treiber_stack_model t vs >>>
+    <<<
+      treiber_stack_inv t ι
+    | ∀∀ vs, treiber_stack_model t vs
+    >>>
       treiber_stack_pop t @ ↑ι
     <<< ∃∃ o,
       (⌜vs = [] ∧ o = NONEV⌝ ∗ treiber_stack_model t []) ∨
-      (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ treiber_stack_model t vs') |
-      RET o; True
+      (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ treiber_stack_model t vs')
+    | RET o; True
     >>>.
   Proof.
     iIntros "!> %Φ (%l & %γ & -> & #Hmeta & #Hinv) HΦ".

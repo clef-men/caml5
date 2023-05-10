@@ -1018,13 +1018,13 @@ Section inf_chaselev_deque_G.
   Lemma inf_chaselev_deque_push_spec t ι v :
     <<<
       inf_chaselev_deque_inv t ι ∗
-      inf_chaselev_deque_owner t |
-      ∀∀ model, inf_chaselev_deque_model t model
+      inf_chaselev_deque_owner t
+    | ∀∀ model, inf_chaselev_deque_model t model
     >>>
       inf_chaselev_deque_push t v @ ↑ι
     <<<
-      inf_chaselev_deque_model t (model ++ [v]) |
-      RET #(); inf_chaselev_deque_owner t
+      inf_chaselev_deque_model t (model ++ [v])
+    | RET #(); inf_chaselev_deque_owner t
     >>>.
   Proof.
     iIntros "!> %Φ ((%l & %γ & %data & %p & -> & #Hmeta & #Hdata & #Hp & #Hinv) & (%_l & %_γ & %back & %priv & %Heq & #_Hmeta & Hctl₂ & Hlock)) HΦ". injection Heq as <-.
@@ -1142,15 +1142,15 @@ Section inf_chaselev_deque_G.
 
   Lemma inf_chaselev_deque_steal_spec t ι :
     <<<
-      inf_chaselev_deque_inv t ι |
-      ∀∀ model, inf_chaselev_deque_model t model
+      inf_chaselev_deque_inv t ι
+    | ∀∀ model, inf_chaselev_deque_model t model
     >>>
       inf_chaselev_deque_steal t @ ↑ι
     <<<
       ∃∃ o,
       (⌜model = [] ∧ o = InjLV #()⌝ ∗ inf_chaselev_deque_model t []) ∨
-      (∃ v model', ⌜model = v :: model' ∧ o = SOMEV v⌝ ∗ inf_chaselev_deque_model t model') |
-      RET o; True
+      (∃ v model', ⌜model = v :: model' ∧ o = SOMEV v⌝ ∗ inf_chaselev_deque_model t model')
+    | RET o; True
     >>>.
   Proof.
     iIntros "!> %Φ (%l & %γ & %data & %p & -> & #Hmeta & #Hdata & #Hp & #Hinv) HΦ".
@@ -1479,15 +1479,15 @@ Section inf_chaselev_deque_G.
   Lemma inf_chaselev_deque_pop_spec t ι :
     <<<
       inf_chaselev_deque_inv t ι ∗
-      inf_chaselev_deque_owner t |
-      ∀∀ model, inf_chaselev_deque_model t model
+      inf_chaselev_deque_owner t
+    | ∀∀ model, inf_chaselev_deque_model t model
     >>>
       inf_chaselev_deque_pop t @ ↑ι
     <<<
       ∃∃ o,
       (⌜model = [] ∧ o = NONEV⌝ ∗ inf_chaselev_deque_model t []) ∨
-      (∃ model' v, ⌜model = model' ++ [v] ∧ o = SOMEV v⌝ ∗ inf_chaselev_deque_model t model') |
-      RET o; inf_chaselev_deque_owner t
+      (∃ model' v, ⌜model = model' ++ [v] ∧ o = SOMEV v⌝ ∗ inf_chaselev_deque_model t model')
+    | RET o; inf_chaselev_deque_owner t
     >>>.
   Proof.
     iIntros "!> %Φ ((%l & %γ & %data & %p & -> & #Hmeta & #Hdata & #Hp & #Hinv) & (%_l & %_γ & %back & %priv & %Heq & #_Hmeta & Hctl₂ & Hlock)) HΦ". injection Heq as <-.

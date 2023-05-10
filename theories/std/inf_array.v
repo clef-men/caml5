@@ -24,19 +24,34 @@ Record inf_array `{!heapGS Σ} {unboxed : bool} := {
   inf_array_make_spec v :
     {{{ True }}}
       inf_array_make v
-    {{{ t, RET t; inf_array_model t (λ _, v) }}} ;
+    {{{ t,
+      RET t;
+      inf_array_model t (λ _, v)
+    }}} ;
 
   inf_array_get_spec t i :
     (0 ≤ i)%Z →
-    <<< True | ∀∀ vs, inf_array_model t vs >>>
+    <<<
+      True
+    | ∀∀ vs, inf_array_model t vs
+    >>>
       inf_array_get t #i
-    <<< inf_array_model t vs | RET vs (Z.to_nat i); True >>> ;
+    <<<
+      inf_array_model t vs
+    | RET vs (Z.to_nat i); True
+    >>> ;
 
   inf_array_set_spec t i v :
     (0 ≤ i)%Z →
-    <<< True | ∀∀ vs, inf_array_model t vs >>>
+    <<<
+      True
+    | ∀∀ vs, inf_array_model t vs
+    >>>
       inf_array_set t #i v
-    <<< inf_array_model t (<[Z.to_nat i := v]> vs) | RET #(); True >>> ;
+    <<<
+      inf_array_model t (<[Z.to_nat i := v]> vs)
+    | RET #(); True
+    >>> ;
 
   inf_array_unboxed :
     if unboxed then ∀ t vs,
@@ -88,13 +103,13 @@ Section inf_array.
   Lemma inf_array_get_spec' i t :
     (0 ≤ i)%Z →
     <<<
-      True |
-      ∀∀ vsₗ vsᵣ, inf_array_model' t vsₗ vsᵣ
+      True
+    | ∀∀ vsₗ vsᵣ, inf_array_model' t vsₗ vsᵣ
     >>>
       inf_array.(inf_array_get) t #i
     <<<
-      inf_array_model' t vsₗ vsᵣ |
-      RET
+      inf_array_model' t vsₗ vsᵣ
+    | RET
         let i := Z.to_nat i in
         if decide (i < length vsₗ) then vsₗ !!! i else vsᵣ (i - length vsₗ);
       True
@@ -110,16 +125,16 @@ Section inf_array.
   Lemma inf_array_set_spec' i v t :
     (0 ≤ i)%Z →
     <<<
-      True |
-      ∀∀ vsₗ vsᵣ, inf_array_model' t vsₗ vsᵣ
+      True
+    | ∀∀ vsₗ vsᵣ, inf_array_model' t vsₗ vsᵣ
     >>>
       inf_array.(inf_array_set) t #i v
     <<<
       let i := Z.to_nat i in
       if decide (i < length vsₗ)
       then inf_array_model' t (<[i := v]> vsₗ) vsᵣ
-      else inf_array_model' t vsₗ (<[i - length vsₗ := v]> vsᵣ) |
-      RET #(); True
+      else inf_array_model' t vsₗ (<[i - length vsₗ := v]> vsᵣ)
+    | RET #(); True
     >>>.
   Proof.
     iIntros "% !> %Φ _ HΦ".

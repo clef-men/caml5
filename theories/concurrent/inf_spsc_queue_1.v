@@ -400,13 +400,13 @@ Section inf_spsc_queue_G.
   Lemma inf_spsc_queue_push_spec t ι v :
     <<<
       inf_spsc_queue_inv t ι ∗
-      inf_spsc_queue_producer t |
-      ∀∀ model, inf_spsc_queue_model t model
+      inf_spsc_queue_producer t
+    | ∀∀ model, inf_spsc_queue_model t model
     >>>
       inf_spsc_queue_push t v @ ↑ι
     <<<
-      inf_spsc_queue_model t (v :: model) |
-      RET #(); inf_spsc_queue_producer t
+      inf_spsc_queue_model t (v :: model)
+    | RET #(); inf_spsc_queue_producer t
     >>>.
   Proof.
     iIntros "!> %Φ ((%l & %γ & %data & -> & #Hmeta & #Hdata & #Hinv) & (%_l & %_γ & %back & %priv & %Heq & #_Hmeta & Hproducer₁)) HΦ". injection Heq as <-.
@@ -489,14 +489,14 @@ Section inf_spsc_queue_G.
   Lemma inf_spsc_queue_pop_spec t ι :
     <<<
       inf_spsc_queue_inv t ι ∗
-      inf_spsc_queue_consumer t |
-      ∀∀ model, inf_spsc_queue_model t model
+      inf_spsc_queue_consumer t
+    | ∀∀ model, inf_spsc_queue_model t model
     >>>
       inf_spsc_queue_pop t @ ↑ι
     <<< ∃∃ o,
       (⌜model = [] ∧ o = NONEV⌝ ∗ inf_spsc_queue_model t []) ∨
-      (∃ model' v, ⌜model = model' ++ [v] ∧ o = SOMEV v⌝ ∗ inf_spsc_queue_model t model') |
-      RET o; inf_spsc_queue_consumer t
+      (∃ model' v, ⌜model = model' ++ [v] ∧ o = SOMEV v⌝ ∗ inf_spsc_queue_model t model')
+    | RET o; inf_spsc_queue_consumer t
     >>>.
   Proof.
     iIntros "!> %Φ ((%l & %γ & %data & -> & #Hmeta & #Hdata & #Hinv) & (%_l & %_γ & %hist & %Heq & #_Hmeta & Hfront & Hconsumer₁)) HΦ". injection Heq as <-.
