@@ -11,6 +11,7 @@ Implicit Types vss : list (list val).
 
 Record ws_deques `{!heapGS Σ} `{!CounterG Σ} {unboxed : bool} := {
   ws_deques_make : val ;
+  ws_deques_size : val ;
   ws_deques_push : val ;
   ws_deques_pop : val ;
   ws_deques_steal : val ;
@@ -29,14 +30,29 @@ Record ws_deques `{!heapGS Σ} `{!CounterG Σ} {unboxed : bool} := {
   ws_deques_model_timeless t γ vss :
     Timeless (ws_deques_model t γ vss) ;
 
+  ws_deques_inv_valid t γ ι cntr sz :
+    ws_deques_inv t γ ι cntr sz -∗
+      ∃ ι_cntr, counter_inv cntr ι_cntr (Some sz) ;
+
   ws_deques_make_spec ι cntr ι_cntr sz sz' :
     sz' = Z.of_nat sz →
-    {{{ counter_inv cntr ι_cntr (Some sz) }}}
+    {{{
+      counter_inv cntr ι_cntr (Some sz)
+    }}}
       ws_deques_make #sz'
     {{{ t γ,
       RET t;
       ws_deques_inv t γ ι cntr sz ∗
       ws_deques_model t γ (repeat [] sz)
+    }}} ;
+
+  ws_deques_size_spec t γ ι cntr sz :
+    {{{
+      ws_deques_inv t γ ι cntr sz
+    }}}
+      ws_deques_size t
+    {{{
+      RET #sz; True
     }}} ;
 
   ws_deques_push_spec t γ ι cntr sz i i' v :
@@ -61,14 +77,12 @@ Record ws_deques `{!heapGS Σ} `{!CounterG Σ} {unboxed : bool} := {
     | ∀∀ vss, ws_deques_model t γ vss
     >>>
       ws_deques_pop t #i' @ ↑ι
-    <<< ∃∃ vs o,
-      ⌜vss !! i = Some vs⌝ ∗
-      ( ⌜vs = [] ∧ o = NONEV⌝ ∗
+    <<< ∃∃ o,
+        ⌜vss !! i = Some [] ∧ o = NONEV⌝ ∗
         ws_deques_model t γ vss
-      ∨ ∃ vs' v,
-        ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗
-        ws_deques_model t γ (<[i := vs']> vss)
-      )
+      ∨ ∃ vs v,
+        ⌜vss !! i = Some (vs ++ [v]) ∧ o = SOMEV v⌝ ∗
+        ws_deques_model t γ (<[i := vs]> vss)
     | RET o; counter_token cntr i
     >>> ;
 
@@ -79,15 +93,13 @@ Record ws_deques `{!heapGS Σ} `{!CounterG Σ} {unboxed : bool} := {
     | ∀∀ vss, ws_deques_model t γ vss
     >>>
       ws_deques_steal t #i @ ↑ι
-    <<< ∃∃ vs o,
+    <<< ∃∃ o,
       let i := Z.to_nat i in
-      ⌜vss !! i = Some vs⌝ ∗
-      ( ⌜vs = [] ∧ o = NONEV⌝ ∗
+        ⌜vss !! i = Some [] ∧ o = NONEV⌝ ∗
         ws_deques_model t γ vss
-      ∨ ∃ v vs',
-        ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗
-        ws_deques_model t γ (<[i := vs']> vss)
-      )
+      ∨ ∃ v vs,
+        ⌜vss !! i = Some (v :: vs) ∧ o = SOMEV v⌝ ∗
+        ws_deques_model t γ (<[i := vs]> vss)
     | RET o; True
     >>> ;
 
@@ -99,7 +111,7 @@ Record ws_deques `{!heapGS Σ} `{!CounterG Σ} {unboxed : bool} := {
       True ;
 }.
 #[global] Arguments ws_deques _ {_ _} _ : assert.
-#[global] Arguments Build_ws_deques {_ _ _} _ {_ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ : assert.
+#[global] Arguments Build_ws_deques {_ _ _ _} _ {_ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ _ _ : assert.
 #[global] Existing Instance ws_deques_name_eq_dec.
 #[global] Existing Instance ws_deques_name_countable.
 #[global] Existing Instance ws_deques_inv_persistent.
