@@ -42,11 +42,9 @@ Record random `{!heapGS Σ} {unboxed : bool} := {
 Section random.
   Context `{!heapGS Σ} {unboxed} (random : random Σ unboxed).
 
-  Definition random_gen_Z : val :=
+  Definition random_gen_integer : val :=
     λ: "t" "lb" "ub",
       "lb" + random.(random_gen) "t" ("ub" - "lb").
-  Definition random_gen_nat :=
-    random_gen_Z.
   Definition random_gen_bool : val :=
     λ: "t",
       random.(random_gen) "t" #2.
@@ -54,7 +52,7 @@ Section random.
   Lemma random_gen_Z_spec t lb ub :
     (lb < ub)%Z →
     {{{ random.(random_inv) t }}}
-      random_gen_Z t #lb #ub
+      random_gen_integer t #lb #ub
     {{{ n, RET #n; ⌜lb ≤ n < ub⌝%Z }}}.
   Proof.
     iIntros "%Hlt %Φ Hinv HΦ".
@@ -66,7 +64,7 @@ Section random.
   Lemma random_gen_nat_spec t lb ub :
     lb < ub →
     {{{ random.(random_inv) t }}}
-      random_gen_nat t #lb #ub
+      random_gen_integer t #lb #ub
     {{{ n, RET #n; ⌜lb ≤ n < ub⌝ }}}.
   Proof.
     iIntros "%Hlt %Φ Hinv HΦ".
@@ -91,6 +89,12 @@ Section random.
   Qed.
 End random.
 
-#[global] Opaque random_gen_Z.
-#[global] Opaque random_gen_nat.
+#[global] Opaque random_gen_integer.
 #[global] Opaque random_gen_bool.
+
+Notation "random .(random_gen_integer)" := (random_gen_integer random)
+( at level 5
+).
+Notation "random .(random_gen_bool)" := (random_gen_bool random)
+( at level 5
+).
