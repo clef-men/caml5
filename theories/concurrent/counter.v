@@ -85,9 +85,8 @@ Section counter_G.
   Implicit Types γ : counter_name.
 
   #[local] Definition counter_ub_auth γ ub :=
-    auth_natinf_max_auth γ.(counter_name_ub) DfracDiscarded (
-      if ub is Some ub then natinf_nat ub else natinf_inf
-    ).
+    auth_natinf_max_auth γ.(counter_name_ub) DfracDiscarded $
+      if ub is Some ub then natinf_nat (ub - 1) else natinf_inf.
   #[local] Definition counter_ub_lb γ n :=
     auth_natinf_max_lb γ.(counter_name_ub) (natinf_nat n).
 
@@ -134,63 +133,41 @@ Section counter_G.
     ∃ l γ,
     ⌜t = #l⌝ ∗
     meta l nroot γ ∗
+    ⌜if ub is Some ub then 0 < ub else True⌝ ∗
     counter_ub_auth γ ub ∗
     inv ι (counter_inv_inner l γ).
 
-  #[global] Instance counter_lb_persistent t lb :
-    Persistent (counter_lb t lb).
-  Proof.
-    apply _.
-  Qed.
-  #[global] Instance counter_token_timeless t n :
-    Timeless (counter_token t n).
-  Proof.
-    apply _.
-  Qed.
-  #[global] Instance counter_model_timeless t dq n :
-    Timeless (counter_model t dq n).
-  Proof.
-    apply _.
-  Qed.
-  #[global] Instance counter_model_persistent t n :
-    Persistent (counter_model t DfracDiscarded n).
-  Proof.
-    apply _.
-  Qed.
-  #[global] Instance counter_inv_persistent t ι ub :
-    Persistent (counter_inv t ι ub).
-  Proof.
-    apply _.
-  Qed.
+  Section counter_inv.
+    #[global] Instance counter_inv_persistent t ι ub :
+      Persistent (counter_inv t ι ub).
+    Proof.
+      apply _.
+    Qed.
 
-  #[global] Instance counter_model_fractional t n :
-    Fractional (λ q, counter_model t (DfracOwn q) n).
-  Proof.
-    intros q1 q2. iSplit.
-    - iIntros "(%l & %γ & -> & #Hmeta & #Hub_lb & (Hlb_auth1 & Hlb_auth2) & (Htoken_auth1 & Htoken_auth2) & (Hmodel₂1 & Hmodel₂2))".
-      iSplitL "Hlb_auth1 Htoken_auth1 Hmodel₂1"; repeat iExists _; iFrame "#∗"; done.
-    - iIntros "((%l & %γ & -> & #Hmeta & #Hub_lb & Hlb_auth1 & Htoken_auth1 & Hmodel₂1) & (%_l & %_γ & %Heq & #_Hmeta & _ & Hlb_auth2 & Htoken_auth2 & Hmodel₂2))". injection Heq as <-.
-      iDestruct (meta_agree with "Hmeta _Hmeta") as %->. iClear "_Hmeta".
-      iCombine "Hlb_auth1 Hlb_auth2" as "Hlb_auth".
-      iCombine "Htoken_auth1 Htoken_auth2" as "Htoken_auth".
-      iCombine "Hmodel₂1 Hmodel₂2" as "Hmodel₂".
-      repeat iExists _. iFrame "#∗". done.
-  Qed.
-  #[global] Instance counter_model_as_fractional t q n :
-    AsFractional (counter_model t (DfracOwn q) n) (λ q, counter_model t (DfracOwn q) n) q.
-  Proof.
-    split; [done | apply _].
-  Qed.
+    Lemma counter_inv_valid t ι ub :
+      counter_inv t ι (Some ub) -∗
+      ⌜0 < ub⌝.
+    Proof.
+      iIntros "(%l & %γ & -> & #Hmeta & %Hub & #Hub_auth & #Hinv) //".
+    Qed.
+  End counter_inv.
 
   Section counter_lb.
+    #[global] Instance counter_lb_persistent t lb :
+      Persistent (counter_lb t lb).
+    Proof.
+      apply _.
+    Qed.
+
     Lemma counter_inv_lb_valid t ι ub lb :
       counter_inv t ι (Some ub) -∗
       counter_lb t lb -∗
-      ⌜lb ≤ ub⌝.
+      ⌜lb < ub⌝.
     Proof.
-      iIntros "(%l & %γ & -> & #Hmeta & #Hub_auth & #Hinv) (%_l & %_γ & %Heq & #_Hmeta & #Hub_lb & #Hlb_lb)". injection Heq as <-.
+      iIntros "(%l & %γ & -> & #Hmeta & %Hub & #Hub_auth & #Hinv) (%_l & %_γ & %Heq & #_Hmeta & #Hub_lb & #Hlb_lb)". injection Heq as <-.
       iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
-      iDestruct (auth_natinf_max_valid with "Hub_auth Hub_lb") as %?%(inj natinf_nat). done.
+      iDestruct (auth_natinf_max_valid with "Hub_auth Hub_lb") as %?%(inj natinf_nat).
+      auto with lia.
     Qed.
 
     Lemma counter_lb_le t lb1 lb2 :
@@ -216,14 +193,21 @@ Section counter_G.
   End counter_lb.
 
   Section counter_token.
+    #[global] Instance counter_token_timeless t n :
+      Timeless (counter_token t n).
+    Proof.
+      apply _.
+    Qed.
+
     Lemma counter_inv_token_valid t ι ub n :
       counter_inv t ι (Some ub) -∗
       counter_token t n -∗
-      ⌜n ≤ ub⌝.
+      ⌜n < ub⌝.
     Proof.
-      iIntros "(%l & %γ & -> & #Hmeta & #Hub_auth & #Hinv) (%_l & %_γ & %Heq & #_Hmeta & #Hub_lb & Htoken_frag)". injection Heq as <-.
+      iIntros "(%l & %γ & -> & #Hmeta & %Hub & #Hub_auth & #Hinv) (%_l & %_γ & %Heq & #_Hmeta & #Hub_lb & Htoken_frag)". injection Heq as <-.
       iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
-      iDestruct (auth_natinf_max_valid with "Hub_auth Hub_lb") as %?%(inj natinf_nat). done.
+      iDestruct (auth_natinf_max_valid with "Hub_auth Hub_lb") as %?%(inj natinf_nat).
+      auto with lia.
     Qed.
 
     Lemma counter_token_exclusive t n :
@@ -238,15 +222,46 @@ Section counter_G.
   End counter_token.
 
   Section counter_model.
+    #[global] Instance counter_model_timeless t dq n :
+      Timeless (counter_model t dq n).
+    Proof.
+      apply _.
+    Qed.
+    #[global] Instance counter_model_persistent t n :
+      Persistent (counter_model t DfracDiscarded n).
+    Proof.
+      apply _.
+    Qed.
+
+    #[global] Instance counter_model_fractional t n :
+      Fractional (λ q, counter_model t (DfracOwn q) n).
+    Proof.
+      intros q1 q2. iSplit.
+      - iIntros "(%l & %γ & -> & #Hmeta & #Hub_lb & (Hlb_auth1 & Hlb_auth2) & (Htoken_auth1 & Htoken_auth2) & (Hmodel₂1 & Hmodel₂2))".
+        iSplitL "Hlb_auth1 Htoken_auth1 Hmodel₂1"; repeat iExists _; iFrame "#∗"; done.
+      - iIntros "((%l & %γ & -> & #Hmeta & #Hub_lb & Hlb_auth1 & Htoken_auth1 & Hmodel₂1) & (%_l & %_γ & %Heq & #_Hmeta & _ & Hlb_auth2 & Htoken_auth2 & Hmodel₂2))". injection Heq as <-.
+        iDestruct (meta_agree with "Hmeta _Hmeta") as %->. iClear "_Hmeta".
+        iCombine "Hlb_auth1 Hlb_auth2" as "Hlb_auth".
+        iCombine "Htoken_auth1 Htoken_auth2" as "Htoken_auth".
+        iCombine "Hmodel₂1 Hmodel₂2" as "Hmodel₂".
+        repeat iExists _. iFrame "#∗". done.
+    Qed.
+    #[global] Instance counter_model_as_fractional t q n :
+      AsFractional (counter_model t (DfracOwn q) n) (λ q, counter_model t (DfracOwn q) n) q.
+    Proof.
+      split; [done | apply _].
+    Qed.
+
     Lemma counter_inv_model_valid t ι ub dq n :
       counter_inv t ι ub -∗
       counter_model t dq n -∗
-      ⌜if ub is Some ub then n ≤ ub else True⌝.
+      ⌜if ub is Some ub then n < ub else True⌝.
     Proof.
-      iIntros "(%l & %γ & -> & #Hmeta & #Hub_auth & #Hinv) (%_l & %_γ & %Heq & #_Hmeta & #Hub_lb & Hlb_auth & Htoken_auth & Hmodel₂)". injection Heq as <-.
+      iIntros "(%l & %γ & -> & #Hmeta & %Hub & #Hub_auth & #Hinv) (%_l & %_γ & %Heq & #_Hmeta & #Hub_lb & Hlb_auth & Htoken_auth & Hmodel₂)". injection Heq as <-.
       destruct ub as [ub |]; last done.
       iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
-      iDestruct (auth_natinf_max_valid with "Hub_auth Hub_lb") as %?%(inj natinf_nat). done.
+      iDestruct (auth_natinf_max_valid with "Hub_auth Hub_lb") as %?%(inj natinf_nat).
+      auto with lia.
     Qed.
 
     Lemma counter_model_lb_valid t dq n lb :
@@ -346,6 +361,7 @@ Section counter_G.
   End counter_model.
 
   Lemma counter_make_spec ι ub :
+    (if ub is Some ub then 0 < ub else True) →
     {{{ True }}}
       counter_make #()
     {{{ t,
@@ -354,9 +370,9 @@ Section counter_G.
       counter_model t (DfracOwn 1) 0
     }}}.
   Proof.
-    iIntros "%Φ _ HΦ".
+    iIntros "%Hub %Φ _ HΦ".
     wp_rec. iApply wp_fupd. wp_apply (wp_alloc with "[//]"). iIntros "%l (Hl & Hmeta)".
-    iMod (auth_natinf_max_alloc (if ub is Some ub then natinf_nat ub else natinf_inf)) as "(%γ_ub & Hub_auth)".
+    iMod (auth_natinf_max_alloc (if ub is Some ub then natinf_nat (ub - 1) else natinf_inf)) as "(%γ_ub & Hub_auth)".
     iMod (auth_natinf_max_auth_persist with "Hub_auth") as "Hub_auth".
     iMod (auth_natinf_max_lb_0 γ_ub) as "#Hub_lb".
     iMod (auth_nat_max_alloc 0) as "(%γ_lb & Hlb_auth)".
@@ -370,7 +386,7 @@ Section counter_G.
     |}.
     iMod (meta_set _ _ γ with "Hmeta") as "#Hmeta"; first done.
     iApply "HΦ". iSplitL "Hub_auth Hl Hmodel₁".
-    - repeat iExists _. iFrame "#∗". iSplitR; first done.
+    - repeat iExists _. iFrame "#∗". do 2 (iSplitR; first done).
       iApply inv_alloc. iExists 0. iFrame.
     - repeat iExists _. iFrame "#∗". done.
   Qed.
@@ -380,7 +396,7 @@ Section counter_G.
       counter_inv t ι ub
     | ∀∀ n,
       counter_model t (DfracOwn 1) n ∗
-      if ub is Some ub then ⌜n < ub⌝ else True
+      if ub is Some ub then ⌜S n < ub⌝ else True
     >>>
       counter_incr t @ ↑ι
     <<<
@@ -389,7 +405,7 @@ Section counter_G.
     | RET #n; True
     >>>.
   Proof.
-    iIntros "!> %Φ (%l & %γ & -> & #Hmeta & #Hub_auth & #Hinv) HΦ".
+    iIntros "!> %Φ (%l & %γ & -> & #Hmeta & %Hub & #Hub_auth & #Hinv) HΦ".
     wp_rec.
     iInv "Hinv" as "(%n & Hl & Hmodel₁)".
     wp_faa.
@@ -411,12 +427,12 @@ Section counter_G.
       destruct ub as [ub |].
       - iDestruct "Hle" as %?.
         iDestruct (auth_natinf_max_lb_le with "Hub_lb'") as "$"; last done.
-        apply natinf_le_proper. done.
+        apply natinf_le_proper. lia.
       - iDestruct (auth_natinf_max_lb_le with "Hub_lb'") as "$"; done.
     }
     iMod ("HΦ" with "[$Hmodel $Htoken] [//]") as "$".
     iModIntro. iExists (S n). iNext. iFrame.
-    assert (n + 1 = S n)%Z as -> by lia. done.
+    rewrite Z.add_1_r -Nat2Z.inj_succ //.
   Qed.
 
   Lemma counter_get_spec t ι ub :
@@ -427,10 +443,10 @@ Section counter_G.
       counter_get t @ ↑ι
     <<<
       counter_model t dq n
-    | RET #n; if ub is Some ub then ⌜n ≤ ub⌝ else True
+    | RET #n; if ub is Some ub then ⌜n < ub⌝ else True
     >>>.
   Proof.
-    iIntros "!> %Φ (%l & %γ & -> & #Hmeta & #Hub_auth & #Hinv) HΦ".
+    iIntros "!> %Φ (%l & %γ & -> & #Hmeta & %Hub & #Hub_auth & #Hinv) HΦ".
     wp_rec.
     iInv "Hinv" as "(%n & Hl & Hmodel₁)".
     wp_load.
@@ -441,7 +457,8 @@ Section counter_G.
     { repeat iExists _. iFrame "#∗". done. }
     iMod ("HΦ" with "Hmodel []") as "$".
     { destruct ub as [ub |]; last done.
-      iDestruct (auth_natinf_max_valid with "Hub_auth Hub_lb") as %?%(inj natinf_nat). done.
+      iDestruct (auth_natinf_max_valid with "Hub_auth Hub_lb") as %?%(inj natinf_nat).
+      auto with lia.
     }
     iModIntro. iNext. iExists n. iFrame.
   Qed.
@@ -450,7 +467,7 @@ Section counter_G.
     counter_inv t ι ub -∗
     ⌜val_is_unboxed t⌝.
   Proof.
-    iIntros "(%l & %γ & -> & #Hmeta & #Hub_auth & #Hinv) //".
+    iIntros "(%l & %γ & -> & #Hmeta & %Hub & #Hub_auth & #Hinv) //".
   Qed.
 End counter_G.
 
