@@ -54,15 +54,25 @@ Section big_sepL.
     iApply ("HΦ" with "[//] HΨ").
   Qed.
 
+  Lemma big_sepL_seq_index `{!BiAffine PROP} {A} (l : list A) sz Φ :
+    length l = sz →
+    ([∗ list] i ∈ seq 0 sz, Φ i) ⊣⊢@{PROP}
+    [∗ list] i ↦ _ ∈ l, Φ i.
+  Proof.
+    intros. iSplit.
+    all: iIntros "H".
+    all: iApply (big_sepL_mono_strong' with "[] H"); first rewrite seq_length //.
+    all: iIntros "!> %i %_i % %".
+    all: pose proof lookup_seq.
+    all: naive_solver.
+  Qed.
   Lemma big_sepL_seq_index_1 `{!BiAffine PROP} {A} (l : list A) sz Φ :
     length l = sz →
     ⊢@{PROP}
       ([∗ list] i ∈ seq 0 sz, Φ i) -∗
       [∗ list] i ↦ _ ∈ l, Φ i.
   Proof.
-    iIntros "% H".
-    iApply (big_sepL_mono_strong' (seq 0 sz) l with "[] H"); first rewrite seq_length //.
-    iIntros "!> %i %_i % (%H_i & _)". apply lookup_seq in H_i as (-> & ?). auto.
+    intros. rewrite big_sepL_seq_index; last eauto. naive_solver.
   Qed.
   Lemma big_sepL_seq_index_2 `{!BiAffine PROP} {A} (l : list A) sz Φ :
     length l = sz →
@@ -70,15 +80,31 @@ Section big_sepL.
       ([∗ list] i ↦ _ ∈ l, Φ i) -∗
       [∗ list] i ∈ seq 0 sz, Φ i.
   Proof.
-    iIntros "% H".
-    iApply (big_sepL_mono_strong' l (seq 0 sz) with "[] H"); first rewrite seq_length //.
-    iIntros "!> %i %_i % (_ & %H_i)". apply lookup_seq in H_i as (-> & ?). auto.
+    intros. rewrite big_sepL_seq_index; last eauto. naive_solver.
   Qed.
-  Lemma big_sepL_seq_index `{!BiAffine PROP} {A} (l : list A) sz Φ :
-    length l = sz →
-    ([∗ list] i ∈ seq 0 sz, Φ i) ⊣⊢@{PROP}
-    [∗ list] i ↦ _ ∈ l, Φ i.
+
+  Lemma big_sepL_seq_shift `{!BiAffine PROP} j i sz Φ :
+    ([∗ list] k ∈ seq i sz, Φ k) ⊣⊢@{PROP}
+    [∗ list] k ∈ seq (i + j) sz, Φ (k - j).
   Proof.
-    intros. iSplit; [iApply big_sepL_seq_index_1 | iApply big_sepL_seq_index_2]; done.
+    iSplit.
+    all: iApply big_sepL_mono_strong'; first rewrite !seq_length //.
+    all: iIntros "!>" (k ? ? ((-> & _)%lookup_seq & (-> & _)%lookup_seq)).
+    all: assert (i + j + k - j = i + k) as -> by lia.
+    all: auto.
+  Qed.
+  Lemma big_sepL_seq_shift_1 `{!BiAffine PROP} j i sz Φ :
+    ⊢@{PROP}
+      ([∗ list] k ∈ seq i sz, Φ k) -∗
+      [∗ list] k ∈ seq (i + j) sz, Φ (k - j).
+  Proof.
+    rewrite big_sepL_seq_shift. naive_solver.
+  Qed.
+  Lemma big_sepL_seq_shift_2 `{!BiAffine PROP} j i sz Φ :
+    ⊢@{PROP}
+      ([∗ list] k ∈ seq (i + j) sz, Φ (k - j)) -∗
+      [∗ list] k ∈ seq i sz, Φ k.
+  Proof.
+    rewrite -big_sepL_seq_shift. naive_solver.
   Qed.
 End big_sepL.
