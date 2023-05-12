@@ -9,7 +9,7 @@ Implicit Types v t : val.
 Implicit Types vs : list val.
 Implicit Types vss : list (list val).
 
-Record ws_deques `{!heapGS Σ} `{!CounterG Σ} {unboxed : bool} := {
+Record ws_deques `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool} := {
   ws_deques_make : val ;
   ws_deques_size : val ;
   ws_deques_push : val ;

@@ -14,7 +14,7 @@ Implicit Types v t : val.
 Implicit Types vs : list val.
 Implicit Types vss : list (list val).
 
-Record ws_deques_ext1 `{!heapGS Σ} `{!CounterG Σ} {unboxed : bool} := {
+Record ws_deques_ext1 `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool} := {
   ws_deques_ext1_make : val ;
   ws_deques_ext1_size : val ;
   ws_deques_ext1_push : val ;
@@ -122,7 +122,8 @@ Record ws_deques_ext1 `{!heapGS Σ} `{!CounterG Σ} {unboxed : bool} := {
 #[global] Existing Instance ws_deques_ext1_model_timeless.
 
 Section ws_deques_ext1.
-  Context `{!heapGS Σ} `{!CounterG Σ} `(ws_deques : ws_deques_ext1 Σ unboxed).
+  Context `{!heapGS Σ} `{counter_G : !CounterG Σ}.
+  Context `(ws_deques : ws_deques_ext1 Σ unboxed).
 
   Definition ws_deques_ext1_try_steal : val :=
     rec: "ws_deques_ext1_try_steal" "t" "i" "cnt" :=
@@ -316,7 +317,8 @@ Notation "ws_deques .(ws_deques_ext1_pop_steal)" := (ws_deques_ext1_pop_steal ws
 ).
 
 Program Definition ws_deques_ext1_random1
-  `{!heapGS Σ} `{!CounterG Σ} {unboxed} (ws_deques : ws_deques Σ unboxed)
+  `{!heapGS Σ} `{counter_G : !CounterG Σ}
+  {unboxed} (ws_deques : ws_deques Σ unboxed)
   {random_unboxed} (random : random Σ random_unboxed)
   : ws_deques_ext1 Σ unboxed
 := {|
