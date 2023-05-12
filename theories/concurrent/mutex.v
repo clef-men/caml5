@@ -6,7 +6,7 @@ From caml5.lang Require Import
 From caml5.concurrent Require Export
   base.
 
-Implicit Types t : val.
+Implicit Types t fn : val.
 
 Record mutex `{!heapGS Σ} {unboxed : bool} := {
   mutex_make : val ;
@@ -32,17 +32,28 @@ Record mutex `{!heapGS Σ} {unboxed : bool} := {
   mutex_make_spec P :
     {{{ P }}}
       mutex_make #()
-    {{{ t, RET t; mutex_inv t P }}} ;
+    {{{ t,
+      RET t; mutex_inv t P
+    }}} ;
 
   mutex_lock_spec t P :
-    {{{ mutex_inv t P }}}
+    {{{
+      mutex_inv t P
+    }}}
       mutex_lock t
-    {{{ RET #(); mutex_locked t ∗ P }}} ;
+    {{{
+      RET #(); mutex_locked t ∗ P
+    }}} ;
 
   mutex_unlock_spec t P :
-    {{{ mutex_inv t P ∗ mutex_locked t ∗ P }}}
+    {{{
+      mutex_inv t P ∗
+      mutex_locked t ∗ P
+    }}}
       mutex_unlock t
-    {{{ RET #(); True }}} ;
+    {{{
+      RET #(); True
+    }}} ;
 
   mutex_unboxed :
     if unboxed then ∀ t P,
@@ -78,21 +89,32 @@ Section mutex.
       mutex.(mutex_unlock) "t" ;;
       "res".
 
-  Lemma mutex_protect_spec t P (fn : val) Φ :
-    {{{ mutex.(mutex_inv) t P ∗ {{{ P }}} fn #() {{{ v, RET v; P ∗ Φ v }}} }}}
+  Lemma mutex_protect_spec t P fn Φ :
+    {{{
+      mutex.(mutex_inv) t P ∗
+      ( mutex.(mutex_locked) t -∗
+        P -∗
+        WP fn #() {{ v, mutex.(mutex_locked) t ∗ P ∗ Φ v }}
+      )
+    }}}
       mutex_protect t fn
-    {{{ v, RET v; Φ v }}}.
+    {{{ v,
+      RET v; Φ v
+    }}}.
   Proof.
     iIntros "%Ψ (#Hinv & Hfn) HΨ".
-    wp_rec. wp_pures.
-    wp_apply (mutex_lock_spec with "Hinv"). iIntros "(Hlocked & HP)".
+    wp_rec.
+    wp_smart_apply (mutex_lock_spec with "Hinv"). iIntros "(Hlocked & HP)".
     wp_pures.
-    wp_apply ("Hfn" with "HP"). iIntros "%v (HP & HΦ)".
+    wp_bind (fn #()). iApply (wp_wand with "(Hfn Hlocked HP)"). iIntros "%v (Hlocked & HP & HΦ)".
+    wp_smart_apply (mutex_unlock_spec with "[$Hinv $Hlocked $HP]"). iIntros "_".
     wp_pures.
-    wp_apply (mutex_unlock_spec with "[$Hinv $Hlocked $HP]"). iIntros "_".
-    wp_pures.
-    iApply "HΨ". done.
+    iApply ("HΨ" with "HΦ").
   Qed.
 End mutex.
 
 #[global] Opaque mutex_protect.
+
+Notation "mutex .(mutex_protect)" := (mutex_protect mutex)
+( at level 5
+).
