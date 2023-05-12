@@ -490,8 +490,8 @@ Section heapGS.
       iExists vs1. auto.
     Qed.
     Lemma chunk_span_valid_2 l dq1 sz1 dq2 sz2 :
-      0 < sz1 →
       sz1 = sz2 →
+      0 < sz1 →
       chunk_span l dq1 sz1 -∗
       chunk_span l dq2 sz2 -∗
       ⌜✓ (dq1 ⋅ dq2)⌝.
@@ -501,8 +501,8 @@ Section heapGS.
       iDestruct (chunk_span_valid with "Hspan") as %?; done.
     Qed.
     Lemma chunk_span_dfrac_ne l1 dq1 sz1 l2 dq2 sz2 :
-      0 < sz1 →
       sz1 = sz2 →
+      0 < sz1 →
       ¬ ✓ (dq1 ⋅ dq2) →
       chunk_span l1 dq1 sz1 -∗
       chunk_span l2 dq2 sz2 -∗
@@ -512,8 +512,8 @@ Section heapGS.
       iDestruct (chunk_span_valid_2 with "Hspan1 Hspan2") as %?; naive_solver.
     Qed.
     Lemma chunk_span_ne l1 sz1 l2 dq2 sz2 :
-      0 < sz1 →
       sz1 = sz2 →
+      0 < sz1 →
       chunk_span l1 (DfracOwn 1) sz1 -∗
       chunk_span l2 dq2 sz2 -∗
       ⌜l1 ≠ l2⌝.
@@ -521,8 +521,8 @@ Section heapGS.
       intros. iApply chunk_span_dfrac_ne; [done.. | intros []%(exclusive_l _)].
     Qed.
     Lemma chunk_span_exclusive l sz1 sz2 :
-      0 < sz1 →
       sz1 = sz2 →
+      0 < sz1 →
       chunk_span l (DfracOwn 1) sz1 -∗
       chunk_span l (DfracOwn 1) sz2 -∗
       False.
