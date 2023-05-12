@@ -123,7 +123,7 @@ Section heapGS.
     #[global] Instance chunk_model_as_fractional l q vs :
       AsFractional (chunk_model l (DfracOwn q) vs) (λ q, chunk_model l (DfracOwn q) vs) q.
     Proof.
-      split; done || apply _.
+      split; [done | apply _].
     Qed.
 
     Lemma chunk_model_singleton l dq v :
@@ -341,7 +341,7 @@ Section heapGS.
     #[global] Instance chunk_span_as_fractional l q sz :
       AsFractional (chunk_span l (DfracOwn q) sz) (λ q, chunk_span l (DfracOwn q) sz) q.
     Proof.
-      split; done || apply _.
+      split; [done | apply _].
     Qed.
 
     Lemma chunk_span_singleton l dq :
