@@ -1,5 +1,6 @@
 From caml5 Require Import
-  prelude
+  prelude.
+From caml5.common Require Import
   tactics.
 From caml5.bi Require Import
   big_op.
