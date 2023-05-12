@@ -89,27 +89,27 @@ Section mutex.
       mutex.(mutex_unlock) "t" ;;
       "res".
 
-  Lemma mutex_protect_spec t P fn Φ :
+  Lemma mutex_protect_spec t P fn Ψ :
     {{{
       mutex.(mutex_inv) t P ∗
       ( mutex.(mutex_locked) t -∗
         P -∗
-        WP fn #() {{ v, mutex.(mutex_locked) t ∗ P ∗ Φ v }}
+        WP fn #() {{ v, mutex.(mutex_locked) t ∗ P ∗ Ψ v }}
       )
     }}}
       mutex_protect t fn
     {{{ v,
-      RET v; Φ v
+      RET v; Ψ v
     }}}.
   Proof.
-    iIntros "%Ψ (#Hinv & Hfn) HΨ".
+    iIntros "%Φ (#Hinv & Hfn) HΦ".
     wp_rec.
     wp_smart_apply (mutex_lock_spec with "Hinv"). iIntros "(Hlocked & HP)".
     wp_pures.
-    wp_bind (fn #()). iApply (wp_wand with "(Hfn Hlocked HP)"). iIntros "%v (Hlocked & HP & HΦ)".
+    wp_bind (fn #()). iApply (wp_wand with "(Hfn Hlocked HP)"). iIntros "%v (Hlocked & HP & HΨ)".
     wp_smart_apply (mutex_unlock_spec with "[$Hinv $Hlocked $HP]"). iIntros "_".
     wp_pures.
-    iApply ("HΨ" with "HΦ").
+    iApply ("HΦ" with "HΨ").
   Qed.
 End mutex.
 
