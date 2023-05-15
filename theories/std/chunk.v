@@ -701,7 +701,7 @@ Section heapGS.
     iApply ("Hfn" with "[//]"). auto.
   Qed.
 
-  Lemma chunk_get_spec l i dq vs v E :
+  Lemma chunk_get_spec l (i : Z) dq vs v E :
     (0 ≤ i)%Z →
     vs !! Z.to_nat i = Some v →
     {{{
@@ -719,7 +719,7 @@ Section heapGS.
     iApply "HΦ". iApply ("Hmodel" with "H↦").
   Qed.
 
-  Lemma chunk_set_spec l i vs v E :
+  Lemma chunk_set_spec l (i : Z) vs v E :
     (0 ≤ i < length vs)%Z →
     {{{
       chunk_model l (DfracOwn 1) vs
