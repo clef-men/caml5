@@ -85,10 +85,10 @@ Section heapGS.
 
   Definition array_mapi : val :=
     λ: "t" "fn",
-      chunk_mapi "t".(data) (array_size "t") "fn".
+      array_init (array_size "t") (λ: "i", "fn" "i" (array_get "t" "i")).
   Definition array_map : val :=
     λ: "t" "fn",
-      chunk_map "t".(data) (array_size "t") "fn".
+      array_mapi "t" (λ: <> "v", "fn" "v").
 
   Definition array_blit : val :=
     λ: "t" "i" "t'" "i'" "n",
@@ -672,6 +672,628 @@ Section heapGS.
     iApply big_sepL_intro. iIntros "!> %i %_i %Hlookup".
     apply lookup_seq in Hlookup as (-> & ?).
     iApply ("Hfn" with "[//]"). auto.
+  Qed.
+
+  Lemma array_get_spec t (i : Z) dq vs v E :
+    (0 ≤ i)%Z →
+    vs !! Z.to_nat i = Some v →
+    {{{
+      array_model t dq vs
+    }}}
+      array_get t #i @ E
+    {{{
+      RET v;
+      array_model t dq vs
+    }}}.
+  Proof.
+    iIntros "% % %Φ (%l & -> & #Hsz & Hmodel) HΦ".
+    wp_rec.
+    wp_smart_apply (chunk_get_spec with "Hmodel"); [done.. |]. iIntros "Hmodel".
+    iApply "HΦ". iExists l. auto.
+  Qed.
+  Lemma array_get_spec' t (j : nat) dq vs (i : Z) v E :
+    (j ≤ i)%Z →
+    vs !! Z.to_nat (i - j) = Some v →
+    {{{
+      array_view t j dq vs
+    }}}
+      array_get t #i @ E
+    {{{
+      RET v;
+      array_view t j dq vs
+    }}}.
+  Proof.
+    iIntros "%Hi %Hlookup %Φ (%l & -> & Hmodel) HΦ".
+    destruct (Z_of_nat_complete (i - j)) as (k & Hk); first lia.
+    assert (i = j + k)%Z as -> by lia.
+    rewrite Z.add_simpl_l in Hlookup.
+    wp_rec. wp_pures.
+    rewrite -loc_add_assoc.
+    wp_apply (chunk_get_spec with "Hmodel"); [lia | done |]. iIntros "Hmodel".
+    iApply "HΦ". iExists l. auto.
+  Qed.
+
+  Lemma array_size_spec t sz :
+    {{{ array_inv t sz }}}
+      array_size t
+    {{{
+      RET #sz; True
+    }}}.
+  Proof.
+    iIntros "%Φ (%l & -> & #Hsz) HΦ".
+    wp_rec. wp_pures. wp_load.
+    iApply ("HΦ" with "[//]").
+  Qed.
+
+  Lemma array_set_spec t (i : Z) vs v E :
+    (0 ≤ i < length vs)%Z →
+    {{{
+      array_model t (DfracOwn 1) vs
+    }}}
+      array_set t #i v @ E
+    {{{
+      RET #();
+      array_model t (DfracOwn 1) (<[Z.to_nat i := v]> vs)
+    }}}.
+  Proof.
+    iIntros "% %Φ (%l & -> & #Hsz & Hmodel) HΦ".
+    wp_rec.
+    wp_smart_apply (chunk_set_spec with "Hmodel"); first done. iIntros "Hmodel".
+    iApply "HΦ". iExists l. rewrite insert_length. auto.
+  Qed.
+  Lemma array_set_spec' t (j : nat) vs (i : Z) v E :
+    (j ≤ i < j + length vs)%Z →
+    {{{
+      array_view t j (DfracOwn 1) vs
+    }}}
+      array_set t #i v @ E
+    {{{
+      RET #();
+      array_view t j (DfracOwn 1) (<[Z.to_nat (i - j) := v]> vs)
+    }}}.
+  Proof.
+    iIntros "% %Φ (%l & -> & Hmodel) HΦ".
+    destruct (Z_of_nat_complete (i - j)) as (k & Hk); first lia.
+    assert (i = j + k)%Z as -> by lia.
+    wp_rec. wp_pures.
+    rewrite -loc_add_assoc.
+    wp_smart_apply (chunk_set_spec with "Hmodel"); first lia. iIntros "Hmodel".
+    iApply "HΦ". iExists l. rewrite Z.add_simpl_l. auto.
+  Qed.
+
+  Lemma array_foldli_spec Ψ t dq vs acc fn :
+    {{{
+      array_model t dq vs ∗
+      Ψ [] acc ∗
+      [∗ list] i ↦ v ∈ vs, ∀ acc,
+        Ψ (take i vs) acc -∗
+        WP fn acc #i (v : val) {{ acc', Ψ (take i vs ++ [v]) acc' }}
+    }}}
+      array_foldli t acc fn
+    {{{ acc',
+      RET acc';
+      array_model t dq vs ∗
+      Ψ vs acc'
+    }}}.
+  Proof.
+    iIntros "%Φ ((%l & -> & #Hsz & Hmodel) & HΨ & Hfn) HΦ".
+    wp_rec.
+    wp_smart_apply array_size_spec; first (iExists l; auto). iIntros "_".
+    wp_smart_apply (chunk_foldli_spec Ψ with "[$Hmodel $HΨ $Hfn]"); first done. iIntros "%acc' (Hmodel & HΨ)".
+    iApply "HΦ". iFrame. iExists l. auto.
+  Qed.
+  Lemma array_foldli_spec' Ψ t dq vs acc fn :
+    {{{
+      array_model t dq vs ∗
+      Ψ [] acc ∗
+      ∀ acc i v,
+      {{{ ⌜vs !! i = Some v⌝ ∗ Ψ (take i vs) acc }}}
+        fn acc #i v
+      {{{ acc', RET acc'; Ψ (take i vs ++ [v]) acc' }}}
+    }}}
+      array_foldli t acc fn
+    {{{ acc',
+      RET acc';
+      array_model t dq vs ∗
+      Ψ vs acc'
+    }}}.
+  Proof.
+    iIntros "%Φ ((%l & -> & #Hsz & Hmodel) & HΨ & Hfn) HΦ".
+    wp_rec.
+    wp_smart_apply array_size_spec; first (iExists l; auto). iIntros "_".
+    wp_smart_apply (chunk_foldli_spec' Ψ with "[$Hmodel $HΨ $Hfn]"); first done. iIntros "%acc' (Hmodel & HΨ)".
+    iApply "HΦ". iFrame. iExists l. auto.
+  Qed.
+
+  Lemma array_foldl_spec Ψ t dq vs acc fn :
+    {{{
+      array_model t dq vs ∗
+      Ψ [] acc ∗
+      [∗ list] i ↦ v ∈ vs, ∀ acc,
+        Ψ (take i vs) acc -∗
+        WP fn acc (v : val) {{ acc', Ψ (take i vs ++ [v]) acc' }}
+    }}}
+      array_foldl t acc fn
+    {{{ acc',
+      RET acc';
+      array_model t dq vs ∗
+      Ψ vs acc'
+    }}}.
+  Proof.
+    iIntros "%Φ ((%l & -> & #Hsz & Hmodel) & HΨ & Hfn) HΦ".
+    wp_rec.
+    wp_smart_apply array_size_spec; first (iExists l; auto). iIntros "_".
+    wp_smart_apply (chunk_foldl_spec Ψ with "[$Hmodel $HΨ Hfn]"); try done. iIntros "%acc' (Hmodel & HΨ)".
+    iApply "HΦ". iFrame. iExists l. auto.
+  Qed.
+  Lemma array_foldl_spec' Ψ t dq vs acc fn :
+    {{{
+      array_model t dq vs ∗
+      Ψ [] acc ∗
+      ∀ i v acc,
+      {{{ ⌜vs !! i = Some v⌝ ∗ Ψ (take i vs) acc }}}
+        fn acc v
+      {{{ acc', RET acc'; Ψ (take i vs ++ [v]) acc' }}}
+    }}}
+      array_foldl t acc fn
+    {{{ acc',
+      RET acc';
+      array_model t dq vs ∗
+      Ψ vs acc'
+    }}}.
+  Proof.
+    iIntros "%Φ ((%l & -> & #Hsz & Hmodel) & HΨ & Hfn) HΦ".
+    wp_rec.
+    wp_smart_apply array_size_spec; first (iExists l; auto). iIntros "_".
+    wp_smart_apply (chunk_foldl_spec' Ψ with "[$Hmodel $HΨ Hfn]"); try done. iIntros "%acc' (Hmodel & HΨ)".
+    iApply "HΦ". iFrame. iExists l. auto.
+  Qed.
+
+  Lemma array_foldri_spec Ψ t dq vs acc fn :
+    {{{
+      array_model t dq vs ∗
+      Ψ acc [] ∗
+      [∗ list] i ↦ v ∈ vs, ∀ acc,
+        Ψ acc (drop (S i) vs) -∗
+        WP fn #i (v : val) acc {{ acc', Ψ acc' (v :: drop (S i) vs) }}
+    }}}
+      array_foldri t fn acc
+    {{{ acc',
+      RET acc';
+      array_model t dq vs ∗
+      Ψ acc' vs
+    }}}.
+  Proof.
+    iIntros "%Φ ((%l & -> & #Hsz & Hmodel) & HΨ & Hfn) HΦ".
+    wp_rec.
+    wp_smart_apply array_size_spec; first (iExists l; auto). iIntros "_".
+    wp_smart_apply (chunk_foldri_spec Ψ with "[$Hmodel $HΨ $Hfn]"); first done. iIntros "%acc' (Hmodel & HΨ)".
+    iApply "HΦ". iFrame. iExists l. auto.
+  Qed.
+  Lemma array_foldri_spec' Ψ t dq vs acc fn :
+    {{{
+      array_model t dq vs ∗
+      Ψ acc [] ∗
+      ∀ acc i v,
+      {{{ ⌜vs !! i = Some v⌝ ∗ Ψ acc (drop (S i) vs) }}}
+        fn #i v acc
+      {{{ acc', RET acc'; Ψ acc' (v :: drop (S i) vs) }}}
+    }}}
+      array_foldri t fn acc
+    {{{ acc',
+      RET acc';
+      array_model t dq vs ∗
+      Ψ acc' vs
+    }}}.
+  Proof.
+    iIntros "%Φ ((%l & -> & #Hsz & Hmodel) & HΨ & Hfn) HΦ".
+    wp_rec.
+    wp_smart_apply array_size_spec; first (iExists l; auto). iIntros "_".
+    wp_smart_apply (chunk_foldri_spec' Ψ with "[$Hmodel $HΨ $Hfn]"); first done. iIntros "%acc' (Hmodel & HΨ)".
+    iApply "HΦ". iFrame. iExists l. auto.
+  Qed.
+
+  Lemma array_foldr_spec Ψ t dq vs acc fn :
+    {{{
+      array_model t dq vs ∗
+      Ψ acc [] ∗
+      [∗ list] i ↦ v ∈ vs, ∀ acc,
+        Ψ acc (drop (S i) vs) -∗
+        WP fn (v : val) acc {{ acc', Ψ acc' (v :: drop (S i) vs) }}
+    }}}
+      array_foldr t fn acc
+    {{{ acc',
+      RET acc';
+      array_model t dq vs ∗
+      Ψ acc' vs
+    }}}.
+  Proof.
+    iIntros "%Φ ((%l & -> & #Hsz & Hmodel) & HΨ & Hfn) HΦ".
+    wp_rec.
+    wp_smart_apply array_size_spec; first (iExists l; auto). iIntros "_".
+    wp_smart_apply (chunk_foldr_spec Ψ with "[$Hmodel $HΨ $Hfn]"); first done. iIntros "%acc' (Hmodel & HΨ)".
+    iApply "HΦ". iFrame. iExists l. auto.
+  Qed.
+  Lemma array_foldr_spec' Ψ t dq vs acc fn :
+    {{{
+      array_model t dq vs ∗
+      Ψ acc [] ∗
+      ∀ i v acc,
+      {{{ ⌜vs !! i = Some v⌝ ∗ Ψ acc (drop (S i) vs) }}}
+        fn v acc
+      {{{ acc', RET acc'; Ψ acc' (v :: drop (S i) vs) }}}
+    }}}
+      array_foldr t fn acc
+    {{{ acc',
+      RET acc';
+      array_model t dq vs ∗
+      Ψ acc' vs
+    }}}.
+  Proof.
+    iIntros "%Φ ((%l & -> & #Hsz & Hmodel) & HΨ & Hfn) HΦ".
+    wp_rec.
+    wp_smart_apply array_size_spec; first (iExists l; auto). iIntros "_".
+    wp_smart_apply (chunk_foldr_spec' Ψ with "[$Hmodel $HΨ $Hfn]"); first done. iIntros "%acc' (Hmodel & HΨ)".
+    iApply "HΦ". iFrame. iExists l. auto.
+  Qed.
+
+  Lemma array_iteri_spec Ψ t dq vs fn :
+    {{{
+      array_model t dq vs ∗
+      Ψ [] ∗
+      [∗ list] i ↦ v ∈ vs,
+        Ψ (take i vs) -∗
+        WP fn #i (v : val) {{ _, Ψ (take i vs ++ [v]) }}
+    }}}
+      array_iteri t fn
+    {{{
+      RET #();
+      array_model t dq vs ∗
+      Ψ vs
+    }}}.
+  Proof.
+    iIntros "%Φ ((%l & -> & #Hsz & Hmodel) & HΨ & Hfn) HΦ".
+    wp_rec.
+    wp_smart_apply array_size_spec; first (iExists l; auto). iIntros "_".
+    wp_smart_apply (chunk_iteri_spec Ψ with "[$Hmodel $HΨ $Hfn]"); first done. iIntros "(Hmodel & HΨ)".
+    iApply "HΦ". iFrame. iExists l. auto.
+  Qed.
+  Lemma array_iteri_spec' Ψ t dq vs fn :
+    {{{
+      array_model t dq vs ∗
+      Ψ [] ∗
+      ∀ i v,
+      {{{ ⌜vs !! i = Some v⌝ ∗ Ψ (take i vs) }}}
+        fn #i v
+      {{{ w, RET w; Ψ (take i vs ++ [v]) }}}
+    }}}
+      array_iteri t fn
+    {{{
+      RET #();
+      array_model t dq vs ∗
+      Ψ vs
+    }}}.
+  Proof.
+    iIntros "%Φ ((%l & -> & #Hsz & Hmodel) & HΨ & Hfn) HΦ".
+    wp_rec.
+    wp_smart_apply array_size_spec; first (iExists l; auto). iIntros "_".
+    wp_smart_apply (chunk_iteri_spec' Ψ with "[$Hmodel $HΨ $Hfn]"); first done. iIntros "(Hmodel & HΨ)".
+    iApply "HΦ". iFrame. iExists l. auto.
+  Qed.
+  Lemma array_iteri_spec_disentangled Ψ t dq vs fn :
+    {{{
+      array_model t dq vs ∗
+      [∗ list] i ↦ v ∈ vs,
+        WP fn #i (v : val) {{ _, Ψ i v }}
+    }}}
+      array_iteri t fn
+    {{{
+      RET #();
+      array_model t dq vs ∗
+      [∗ list] i ↦ v ∈ vs, Ψ i v
+    }}}.
+  Proof.
+    iIntros "%Φ ((%l & -> & #Hsz & Hmodel) & Hfn) HΦ".
+    wp_rec.
+    wp_smart_apply array_size_spec; first (iExists l; auto). iIntros "_".
+    wp_smart_apply (chunk_iteri_spec_disentangled Ψ with "[$Hmodel $Hfn]"); first done. iIntros "(Hmodel & HΨ)".
+    iApply "HΦ". iFrame. iExists l. auto.
+  Qed.
+  Lemma array_iteri_spec_disentangled' Ψ t dq vs fn :
+    {{{
+      array_model t dq vs ∗
+      ∀ i v,
+      {{{ ⌜vs !! i = Some v⌝ }}}
+        fn #i v
+      {{{ w, RET w; Ψ i v }}}
+    }}}
+      array_iteri t fn
+    {{{
+      RET #();
+      array_model t dq vs ∗
+      [∗ list] i ↦ v ∈ vs, Ψ i v
+    }}}.
+  Proof.
+    iIntros "%Φ ((%l & -> & #Hsz & Hmodel) & Hfn) HΦ".
+    wp_rec.
+    wp_smart_apply array_size_spec; first (iExists l; auto). iIntros "_".
+    wp_smart_apply (chunk_iteri_spec_disentangled' Ψ with "[$Hmodel $Hfn]"); first done. iIntros "(Hmodel & HΨ)".
+    iApply "HΦ". iFrame. iExists l. auto.
+  Qed.
+
+  Lemma array_iter_spec Ψ t dq vs fn :
+    {{{
+      array_model t dq vs ∗
+      Ψ [] ∗
+      [∗ list] i ↦ v ∈ vs,
+        Ψ (take i vs) -∗
+        WP fn (v : val) {{ _, Ψ (take i vs ++ [v]) }}
+    }}}
+      array_iter t fn
+    {{{
+      RET #();
+      array_model t dq vs ∗
+      Ψ vs
+    }}}.
+  Proof.
+    iIntros "%Φ ((%l & -> & #Hsz & Hmodel) & HΨ & Hfn) HΦ".
+    wp_rec.
+    wp_smart_apply array_size_spec; first (iExists l; auto). iIntros "_".
+    wp_smart_apply (chunk_iter_spec Ψ with "[$Hmodel $HΨ $Hfn]"); first done. iIntros "(Hmodel & HΨ)".
+    iApply "HΦ". iFrame. iExists l. auto.
+  Qed.
+  Lemma array_iter_spec' Ψ t dq vs fn :
+    {{{
+      array_model t dq vs ∗
+      Ψ [] ∗
+      ∀ i v,
+      {{{ ⌜vs !! i = Some v⌝ ∗ Ψ (take i vs) }}}
+        fn v
+      {{{ w, RET w; Ψ (take i vs ++ [v]) }}}
+    }}}
+      array_iter t fn
+    {{{
+      RET #();
+      array_model t dq vs ∗
+      Ψ vs
+    }}}.
+  Proof.
+    iIntros "%Φ ((%l & -> & #Hsz & Hmodel) & HΨ & Hfn) HΦ".
+    wp_rec.
+    wp_smart_apply array_size_spec; first (iExists l; auto). iIntros "_".
+    wp_smart_apply (chunk_iter_spec' Ψ with "[$Hmodel $HΨ $Hfn]"); first done. iIntros "(Hmodel & HΨ)".
+    iApply "HΦ". iFrame. iExists l. auto.
+  Qed.
+  Lemma array_iter_spec_disentangled Ψ t dq vs fn :
+    {{{
+      array_model t dq vs ∗
+      [∗ list] v ∈ vs,
+        WP fn (v : val) {{ _, Ψ v }}
+    }}}
+      array_iter t fn
+    {{{
+      RET #();
+      array_model t dq vs ∗
+      [∗ list] v ∈ vs, Ψ v
+    }}}.
+  Proof.
+    iIntros "%Φ ((%l & -> & #Hsz & Hmodel) & Hfn) HΦ".
+    wp_rec.
+    wp_smart_apply array_size_spec; first (iExists l; auto). iIntros "_".
+    wp_smart_apply (chunk_iter_spec_disentangled Ψ with "[$Hmodel $Hfn]"); first done. iIntros "(Hmodel & HΨ)".
+    iApply "HΦ". iFrame. iExists l. auto.
+  Qed.
+  Lemma array_iter_spec_disentangled' Ψ t dq vs fn :
+    {{{
+      array_model t dq vs ∗
+      ∀ v,
+      {{{ ⌜v ∈ vs⌝ }}}
+        fn v
+      {{{ w, RET w; Ψ v }}}
+    }}}
+      array_iter t fn
+    {{{
+      RET #();
+      array_model t dq vs ∗
+      [∗ list] v ∈ vs, Ψ v
+    }}}.
+  Proof.
+    iIntros "%Φ ((%l & -> & #Hsz & Hmodel) & Hfn) HΦ".
+    wp_rec.
+    wp_smart_apply array_size_spec; first (iExists l; auto). iIntros "_".
+    wp_smart_apply (chunk_iter_spec_disentangled' Ψ with "[$Hmodel $Hfn]"); first done. iIntros "(Hmodel & HΨ)".
+    iApply "HΦ". iFrame. iExists l. auto.
+  Qed.
+
+  Lemma array_mapi_spec Ψ t dq vs fn :
+    {{{
+      array_model t dq vs ∗
+      Ψ [] [] ∗
+      [∗ list] i ↦ v ∈ vs, ∀ ws,
+        ⌜length ws = i⌝ -∗
+        Ψ (take i vs) ws -∗
+        WP fn #i (v : val) {{ w, Ψ (take i vs ++ [v]) (ws ++ [w]) }}
+    }}}
+      array_mapi t fn
+    {{{ t' ws,
+      RET t';
+      array_model t dq vs ∗
+      array_model t' (DfracOwn 1) ws ∗
+      Ψ vs ws
+    }}}.
+  Proof.
+    iIntros "%Φ (Hmodel & HΨ & Hfn) HΦ".
+    wp_rec.
+    pose Ψ' ws := (
+      array_model t dq vs ∗
+      Ψ (take (length ws) vs) ws
+    )%I.
+    wp_smart_apply (array_size_spec with "[#]").
+    { iDestruct "Hmodel" as "(%l & -> & #Hsz & _)". iExists l. auto. }
+    iIntros "_".
+    wp_smart_apply (array_init_spec Ψ' with "[$Hmodel $HΨ Hfn]"); first lia.
+    { rewrite Nat2Z.id.
+      iApply (big_sepL_seq_index vs); first naive_solver.
+      iApply (big_sepL_mono with "Hfn"). iIntros "%i %v %Hlookup Hfn %ws -> (Hmodel & HΨ)".
+      wp_smart_apply (array_get_spec with "Hmodel"); [lia | rewrite Nat2Z.id // |]. iIntros "Hmodel".
+      iApply (wp_wand with "(Hfn [//] HΨ)"). iIntros "%w HΨ".
+      rewrite /Ψ' app_length /= Nat.add_1_r (take_S_r _ _ v); auto with iFrame.
+    }
+    iIntros "%t' %ws (%Hws & Hmodel' & (Hmodel & HΨ))".
+    rewrite Hws Nat2Z.id firstn_all.
+    iApply ("HΦ" with "[$Hmodel $Hmodel' $HΨ]").
+  Qed.
+  Lemma array_mapi_spec' Ψ t dq vs fn :
+    {{{
+      array_model t dq vs ∗
+      Ψ [] [] ∗
+      ∀ i v ws,
+      {{{ ⌜vs !! i = Some v⌝ ∗ Ψ (take i vs) ws }}}
+        fn #i v
+      {{{ w, RET w; Ψ (take i vs ++ [v]) (ws ++ [w]) }}}
+    }}}
+      array_mapi t fn
+    {{{ t' ws,
+      RET t';
+      array_model t dq vs ∗
+      array_model t' (DfracOwn 1) ws ∗
+      Ψ vs ws
+    }}}.
+  Proof.
+    iIntros "%Φ (Hmodel & HΨ & #Hfn) HΦ".
+    wp_apply (array_mapi_spec Ψ with "[$Hmodel $HΨ Hfn]"); try done.
+    iApply big_sepL_intro. clear. iIntros "!> %i %v % %ws % HΨ".
+    wp_apply ("Hfn" with "[$HΨ //]"). naive_solver.
+  Qed.
+  Lemma array_mapi_spec_disentangled Ψ t dq vs fn :
+    {{{
+      array_model t dq vs ∗
+      [∗ list] i ↦ v ∈ vs,
+        WP fn #i (v : val) {{ w, Ψ i v w }}
+    }}}
+      array_mapi t fn
+    {{{ t' ws,
+      RET t';
+      array_model t dq vs ∗
+      array_model t' (DfracOwn 1) ws ∗
+      [∗ list] i ↦ v; w ∈ vs; ws, Ψ i v w
+    }}}.
+  Proof.
+    iIntros "%Φ (Hmodel & Hfn) HΦ".
+    set (Ψ' vs ws := ([∗ list] i ↦ v; w ∈ vs; ws, Ψ i v w)%I).
+    wp_apply (array_mapi_spec Ψ' with "[$Hmodel Hfn]"); try done.
+    iSplit; first rewrite /Ψ' //.
+    iApply (big_sepL_mono with "Hfn"). iIntros "%i %v %Hlookup Hfn %ws % HΨ'".
+    iApply (wp_wand with "Hfn"). iIntros "%w HΨ". iFrame. iSplitL; last done.
+    rewrite right_id take_length_le //. apply lookup_lt_Some in Hlookup. lia.
+  Qed.
+  Lemma array_mapi_spec_disentangled' Ψ t dq vs fn :
+    {{{
+      array_model t dq vs ∗
+      ∀ i v,
+      {{{ ⌜vs !! i = Some v⌝ }}}
+        fn #i v
+      {{{ w, RET w; Ψ i v w }}}
+    }}}
+      array_mapi t fn
+    {{{ t' ws,
+      RET t';
+      array_model t dq vs ∗
+      array_model t' (DfracOwn 1) ws ∗
+      [∗ list] i ↦ v; w ∈ vs; ws, Ψ i v w
+    }}}.
+  Proof.
+    iIntros "%Φ (Hmodel & #Hfn) HΦ".
+    wp_apply (array_mapi_spec_disentangled Ψ with "[$Hmodel Hfn]"); try done.
+    iApply big_sepL_intro. clear. iIntros "!> %i %v %".
+    iApply ("Hfn" with "[//]"). naive_solver.
+  Qed.
+
+  Lemma array_map_spec Ψ t dq vs fn :
+    {{{
+      array_model t dq vs ∗
+      Ψ [] [] ∗
+      [∗ list] i ↦ v ∈ vs, ∀ ws,
+        Ψ (take i vs) ws -∗
+        WP fn (v : val) {{ w, Ψ (take i vs ++ [v]) (ws ++ [w]) }}
+    }}}
+      array_map t fn
+    {{{ t' ws,
+      RET t';
+      array_model t dq vs ∗
+      array_model t' (DfracOwn 1) ws ∗
+      Ψ vs ws
+    }}}.
+  Proof.
+    iIntros "%Φ (Hmodel & HΨ & Hfn) HΦ".
+    wp_rec.
+    wp_smart_apply (array_mapi_spec Ψ with "[$Hmodel $HΨ Hfn]"); try done.
+    iApply (big_sepL_mono with "Hfn"). clear. iIntros "%i %v % Hfn %w % HΨ".
+    wp_smart_apply ("Hfn" with "HΨ").
+  Qed.
+  Lemma array_map_spec' Ψ t dq vs fn :
+    {{{
+      array_model t dq vs ∗
+      Ψ [] [] ∗
+      ∀ i v ws,
+      {{{ ⌜vs !! i = Some v⌝ ∗ Ψ (take i vs) ws }}}
+        fn v
+      {{{ w, RET w; Ψ (take i vs ++ [v]) (ws ++ [w]) }}}
+    }}}
+      array_map t fn
+    {{{ t' ws,
+      RET t';
+      array_model t dq vs ∗
+      array_model t' (DfracOwn 1) ws ∗
+      Ψ vs ws
+    }}}.
+  Proof.
+    iIntros "%Φ (Hmodel & HΨ & #Hfn) HΦ".
+    wp_apply (array_map_spec Ψ with "[$Hmodel $HΨ Hfn]"); try done.
+    iApply big_sepL_intro. clear. iIntros "!> %i %v % %w HΨ".
+    wp_apply ("Hfn" with "[$HΨ //]"). naive_solver.
+  Qed.
+  Lemma array_map_spec_disentangled Ψ t dq vs fn :
+    {{{
+      array_model t dq vs ∗
+      [∗ list] v ∈ vs,
+        WP fn (v : val) {{ Ψ v }}
+    }}}
+      array_map t fn
+    {{{ t' ws,
+      RET t';
+      array_model t dq vs ∗
+      array_model t' (DfracOwn 1) ws ∗
+      [∗ list] v; w ∈ vs; ws, Ψ v w
+    }}}.
+  Proof.
+    iIntros "%Φ (Hmodel & Hfn) HΦ".
+    set (Ψ' vs ws := ([∗ list] v; w ∈ vs; ws, Ψ v w)%I).
+    wp_apply (array_map_spec Ψ' with "[$Hmodel Hfn]"); try done.
+    iSplit; first rewrite /Ψ' //.
+    iApply (big_sepL_mono with "Hfn"). iIntros "%i %v % Hfn %ws HΨ'".
+    iApply (wp_wand with "Hfn"). iIntros "%w HΨ". iFrame. done.
+  Qed.
+  Lemma array_map_spec_disentangled' Ψ t dq vs fn :
+    {{{
+      array_model t dq vs ∗
+      ∀ v,
+      {{{ ⌜v ∈ vs⌝ }}}
+        fn v
+      {{{ w, RET w; Ψ v w }}}
+    }}}
+      array_map t fn
+    {{{ t' ws,
+      RET t';
+      array_model t dq vs ∗
+      array_model t' (DfracOwn 1) ws ∗
+      [∗ list] v; w ∈ vs; ws, Ψ v w
+    }}}.
+  Proof.
+    iIntros "%Φ (Hmodel & #Hfn) HΦ".
+    wp_apply (array_map_spec_disentangled Ψ with "[$Hmodel Hfn]"); try done.
+    iApply big_sepL_intro. clear. iIntros "!> %i %v %".
+    iApply "Hfn"; last auto. rewrite elem_of_list_lookup. naive_solver.
   Qed.
 
   Lemma array_unboxed t sz :
