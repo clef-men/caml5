@@ -68,7 +68,6 @@ theories/std/record3.v
 theories/std/record4.v
 theories/std/inf_array.v
 theories/std/chunk.v
-theories/std/raw_array.v
 theories/std/array.v
 theories/std/lst.v
 theories/std/chain.v
