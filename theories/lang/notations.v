@@ -8,6 +8,17 @@ Notation Fail := (App #() #())
 ( only parsing
 ).
 
+Notation "e .1" := (Fst e)
+( at level 2,
+  left associativity,
+  format "e .1"
+) : expr_scope.
+Notation "e .2" := (Snd e)
+( at level 2,
+  left associativity,
+  format "e .2"
+) : expr_scope.
+
 Notation "e .(0)" := (e +ₗ 0%Z)%stdpp
 ( at level 2,
   left associativity,
