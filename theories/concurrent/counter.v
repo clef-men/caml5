@@ -396,7 +396,7 @@ Section counter_G.
       counter_inv t ι ub
     | ∀∀ n,
       counter_model t (DfracOwn 1) n ∗
-      if ub is Some ub then ⌜S n < ub⌝ else True
+      ⌜if ub is Some ub then S n < ub else True⌝
     >>>
       counter_incr t @ ↑ι
     <<<
@@ -434,6 +434,25 @@ Section counter_G.
     iModIntro. iExists (S n). iNext. iFrame.
     rewrite Z.add_1_r -Nat2Z.inj_succ //.
   Qed.
+  Lemma counter_incr_spec' t ι ub n :
+    (if ub is Some ub then S n < ub else True) →
+    {{{
+      counter_inv t ι ub ∗
+      counter_model t (DfracOwn 1) n
+    }}}
+      counter_incr t
+    {{{
+      RET #n;
+      counter_model t (DfracOwn 1) (S n) ∗
+      counter_token t n
+    }}}.
+  Proof.
+    iPoseProof counter_incr_spec as "_H".
+    iPoseProof (atomic_triple_seq_step with "_H") as "H"; first done. iClear "_H".
+    iIntros "% %Φ (#Hinv & Hmodel) HΦ".
+    iApply ("H" with "Hinv [$Hmodel //]"). iIntros "!> (Hmodel & Htoken) _".
+    iApply ("HΦ" with "[$Hmodel $Htoken]").
+  Qed.
 
   Lemma counter_get_spec t ι ub :
     <<<
@@ -443,7 +462,7 @@ Section counter_G.
       counter_get t @ ↑ι
     <<<
       counter_model t dq n
-    | RET #n; if ub is Some ub then ⌜n < ub⌝ else True
+    | RET #n; ⌜if ub is Some ub then n < ub else True⌝
     >>>.
   Proof.
     iIntros "!> %Φ (%l & %γ & -> & #Hmeta & %Hub & #Hub_auth & #Hinv) HΦ".
@@ -461,6 +480,24 @@ Section counter_G.
       auto with lia.
     }
     iModIntro. iNext. iExists n. iFrame.
+  Qed.
+  Lemma counter_get_spec' t ι ub dq n :
+    {{{
+      counter_inv t ι ub ∗
+      counter_model t dq n
+    }}}
+      counter_get t
+    {{{
+      RET #n;
+      counter_model t dq n ∗
+      ⌜if ub is Some ub then n < ub else True⌝
+    }}}.
+  Proof.
+    iPoseProof counter_get_spec as "_H".
+    iPoseProof (atomic_triple_seq_step with "_H") as "H"; first done. iClear "_H".
+    iIntros "%Φ (#Hinv & Hmodel) HΦ".
+    iApply ("H" with "Hinv [$Hmodel //]"). iIntros "!> Hmodel %".
+    iApply ("HΦ" with "[$Hmodel //]").
   Qed.
 
   Lemma counter_unboxed t ι ub :
