@@ -32,7 +32,7 @@ Record ws_deques `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool} := {
 
   ws_deques_inv_valid t γ ι cntr sz :
     ws_deques_inv t γ ι cntr sz -∗
-      ∃ ι_cntr, counter_inv cntr ι_cntr (Some sz) ;
+    ∃ ι_cntr, counter_inv cntr ι_cntr (Some sz) ;
 
   ws_deques_make_spec ι cntr ι_cntr sz sz' :
     sz' = Z.of_nat sz →
