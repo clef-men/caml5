@@ -43,7 +43,7 @@ Record ws_deques `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool} := {
     {{{ t γ,
       RET t;
       ws_deques_inv t γ ι cntr sz ∗
-      ws_deques_model t γ (repeat [] sz)
+      ws_deques_model t γ (replicate sz [])
     }}} ;
 
   ws_deques_size_spec t γ ι cntr sz :
