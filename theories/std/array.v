@@ -161,13 +161,6 @@ Section heapGS.
       iIntros "(%l & -> & #Hsz) (%_l & %Heq & #_Hsz & _)". injection Heq as <-.
       iDestruct (mapsto_agree with "Hsz _Hsz") as %[= <-%(inj _)]. done.
     Qed.
-    Lemma array_model_inv t dq vs :
-      array_model t dq vs -∗
-      array_inv t (length vs).
-    Proof.
-      iIntros "(%l & -> & #Hsz & Hmodel)".
-      iExists l. auto.
-    Qed.
 
     Lemma array_model_valid t dq vs :
       0 < length vs →
@@ -721,13 +714,28 @@ Section heapGS.
   Qed.
 
   Lemma array_size_spec t sz :
-    {{{ array_inv t sz }}}
+    {{{
+      array_inv t sz
+    }}}
       array_size t
     {{{
       RET #sz; True
     }}}.
   Proof.
     iIntros "%Φ (%l & -> & #Hsz) HΦ".
+    wp_rec. wp_pures. wp_load.
+    iApply ("HΦ" with "[//]").
+  Qed.
+  Lemma array_size_spec' t dq vs :
+    {{{
+      array_model t dq vs
+    }}}
+      array_size t
+    {{{
+      RET #(length vs); True
+    }}}.
+  Proof.
+    iIntros "%Φ (%l & -> & #Hsz & Hmodel) HΦ".
     wp_rec. wp_pures. wp_load.
     iApply ("HΦ" with "[//]").
   Qed.
