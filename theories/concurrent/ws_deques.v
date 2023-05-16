@@ -111,7 +111,7 @@ Record ws_deques `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool} := {
       True ;
 }.
 #[global] Arguments ws_deques _ {_ _} _ : assert.
-#[global] Arguments Build_ws_deques {_ _ _ _} _ {_ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ _ _ : assert.
+#[global] Arguments Build_ws_deques {_ _ _} _ {_ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ _ _ : assert.
 #[global] Existing Instance ws_deques_name_eq_dec.
 #[global] Existing Instance ws_deques_name_countable.
 #[global] Existing Instance ws_deques_inv_persistent.
