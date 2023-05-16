@@ -161,6 +161,13 @@ Section heapGS.
       iIntros "(%l & -> & #Hsz) (%_l & %Heq & #_Hsz & _)". injection Heq as <-.
       iDestruct (mapsto_agree with "Hsz _Hsz") as %[= <-%(inj _)]. done.
     Qed.
+    Lemma array_model_inv t dq vs :
+      array_model t dq vs -∗
+      array_inv t (length vs).
+    Proof.
+      iIntros "(%l & -> & #Hsz & Hmodel)".
+      iExists l. auto.
+    Qed.
 
     Lemma array_model_valid t dq vs :
       0 < length vs →
