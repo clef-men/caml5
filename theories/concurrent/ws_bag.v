@@ -1,6 +1,3 @@
-From iris.algebra Require Import
-  list.
-
 From caml5 Require Import
   prelude.
 From caml5.base_logic Require Import
@@ -130,12 +127,12 @@ Proof.
 Qed.
 
 Class WsBagOfWsDequeG Σ `{!heapGS Σ} := {
-  ws_bag_of_ws_deque_G_model_G : AuthExclG Σ (listO valO) ;
+  ws_bag_of_ws_deque_G_model_G : AuthExclG Σ (leibnizO (list val)) ;
 }.
 #[local] Existing Instance ws_bag_of_ws_deque_G_model_G.
 
 Definition ws_bag_of_ws_deque_Σ := #[
-  auth_excl_Σ (listO valO)
+  auth_excl_Σ (leibnizO (list val))
 ].
 Lemma subG_ws_bag_of_ws_deque_Σ Σ `{!heapGS Σ} :
   subG ws_bag_of_ws_deque_Σ Σ →
@@ -208,12 +205,6 @@ Section ws_bag_of_ws_deque.
     Proper (pointwise_relation val (≡{n}≡) ==> (≡{n}≡)) (ws_bag_of_ws_deque_inv t γ ι).
   Proof.
     intros Ψ1 Ψ2 HΨ. f_equiv. intros v. apply dist_dist_later. done.
-  Qed.
-  #[local] Instance ws_bag_of_ws_deque_inv_proper t γ ι :
-    Proper (pointwise_relation val (≡) ==> (≡)) (ws_bag_of_ws_deque_inv t γ ι).
-  Proof.
-    intros Ψ1 Ψ2 HΨ. rewrite equiv_dist. intros n. f_equiv.
-    intros v. revert n. rewrite -equiv_dist //.
   Qed.
 
   #[local] Instance ws_bag_of_ws_deque_inv_persistent t γ ι Ψ :
@@ -405,12 +396,12 @@ Section ws_bag_of_ws_deque.
 End ws_bag_of_ws_deque.
 
 Class WsBagOfSpmcStackG Σ `{!heapGS Σ} := {
-  ws_bag_of_spmc_stack_G_model_G : AuthExclG Σ (listO valO) ;
+  ws_bag_of_spmc_stack_G_model_G : AuthExclG Σ (leibnizO (list val)) ;
 }.
 #[local] Existing Instance ws_bag_of_spmc_stack_G_model_G.
 
 Definition ws_bag_of_spmc_stack_Σ := #[
-  auth_excl_Σ (listO valO)
+  auth_excl_Σ (leibnizO (list val))
 ].
 Lemma subG_ws_bag_of_spmc_stack_Σ Σ `{!heapGS Σ} :
   subG ws_bag_of_spmc_stack_Σ Σ →
@@ -483,12 +474,6 @@ Section ws_bag_of_spmc_stack.
     Proper (pointwise_relation val (≡{n}≡) ==> (≡{n}≡)) (ws_bag_of_spmc_stack_inv t γ ι).
   Proof.
     intros Ψ1 Ψ2 HΨ. f_equiv. intros v. apply dist_dist_later. done.
-  Qed.
-  #[local] Instance ws_bag_of_spmc_stack_inv_proper t γ ι :
-    Proper (pointwise_relation val (≡) ==> (≡)) (ws_bag_of_spmc_stack_inv t γ ι).
-  Proof.
-    intros Ψ1 Ψ2 HΨ. rewrite equiv_dist. intros n. f_equiv.
-    intros v. revert n. rewrite -equiv_dist //.
   Qed.
 
   #[local] Instance ws_bag_of_spmc_stack_inv_persistent t γ ι Ψ :
@@ -702,12 +687,12 @@ Definition ws_bag_of_mpmc_stack `{ws_bag_of_mpmc_stack_G : WsBagOfMpmcStackG Σ}
   ws_bag_of_spmc_stack (spmc_stack_of_mpmc_stack mpmc_stack).
 
 Class WsBagOfSpmcQueueG Σ `{!heapGS Σ} := {
-  ws_bag_of_spmc_queue_G_model_G : AuthExclG Σ (listO valO) ;
+  ws_bag_of_spmc_queue_G_model_G : AuthExclG Σ (leibnizO (list val)) ;
 }.
 #[local] Existing Instance ws_bag_of_spmc_queue_G_model_G.
 
 Definition ws_bag_of_spmc_queue_Σ := #[
-  auth_excl_Σ (listO valO)
+  auth_excl_Σ (leibnizO (list val))
 ].
 Lemma subG_ws_bag_of_spmc_queue_Σ Σ `{!heapGS Σ} :
   subG ws_bag_of_spmc_queue_Σ Σ →
@@ -780,12 +765,6 @@ Section ws_bag_of_spmc_queue.
     Proper (pointwise_relation val (≡{n}≡) ==> (≡{n}≡)) (ws_bag_of_spmc_queue_inv t γ ι).
   Proof.
     intros Ψ1 Ψ2 HΨ. f_equiv. intros v. apply dist_dist_later. done.
-  Qed.
-  #[local] Instance ws_bag_of_spmc_queue_inv_proper t γ ι :
-    Proper (pointwise_relation val (≡) ==> (≡)) (ws_bag_of_spmc_queue_inv t γ ι).
-  Proof.
-    intros Ψ1 Ψ2 HΨ. rewrite equiv_dist. intros n. f_equiv.
-    intros v. revert n. rewrite -equiv_dist //.
   Qed.
 
   #[local] Instance ws_bag_of_spmc_queue_inv_persistent t γ ι Ψ :
