@@ -147,20 +147,20 @@ Next Obligation.
   iIntros "* !> %Φ (#Hinv & Howner) HΦ".
   wp_pures. wp_alloc l as "Hl".
   awp_apply (base.(ws_deque_push_spec) with "[$Hinv $Howner]").
-  iApply (aacc_aupd with "HΦ"); first done. iIntros "%vs (%ls & Hmodel & Hls)".
+  iApply (aacc_aupd_commit with "HΦ"); first done. iIntros "%vs (%ls & Hmodel & Hls)".
   iAaccIntro with "Hmodel"; iIntros "Hmodel !>".
   - iFrame. iSplitL; auto with iFrame.
-  - iRight. iSplitL; last naive_solver.
+  - iSplitL; last naive_solver.
     iExists (ls ++ [l]). rewrite -fmap_snoc. iFrame. done.
 Qed.
 Next Obligation.
   iIntros "* !> %Φ (#Hinv & Howner) HΦ".
   wp_pures.
   awp_apply (base.(ws_deque_pop_spec) with "[$Hinv $Howner]").
-  iApply (aacc_aupd with "HΦ"); first done. iIntros "%vs (%ls & Hmodel & Hls)".
+  iApply (aacc_aupd_commit with "HΦ"); first done. iIntros "%vs (%ls & Hmodel & Hls)".
   iAaccIntro with "Hmodel".
   - iIntros "Hmodel !>". iFrame. iSplitL; auto with iFrame.
-  - iIntros "% [((%Heq & ->) & Hmodel) | (%ws & %w & (%Heq & ->) & Hmodel)] !>"; iRight.
+  - iIntros "% [((%Heq & ->) & Hmodel) | (%ws & %w & (%Heq & ->) & Hmodel)] !>".
     + apply fmap_nil_inv in Heq as ->. iDestruct (big_sepL2_nil_inv_l with "Hls") as %->.
       iExists NONEV. iSplitL; first naive_solver. iIntros "HΦ !> Howner".
       wp_pures.
@@ -183,10 +183,10 @@ Next Obligation.
   iIntros "* !> %Φ #Hinv HΦ".
   wp_pures.
   awp_apply (base.(ws_deque_steal_spec) with "Hinv").
-  iApply (aacc_aupd with "HΦ"); first done. iIntros "%vs (%ls & Hmodel & Hls)".
+  iApply (aacc_aupd_commit with "HΦ"); first done. iIntros "%vs (%ls & Hmodel & Hls)".
   iAaccIntro with "Hmodel".
   - iIntros "Hmodel !>". iFrame. iSplitL; auto with iFrame.
-  - iIntros "% [((%Heq & ->) & Hmodel) | (%w & %ws & (%Heq & ->) & Hmodel)] !>"; iRight.
+  - iIntros "% [((%Heq & ->) & Hmodel) | (%w & %ws & (%Heq & ->) & Hmodel)] !>".
     + apply fmap_nil_inv in Heq as ->. iDestruct (big_sepL2_nil_inv_l with "Hls") as %->.
       iExists NONEV. iSplitL; first naive_solver. iIntros "HΦ !> _".
       wp_pures.

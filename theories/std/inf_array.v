@@ -117,9 +117,9 @@ Section inf_array.
   Proof.
     iIntros "% !> %Φ _ HΦ".
     awp_apply (inf_array_get_spec with "[//]"); first done.
-    iApply (aacc_aupd with "HΦ"); first done.
+    iApply (aacc_aupd_commit with "HΦ"); first done.
     iIntros "%vsₗ %vsᵣ Hmodel". iAaccIntro with "Hmodel"; first auto with iFrame.
-    iIntros "$ !>". iRight. iIntros "HΦ !> _". iApply ("HΦ" with "[//]").
+    iIntros "$ !>". iIntros "HΦ !> _". iApply ("HΦ" with "[//]").
   Qed.
 
   Lemma inf_array_set_spec' i v t :
@@ -139,9 +139,9 @@ Section inf_array.
   Proof.
     iIntros "% !> %Φ _ HΦ".
     awp_apply (inf_array_set_spec with "[//]"); first done.
-    iApply (aacc_aupd with "HΦ"); first done.
+    iApply (aacc_aupd_commit with "HΦ"); first done.
     iIntros "%vsₗ %vsᵣ Hmodel". iAaccIntro with "Hmodel"; first auto with iFrame.
-    iIntros "Hmodel !>". iRight. iSplitL "Hmodel".
+    iIntros "Hmodel !>". iSplitL "Hmodel".
     - generalize (Z.to_nat i). clear. intros i. case_decide.
       all: iApply (inf_array_model_proper with "Hmodel"); intros j.
       + rewrite insert_length. case_decide.

@@ -222,10 +222,10 @@ Section atomic_wp.
     iIntros "% #Hinv H %Φ HΦ".
     iApply "H". iAuIntro.
     iInv "Hinv" as "HI".
-    iApply (aacc_aupd with "HΦ"); first solve_ndisj. iIntros "%x Hα".
+    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%x Hα".
     iAaccIntro with "[HI Hα]"; rewrite !tele_app_bind; first by iFrame.
     - iIntros "(HI & $)". auto with iFrame.
-    - iIntros "%y". rewrite !tele_app_bind. iIntros "(HI & Hβ)". iRight.
+    - iIntros "%y". rewrite !tele_app_bind. iIntros "(HI & Hβ)".
       iExists y. rewrite !tele_app_bind. auto with iFrame.
   Qed.
 End atomic_wp.
@@ -481,10 +481,10 @@ Section atomic_triple.
     iIntros "% #Hinv #H !> %Φ HP HΦ".
     iApply ("H" with "HP"). iAuIntro.
     iInv "Hinv" as "HI".
-    iApply (aacc_aupd with "HΦ"); first solve_ndisj. iIntros "%x Hα".
+    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%x Hα".
     iAaccIntro with "[HI Hα]"; rewrite !tele_app_bind; first by iFrame.
     - iIntros "(HI & $)". auto with iFrame.
-    - iIntros "%y". rewrite !tele_app_bind. iIntros "(HI & Hβ)". iRight.
+    - iIntros "%y". rewrite !tele_app_bind. iIntros "(HI & Hβ)".
       iExists y. rewrite !tele_app_bind. auto with iFrame.
   Qed.
 End atomic_triple.
