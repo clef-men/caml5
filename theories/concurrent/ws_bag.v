@@ -39,8 +39,8 @@ Record ws_bag `{!heapGS Σ} {unboxed : bool} := {
     Proper (pointwise_relation val (≡{n}≡) ==> (≡{n}≡)) (ws_bag_inv t γ ι) ;
   ws_bag_inv_persistent t γ ι Ψ :
     Persistent (ws_bag_inv t γ ι Ψ) ;
-  ws_bag_model_timeless t γ sz :
-    Timeless (ws_bag_model t γ sz) ;
+  ws_bag_model_timeless t γ pot :
+    Timeless (ws_bag_model t γ pot) ;
   ws_bag_owner_timeless t γ :
     Timeless (ws_bag_owner t γ) ;
 
@@ -63,11 +63,11 @@ Record ws_bag `{!heapGS Σ} {unboxed : bool} := {
     <<<
       ws_bag_inv t γ ι Ψ ∗
       ws_bag_owner t γ ∗ Ψ v
-    | ∀∀ sz, ws_bag_model t γ sz
+    | ∀∀ pot, ws_bag_model t γ pot
     >>>
       ws_bag_push t v @ ↑ι
     <<<
-      ws_bag_model t γ (S sz)
+      ws_bag_model t γ (S pot)
     | RET #(); ws_bag_owner t γ
     >>> ;
 
@@ -75,15 +75,15 @@ Record ws_bag `{!heapGS Σ} {unboxed : bool} := {
     <<<
       ws_bag_inv t γ ι Ψ ∗
       ws_bag_owner t γ
-    | ∀∀ sz, ws_bag_model t γ sz
+    | ∀∀ pot, ws_bag_model t γ pot
     >>>
       ws_bag_pop t @ ↑ι
     <<< ∃∃ o,
-        ⌜sz = 0 ∧ o = None⌝ ∗
+        ⌜pot = 0 ∧ o = None⌝ ∗
         ws_bag_model t γ 0
-      ∨ ∃ sz' v,
-        ⌜sz = S sz' ∧ o = Some v⌝ ∗
-        ws_bag_model t γ sz'
+      ∨ ∃ pot' v,
+        ⌜pot = S pot' ∧ o = Some v⌝ ∗
+        ws_bag_model t γ pot'
     | RET from_option (λ v, SOMEV v) NONEV o;
       ws_bag_owner t γ ∗
       from_option Ψ True o
@@ -92,15 +92,15 @@ Record ws_bag `{!heapGS Σ} {unboxed : bool} := {
   ws_bag_steal_spec t γ ι Ψ :
     <<<
       ws_bag_inv t γ ι Ψ
-    | ∀∀ sz, ws_bag_model t γ sz
+    | ∀∀ pot, ws_bag_model t γ pot
     >>>
       ws_bag_steal t @ ↑ι
     <<< ∃∃ o,
-        ⌜sz = 0 ∧ o = None⌝ ∗
+        ⌜pot = 0 ∧ o = None⌝ ∗
         ws_bag_model t γ 0
-      ∨ ∃ sz' v,
-        ⌜sz = S sz' ∧ o = Some v⌝ ∗
-        ws_bag_model t γ sz'
+      ∨ ∃ pot' v,
+        ⌜pot = S pot' ∧ o = Some v⌝ ∗
+        ws_bag_model t γ pot'
     | RET from_option (λ v, SOMEV v) NONEV o;
       from_option Ψ True o
     >>> ;
@@ -190,9 +190,9 @@ Section ws_bag_of_ws_deque.
     ws_deque.(ws_deque_inv) t γ.(base) (ws_bag_of_ws_deque_namespace_base ι) ∗
     inv (ws_bag_of_ws_deque_namespace_extra ι) (ws_bag_of_ws_deque_inv_inner γ Ψ).
 
-  #[local] Definition ws_bag_of_ws_deque_model t γ sz : iProp Σ :=
+  #[local] Definition ws_bag_of_ws_deque_model t γ pot : iProp Σ :=
     ∃ vs,
-    ⌜sz = length vs⌝ ∗
+    ⌜pot = length vs⌝ ∗
     ws_bag_of_ws_deque_model₂ γ vs ∗
     ws_deque.(ws_deque_model) t γ.(base) vs.
 
@@ -221,8 +221,8 @@ Section ws_bag_of_ws_deque.
   Proof.
     apply _.
   Qed.
-  #[local] Instance ws_bag_of_ws_deque_model_timeless t γ sz :
-    Timeless (ws_bag_of_ws_deque_model t γ sz).
+  #[local] Instance ws_bag_of_ws_deque_model_timeless t γ pot :
+    Timeless (ws_bag_of_ws_deque_model t γ pot).
   Proof.
     apply _.
   Qed.
@@ -264,11 +264,11 @@ Section ws_bag_of_ws_deque.
       ws_bag_of_ws_deque_inv t γ ι Ψ ∗
       ws_bag_of_ws_deque_owner t γ ∗
       Ψ v
-    | ∀∀ sz, ws_bag_of_ws_deque_model t γ sz
+    | ∀∀ pot, ws_bag_of_ws_deque_model t γ pot
     >>>
       ws_bag_of_ws_deque_push t v @ ↑ι
     <<<
-      ws_bag_of_ws_deque_model t γ (S sz)
+      ws_bag_of_ws_deque_model t γ (S pot)
     | RET #(); ws_bag_of_ws_deque_owner t γ
     >>>.
   Proof.
@@ -276,7 +276,7 @@ Section ws_bag_of_ws_deque.
     awp_apply (ws_deque_push_spec with "[$Hbase_inv $Howner]").
     iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%sz (%_vs & -> & Hmodel₂ & Hbase_model)".
+    iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
@@ -294,12 +294,15 @@ Section ws_bag_of_ws_deque.
     <<<
       ws_bag_of_ws_deque_inv t γ ι Ψ ∗
       ws_bag_of_ws_deque_owner t γ
-    | ∀∀ sz, ws_bag_of_ws_deque_model t γ sz
+    | ∀∀ pot, ws_bag_of_ws_deque_model t γ pot
     >>>
       ws_bag_of_ws_deque_pop t @ ↑ι
     <<< ∃∃ o,
-      (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_of_ws_deque_model t γ 0) ∨
-      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_ws_deque_model t γ sz')
+        ⌜pot = 0 ∧ o = None⌝ ∗
+        ws_bag_of_ws_deque_model t γ 0
+      ∨ ∃ pot' v,
+        ⌜pot = S pot' ∧ o = Some v⌝ ∗
+      ws_bag_of_ws_deque_model t γ pot'
     | RET from_option (λ v, SOMEV v) NONEV o;
       ws_bag_of_ws_deque_owner t γ ∗
       from_option Ψ True o
@@ -310,7 +313,7 @@ Section ws_bag_of_ws_deque.
     awp_apply (ws_deque_pop_spec with "[$Hbase_inv $Howner]").
     iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%sz (%_vs & -> & Hmodel₂ & Hbase_model)".
+    iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
@@ -337,12 +340,15 @@ Section ws_bag_of_ws_deque.
   #[local] Lemma ws_bag_of_ws_deque_steal_spec t γ ι Ψ :
     <<<
       ws_bag_of_ws_deque_inv t γ ι Ψ
-    | ∀∀ sz, ws_bag_of_ws_deque_model t γ sz
+    | ∀∀ pot, ws_bag_of_ws_deque_model t γ pot
     >>>
       ws_bag_of_ws_deque_steal t @ ↑ι
     <<< ∃∃ o,
-      (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_of_ws_deque_model t γ 0) ∨
-      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_ws_deque_model t γ sz')
+        ⌜pot = 0 ∧ o = None⌝ ∗
+        ws_bag_of_ws_deque_model t γ 0
+      ∨ ∃ pot' v,
+        ⌜pot = S pot' ∧ o = Some v⌝ ∗
+        ws_bag_of_ws_deque_model t γ pot'
     | RET from_option (λ v, SOMEV v) NONEV o;
       from_option Ψ True o
     >>>.
@@ -352,7 +358,7 @@ Section ws_bag_of_ws_deque.
     awp_apply (ws_deque_steal_spec with "Hbase_inv").
     iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%sz (%_vs & -> & Hmodel₂ & Hbase_model)".
+    iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
@@ -459,9 +465,9 @@ Section ws_bag_of_spmc_stack.
     spmc_stack.(spmc_stack_inv) t γ.(base) (ws_bag_of_spmc_stack_namespace_base ι) ∗
     inv (ws_bag_of_spmc_stack_namespace_extra ι) (ws_bag_of_spmc_stack_inv_inner γ Ψ).
 
-  #[local] Definition ws_bag_of_spmc_stack_model t γ sz : iProp Σ :=
+  #[local] Definition ws_bag_of_spmc_stack_model t γ pot : iProp Σ :=
     ∃ vs,
-    ⌜sz = length vs⌝ ∗
+    ⌜pot = length vs⌝ ∗
     ws_bag_of_spmc_stack_model₂ γ vs ∗
     spmc_stack.(spmc_stack_model) t γ.(base) vs.
 
@@ -490,8 +496,8 @@ Section ws_bag_of_spmc_stack.
   Proof.
     apply _.
   Qed.
-  #[local] Instance ws_bag_of_spmc_stack_model_timeless t γ sz :
-    Timeless (ws_bag_of_spmc_stack_model t γ sz).
+  #[local] Instance ws_bag_of_spmc_stack_model_timeless t γ pot :
+    Timeless (ws_bag_of_spmc_stack_model t γ pot).
   Proof.
     apply _.
   Qed.
@@ -533,11 +539,11 @@ Section ws_bag_of_spmc_stack.
       ws_bag_of_spmc_stack_inv t γ ι Ψ ∗
       ws_bag_of_spmc_stack_owner t γ ∗
       Ψ v
-    | ∀∀ sz, ws_bag_of_spmc_stack_model t γ sz
+    | ∀∀ pot, ws_bag_of_spmc_stack_model t γ pot
     >>>
       ws_bag_of_spmc_stack_push t v @ ↑ι
     <<<
-      ws_bag_of_spmc_stack_model t γ (S sz)
+      ws_bag_of_spmc_stack_model t γ (S pot)
     | RET #(); ws_bag_of_spmc_stack_owner t γ
     >>>.
   Proof.
@@ -545,7 +551,7 @@ Section ws_bag_of_spmc_stack.
     awp_apply (spmc_stack_push_spec with "[$Hbase_inv $Howner]").
     iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%sz (%_vs & -> & Hmodel₂ & Hbase_model)".
+    iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
@@ -563,12 +569,15 @@ Section ws_bag_of_spmc_stack.
     <<<
       ws_bag_of_spmc_stack_inv t γ ι Ψ ∗
       ws_bag_of_spmc_stack_owner t γ
-    | ∀∀ sz, ws_bag_of_spmc_stack_model t γ sz
+    | ∀∀ pot, ws_bag_of_spmc_stack_model t γ pot
     >>>
       ws_bag_of_spmc_stack_pop t @ ↑ι
     <<< ∃∃ o,
-      (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_of_spmc_stack_model t γ 0) ∨
-      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_spmc_stack_model t γ sz')
+        ⌜pot = 0 ∧ o = None⌝ ∗
+        ws_bag_of_spmc_stack_model t γ 0
+      ∨ ∃ pot' v,
+        ⌜pot = S pot' ∧ o = Some v⌝ ∗
+        ws_bag_of_spmc_stack_model t γ pot'
     | RET from_option (λ v, SOMEV v) NONEV o;
       ws_bag_of_spmc_stack_owner t γ ∗
       from_option Ψ True o
@@ -579,7 +588,7 @@ Section ws_bag_of_spmc_stack.
     awp_apply (spmc_stack_pop_spec with "Hbase_inv").
     iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%sz (%_vs & -> & Hmodel₂ & Hbase_model)".
+    iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
@@ -605,12 +614,15 @@ Section ws_bag_of_spmc_stack.
   #[local] Lemma ws_bag_of_spmc_stack_steal_spec t γ ι Ψ :
     <<<
       ws_bag_of_spmc_stack_inv t γ ι Ψ
-    | ∀∀ sz, ws_bag_of_spmc_stack_model t γ sz
+    | ∀∀ pot, ws_bag_of_spmc_stack_model t γ pot
     >>>
       ws_bag_of_spmc_stack_steal t @ ↑ι
     <<< ∃∃ o,
-      (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_of_spmc_stack_model t γ 0) ∨
-      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_spmc_stack_model t γ sz')
+        ⌜pot = 0 ∧ o = None⌝ ∗
+        ws_bag_of_spmc_stack_model t γ 0
+      ∨ ∃ pot' v,
+        ⌜pot = S pot' ∧ o = Some v⌝ ∗
+        ws_bag_of_spmc_stack_model t γ pot'
     | RET from_option (λ v, SOMEV v) NONEV o;
       from_option Ψ True o
     >>>.
@@ -620,7 +632,7 @@ Section ws_bag_of_spmc_stack.
     awp_apply (spmc_stack_pop_spec with "Hbase_inv").
     iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%sz (%_vs & -> & Hmodel₂ & Hbase_model)".
+    iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
@@ -750,9 +762,9 @@ Section ws_bag_of_spmc_queue.
     spmc_queue.(spmc_queue_inv) t γ.(base) (ws_bag_of_spmc_queue_namespace_base ι) ∗
     inv (ws_bag_of_spmc_queue_namespace_extra ι) (ws_bag_of_spmc_queue_inv_inner γ Ψ).
 
-  #[local] Definition ws_bag_of_spmc_queue_model t γ sz : iProp Σ :=
+  #[local] Definition ws_bag_of_spmc_queue_model t γ pot : iProp Σ :=
     ∃ vs,
-    ⌜sz = length vs⌝ ∗
+    ⌜pot = length vs⌝ ∗
     ws_bag_of_spmc_queue_model₂ γ vs ∗
     spmc_queue.(spmc_queue_model) t γ.(base) vs.
 
@@ -781,8 +793,8 @@ Section ws_bag_of_spmc_queue.
   Proof.
     apply _.
   Qed.
-  #[local] Instance ws_bag_of_spmc_queue_model_timeless t γ sz :
-    Timeless (ws_bag_of_spmc_queue_model t γ sz).
+  #[local] Instance ws_bag_of_spmc_queue_model_timeless t γ pot :
+    Timeless (ws_bag_of_spmc_queue_model t γ pot).
   Proof.
     apply _.
   Qed.
@@ -824,11 +836,11 @@ Section ws_bag_of_spmc_queue.
       ws_bag_of_spmc_queue_inv t γ ι Ψ ∗
       ws_bag_of_spmc_queue_owner t γ ∗
       Ψ v
-    | ∀∀ sz, ws_bag_of_spmc_queue_model t γ sz
+    | ∀∀ pot, ws_bag_of_spmc_queue_model t γ pot
     >>>
       ws_bag_of_spmc_queue_push t v @ ↑ι
     <<<
-      ws_bag_of_spmc_queue_model t γ (S sz)
+      ws_bag_of_spmc_queue_model t γ (S pot)
     | RET #(); ws_bag_of_spmc_queue_owner t γ
     >>>.
   Proof.
@@ -836,7 +848,7 @@ Section ws_bag_of_spmc_queue.
     awp_apply (spmc_queue_push_spec with "[$Hbase_inv $Howner]").
     iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%sz (%_vs & -> & Hmodel₂ & Hbase_model)".
+    iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
@@ -854,12 +866,15 @@ Section ws_bag_of_spmc_queue.
     <<<
       ws_bag_of_spmc_queue_inv t γ ι Ψ ∗
       ws_bag_of_spmc_queue_owner t γ
-    | ∀∀ sz, ws_bag_of_spmc_queue_model t γ sz
+    | ∀∀ pot, ws_bag_of_spmc_queue_model t γ pot
     >>>
       ws_bag_of_spmc_queue_pop t @ ↑ι
     <<< ∃∃ o,
-      (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_of_spmc_queue_model t γ 0) ∨
-      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_spmc_queue_model t γ sz')
+        ⌜pot = 0 ∧ o = None⌝ ∗
+        ws_bag_of_spmc_queue_model t γ 0
+      ∨ ∃ pot' v,
+        ⌜pot = S pot' ∧ o = Some v⌝ ∗
+        ws_bag_of_spmc_queue_model t γ pot'
     | RET from_option (λ v, SOMEV v) NONEV o;
       ws_bag_of_spmc_queue_owner t γ ∗
       from_option Ψ True o
@@ -870,7 +885,7 @@ Section ws_bag_of_spmc_queue.
     awp_apply (spmc_queue_pop_spec with "Hbase_inv").
     iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%sz (%_vs & -> & Hmodel₂ & Hbase_model)".
+    iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
@@ -897,12 +912,15 @@ Section ws_bag_of_spmc_queue.
   #[local] Lemma ws_bag_of_spmc_queue_steal_spec t γ ι Ψ :
     <<<
       ws_bag_of_spmc_queue_inv t γ ι Ψ
-    | ∀∀ sz, ws_bag_of_spmc_queue_model t γ sz
+    | ∀∀ pot, ws_bag_of_spmc_queue_model t γ pot
     >>>
       ws_bag_of_spmc_queue_steal t @ ↑ι
     <<< ∃∃ o,
-      (⌜sz = 0 ∧ o = None⌝ ∗ ws_bag_of_spmc_queue_model t γ 0) ∨
-      (∃ sz' v, ⌜sz = S sz' ∧ o = Some v⌝ ∗ ws_bag_of_spmc_queue_model t γ sz')
+        ⌜pot = 0 ∧ o = None⌝ ∗
+        ws_bag_of_spmc_queue_model t γ 0
+      ∨ ∃ pot' v,
+        ⌜pot = S pot' ∧ o = Some v⌝ ∗
+        ws_bag_of_spmc_queue_model t γ pot'
     | RET from_option (λ v, SOMEV v) NONEV o;
       from_option Ψ True o
     >>>.
@@ -912,7 +930,7 @@ Section ws_bag_of_spmc_queue.
     awp_apply (spmc_queue_pop_spec with "Hbase_inv").
     iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%sz (%_vs & -> & Hmodel₂ & Hbase_model)".
+    iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
