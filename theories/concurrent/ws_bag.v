@@ -230,7 +230,7 @@ Section ws_bag_of_ws_deque.
     wp_apply (ws_deque_make_spec with "[//]"). iIntros "%t %γ_base (#Hbase_inv & Hbase_model & Howner)".
     iMod (auth_excl_alloc' (auth_excl_G := ws_bag_of_ws_deque_G_model_G) []) as "(%γ_extra & Hmodel₂ & Hmodel₁)".
     iApply ("HΦ" $! t (γ_base, γ_extra)). iFrame. iSplitL "Hmodel₁".
-    - iFrame "#". iApply inv_alloc. iNext. iExists []. iFrame. done.
+    - iFrame "#∗". iApply inv_alloc. iExists []. auto.
     - iExists []. auto with iFrame.
   Qed.
 
@@ -483,7 +483,7 @@ Section ws_bag_of_spmc_stack.
     wp_apply (spmc_stack_make_spec with "[//]"). iIntros "%t %γ_base (#Hbase_inv & Hbase_model & Howner)".
     iMod (auth_excl_alloc' (auth_excl_G := ws_bag_of_spmc_stack_G_model_G) []) as "(%γ_extra & Hmodel₂ & Hmodel₁)".
     iApply ("HΦ" $! t (γ_base, γ_extra)). iFrame. iSplitL "Hmodel₁".
-    - iFrame "#". iApply inv_alloc. iNext. iExists []. iFrame. done.
+    - iFrame "#∗". iApply inv_alloc. iExists []. auto.
     - iExists []. auto with iFrame.
   Qed.
 
@@ -758,7 +758,7 @@ Section ws_bag_of_spmc_queue.
     wp_apply (spmc_queue_make_spec with "[//]"). iIntros "%t %γ_base (#Hbase_inv & Hbase_model & Howner)".
     iMod (auth_excl_alloc' (auth_excl_G := ws_bag_of_spmc_queue_G_model_G) []) as "(%γ_extra & Hmodel₂ & Hmodel₁)".
     iApply ("HΦ" $! t (γ_base, γ_extra)). iFrame. iSplitL "Hmodel₁".
-    - iFrame "#". iApply inv_alloc. iNext. iExists []. iFrame. done.
+    - iFrame "#∗". iApply inv_alloc. iExists []. auto.
     - iExists []. auto with iFrame.
   Qed.
 
