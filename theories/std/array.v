@@ -589,7 +589,7 @@ Section heapGS.
       - iIntros (vs_done ->%symmetry%nil_length_inv) "HΨ'".
         wp_pures.
         naive_solver.
-      - iApply (big_sepL_mono_strong' with "[] Hfn"); first rewrite !seq_length //. iIntros "!>" (i ? ? ((-> & _)%lookup_seq & (-> & _)%lookup_seq)) "Hfn %vs_done %Hi HΨ'".
+      - iApply (big_sepL_mono_strong' with "Hfn"); first rewrite !seq_length //. iIntros "!>" (i ? ? ((-> & _)%lookup_seq & (-> & _)%lookup_seq)) "Hfn %vs_done %Hi HΨ'".
         wp_pures.
         rewrite Nat2Z.inj_succ Z.sub_1_r Z.pred_succ /=.
         destruct vs_done as [| v vs_done]; first done.

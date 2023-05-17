@@ -14,15 +14,15 @@ Section big_sepL.
   Lemma big_sepL_mono_strong `{!BiAffine PROP} {A1 A2} (l1 : list A1) (l2 : list A2) Φ1 Φ2 :
     length l1 = length l2 →
     ⊢@{PROP}
+      ([∗ list] i ↦ x ∈ l1, Φ1 i x) -∗
       ( [∗ list] i ∈ seq 0 (length l1), ∀ x1 x2,
           ⌜l1 !! i = Some x1 ∧ l2 !! i = Some x2⌝ -∗
           Φ1 i x1 -∗
           Φ2 i x2
       ) -∗
-      ([∗ list] i ↦ x ∈ l1, Φ1 i x) -∗
       ([∗ list] i ↦ x ∈ l2, Φ2 i x).
   Proof.
-    iIntros "%Hl2 HΦ HΦ1". remember (length l1) as sz eqn:Hl1.
+    iIntros "%Hl2 HΦ1 HΦ". remember (length l1) as sz eqn:Hl1.
     iInduction sz as [| sz] "IH" forall (l1 l2 Hl1 Hl2).
     { apply symmetry, nil_length_inv in Hl2 as ->. done. }
     revert dependent l1. refine (rev_ind _ _ _); [| intros x1 l1 _]; intros Hl1; first done.
@@ -31,7 +31,7 @@ Section big_sepL.
     rewrite List.seq_S /=. iDestruct (big_sepL_snoc with "HΦ") as "(HΦ & HΦ')".
     iDestruct (big_sepL_snoc with "HΦ1") as "(HΦ1 & HΦ1')".
     iApply big_sepL_snoc. iSplitL "HΦ HΦ1".
-    - iApply ("IH" with "[] [] [HΦ] HΦ1"); try done.
+    - iApply ("IH" with "[] [] HΦ1 [HΦ]"); try done.
       iApply (big_sepL_mono with "HΦ"). iIntros "%i %_i %H_i HΦ %x1' %x2' % HΦ1". apply lookup_seq in H_i as (-> & ?).
       iApply "HΦ"; naive_solver eauto using lookup_app_l_Some.
     - rewrite -Hl1 -Hl2. iApply ("HΦ'" with "[] HΦ1'"). rewrite !list_lookup_middle //.
@@ -39,17 +39,17 @@ Section big_sepL.
   Lemma big_sepL_mono_strong' `{!BiAffine PROP} {A1 A2} (l1 : list A1) (l2 : list A2) Φ1 Φ2 :
     length l1 = length l2 →
     ⊢@{PROP}
+      ([∗ list] i ↦ x ∈ l1, Φ1 i x) -∗
       □ (
         ∀ i x1 x2,
         ⌜l1 !! i = Some x1 ∧ l2 !! i = Some x2⌝ -∗
         Φ1 i x1 -∗
         Φ2 i x2
       ) -∗
-      ([∗ list] i ↦ x ∈ l1, Φ1 i x) -∗
       ([∗ list] i ↦ x ∈ l2, Φ2 i x).
   Proof.
-    iIntros "% #HΦ HΦ1".
-    iApply (big_sepL_mono_strong with "[HΦ] HΦ1"); first done.
+    iIntros "% HΦ1 #HΦ".
+    iApply (big_sepL_mono_strong with "HΦ1 [HΦ]"); first done.
     iApply big_sepL_intro. iIntros "!> %i %_i % %x1 %x2 % HΨ".
     iApply ("HΦ" with "[//] HΨ").
   Qed.
@@ -61,7 +61,7 @@ Section big_sepL.
   Proof.
     intros. iSplit.
     all: iIntros "H".
-    all: iApply (big_sepL_mono_strong' with "[] H"); first rewrite seq_length //.
+    all: iApply (big_sepL_mono_strong' with "H"); first rewrite seq_length //.
     all: iIntros "!> %i %_i % %".
     all: pose proof lookup_seq.
     all: naive_solver.
@@ -88,7 +88,8 @@ Section big_sepL.
     [∗ list] k ∈ seq (i + j) sz, Φ (k - j).
   Proof.
     iSplit.
-    all: iApply big_sepL_mono_strong'; first rewrite !seq_length //.
+    all: iIntros "H".
+    all: iApply (big_sepL_mono_strong' with "H"); first rewrite !seq_length //.
     all: iIntros "!>" (k ? ? ((-> & _)%lookup_seq & (-> & _)%lookup_seq)).
     all: assert (i + j + k - j = i + k) as -> by lia.
     all: auto.
