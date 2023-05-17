@@ -247,9 +247,9 @@ Section ws_bag_of_ws_deque.
     | RET #(); ws_bag_of_ws_deque_owner t γ
     >>>.
   Proof.
-    iIntros "!> %Φ ((#Hbase_inv & #Hextra_inv) & Howner & Hv) HΦ".
+    iIntros "!> %Φ ((#Hbase_inv & #Hinv) & Howner & Hv) HΦ".
     awp_apply (ws_deque_push_spec with "[$Hbase_inv $Howner]").
-    iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
+    iInv "Hinv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
@@ -282,10 +282,10 @@ Section ws_bag_of_ws_deque.
       from_option Ψ True o
     >>>.
   Proof.
-    iIntros "!> %Φ ((#Hbase_inv & #Hextra_inv) & Howner) HΦ".
+    iIntros "!> %Φ ((#Hbase_inv & #Hinv) & Howner) HΦ".
     wp_rec.
     awp_apply (ws_deque_pop_spec with "[$Hbase_inv $Howner]").
-    iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
+    iInv "Hinv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
@@ -326,10 +326,10 @@ Section ws_bag_of_ws_deque.
       from_option Ψ True o
     >>>.
   Proof.
-    iIntros "!> %Φ (#Hbase_inv & #Hextra_inv) HΦ".
+    iIntros "!> %Φ (#Hbase_inv & #Hinv) HΦ".
     wp_rec.
     awp_apply (ws_deque_steal_spec with "Hbase_inv").
-    iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
+    iInv "Hinv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
@@ -362,7 +362,7 @@ Section ws_bag_of_ws_deque.
   Proof.
     move: ws_deque.(ws_deque_unboxed).
     refine (match unboxed with true => _ | false => _ end); last done.
-    iIntros "%Hunboxed %t %γ %ι %Ψ (#Hbase_inv & #Hextra_inv)".
+    iIntros "%Hunboxed %t %γ %ι %Ψ (#Hbase_inv & #Hinv)".
     iApply (Hunboxed with "Hbase_inv").
   Qed.
 
@@ -497,9 +497,9 @@ Section ws_bag_of_spmc_stack.
     | RET #(); ws_bag_of_spmc_stack_owner t γ
     >>>.
   Proof.
-    iIntros "!> %Φ ((#Hbase_inv & #Hextra_inv) & Howner & Hv) HΦ".
+    iIntros "!> %Φ ((#Hbase_inv & #Hinv) & Howner & Hv) HΦ".
     awp_apply (spmc_stack_push_spec with "[$Hbase_inv $Howner]").
-    iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
+    iInv "Hinv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
@@ -532,10 +532,10 @@ Section ws_bag_of_spmc_stack.
       from_option Ψ True o
     >>>.
   Proof.
-    iIntros "!> %Φ ((#Hbase_inv & #Hextra_inv) & Howner) HΦ".
+    iIntros "!> %Φ ((#Hbase_inv & #Hinv) & Howner) HΦ".
     wp_rec.
     awp_apply (spmc_stack_pop_spec with "Hbase_inv").
-    iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
+    iInv "Hinv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
@@ -575,10 +575,10 @@ Section ws_bag_of_spmc_stack.
       from_option Ψ True o
     >>>.
   Proof.
-    iIntros "!> %Φ (#Hbase_inv & #Hextra_inv) HΦ".
+    iIntros "!> %Φ (#Hbase_inv & #Hinv) HΦ".
     wp_rec.
     awp_apply (spmc_stack_pop_spec with "Hbase_inv").
-    iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
+    iInv "Hinv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
@@ -611,7 +611,7 @@ Section ws_bag_of_spmc_stack.
   Proof.
     move: spmc_stack.(spmc_stack_unboxed).
     refine (match unboxed with true => _ | false => _ end); last done.
-    iIntros "%Hunboxed %t %γ %ι %Ψ (#Hbase_inv & #Hextra_inv)".
+    iIntros "%Hunboxed %t %γ %ι %Ψ (#Hbase_inv & #Hinv)".
     iApply (Hunboxed with "Hbase_inv").
   Qed.
 
@@ -769,9 +769,9 @@ Section ws_bag_of_spmc_queue.
     | RET #(); ws_bag_of_spmc_queue_owner t γ
     >>>.
   Proof.
-    iIntros "!> %Φ ((#Hbase_inv & #Hextra_inv) & Howner & Hv) HΦ".
+    iIntros "!> %Φ ((#Hbase_inv & #Hinv) & Howner & Hv) HΦ".
     awp_apply (spmc_queue_push_spec with "[$Hbase_inv $Howner]").
-    iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
+    iInv "Hinv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
@@ -804,10 +804,10 @@ Section ws_bag_of_spmc_queue.
       from_option Ψ True o
     >>>.
   Proof.
-    iIntros "!> %Φ ((#Hbase_inv & #Hextra_inv) & Howner) HΦ".
+    iIntros "!> %Φ ((#Hbase_inv & #Hinv) & Howner) HΦ".
     wp_rec.
     awp_apply (spmc_queue_pop_spec with "Hbase_inv").
-    iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
+    iInv "Hinv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
@@ -848,10 +848,10 @@ Section ws_bag_of_spmc_queue.
       from_option Ψ True o
     >>>.
   Proof.
-    iIntros "!> %Φ (#Hbase_inv & #Hextra_inv) HΦ".
+    iIntros "!> %Φ (#Hbase_inv & #Hinv) HΦ".
     wp_rec.
     awp_apply (spmc_queue_pop_spec with "Hbase_inv").
-    iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
+    iInv "Hinv" as "(%vs & >Hmodel₁ & Hvs)".
     iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
@@ -885,7 +885,7 @@ Section ws_bag_of_spmc_queue.
   Proof.
     move: spmc_queue.(spmc_queue_unboxed).
     refine (match unboxed with true => _ | false => _ end); last done.
-    iIntros "%Hunboxed %t %γ %ι %Ψ (#Hbase_inv & #Hextra_inv)".
+    iIntros "%Hunboxed %t %γ %ι %Ψ (#Hbase_inv & #Hinv)".
     iApply (Hunboxed with "Hbase_inv").
   Qed.
 
