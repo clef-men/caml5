@@ -180,8 +180,7 @@ Section ws_deques_ext1.
     - iMod "HΦ" as "(%vss & Hmodel & _ & HΦ)".
       iMod ("HΦ" $! NONEV with "[Hmodel]") as "HΦ"; first auto.
       iApply ("HΦ" with "Hcounter_token").
-    - wp_apply (ws_deques_ext1_try_steal_once_spec with "[$Hinv $Hcounter_token]"); [done.. |].
-      iAuIntro.
+    - awp_apply (ws_deques_ext1_try_steal_once_spec with "[$Hinv $Hcounter_token]"); [done.. |].
       iApply (aacc_aupd with "HΦ"); first done. iIntros "%vss Hmodel".
       iAaccIntro with "Hmodel"; first auto with iFrame. iIntros "%o [(-> & Hmodel) | (%j & %v & %vs & (%Hj & %Hlookup & ->) & Hmodel)] !>".
       + iLeft. iFrame. iIntros "HΦ !> Hcounter_token".
@@ -210,9 +209,8 @@ Section ws_deques_ext1.
   Proof.
     iIntros (-> Hsz) "!> %Φ (#Hinv & Hcounter_token) HΦ".
     iLöb as "IH".
-    wp_rec. wp_pures.
-    wp_apply (ws_deques_ext1_try_steal_once_spec with "[$Hinv $Hcounter_token]"); [done.. |].
-    iAuIntro.
+    wp_rec.
+    awp_smart_apply (ws_deques_ext1_try_steal_once_spec with "[$Hinv $Hcounter_token]"); [done.. |].
     iApply (aacc_aupd with "HΦ"); first done. iIntros "%vss Hmodel".
     iAaccIntro with "Hmodel"; first auto with iFrame. iIntros "%o [(-> & Hmodel) | (%j & %v & %vs & (%Hj & %Hlookup & ->) & Hmodel)] !>".
     - iLeft. iFrame. iIntros "HΦ !> Hcounter_token".
@@ -242,13 +240,11 @@ Section ws_deques_ext1.
   Proof.
     iIntros (-> Hsz) "!> %Φ (#Hinv & Hcounter_token) HΦ".
     wp_rec.
-    wp_smart_apply (ws_deques_ext1_pop_spec with "[$Hinv $Hcounter_token]"); first done.
-    iAuIntro.
+    awp_smart_apply (ws_deques_ext1_pop_spec with "[$Hinv $Hcounter_token]"); first done.
     iApply (aacc_aupd with "HΦ"); first done. iIntros "%vss Hmodel".
     iAaccIntro with "Hmodel"; first auto with iFrame. iIntros "%o [((_ & ->) & Hmodel) | (%vs & %v & (%Hlookup & ->) & Hmodel)] !>".
     - iLeft. iFrame. iIntros "HΦ !> Hcounter_token".
-      wp_smart_apply (ws_deques_ext1_try_steal_spec with "[$Hinv $Hcounter_token]"); [done.. |].
-      iAuIntro.
+      awp_smart_apply (ws_deques_ext1_try_steal_spec with "[$Hinv $Hcounter_token]"); [done.. |].
       iApply (aacc_aupd_commit with "HΦ"); first done. clear. iIntros "%vss Hmodel".
       iAaccIntro with "Hmodel"; first auto with iFrame. iIntros "%o [(-> & Hmodel) | (%j & %v & %vs & (%Hj & %Hlookup & ->) & Hmodel)] !>".
       + iExists NONEV. iSplitL; first auto. iIntros "HΦ !> Hcounter_token".
@@ -281,13 +277,11 @@ Section ws_deques_ext1.
   Proof.
     iIntros (-> Hsz) "!> %Φ (#Hinv & Hcounter_token) HΦ".
     wp_rec.
-    wp_smart_apply (ws_deques_ext1_pop_spec with "[$Hinv $Hcounter_token]"); first done.
-    iAuIntro.
+    awp_smart_apply (ws_deques_ext1_pop_spec with "[$Hinv $Hcounter_token]"); first done.
     iApply (aacc_aupd with "HΦ"); first done. iIntros "%vss Hmodel".
     iAaccIntro with "Hmodel"; first auto with iFrame. iIntros "%o [((_ & ->) & Hmodel) | (%vs & %v & (%Hlookup & ->) & Hmodel)] !>".
     - iLeft. iFrame. iIntros "HΦ !> Hcounter_token".
-      wp_smart_apply (ws_deques_ext1_steal_spec with "[$Hinv $Hcounter_token]"); [done.. |].
-      iAuIntro.
+      awp_smart_apply (ws_deques_ext1_steal_spec with "[$Hinv $Hcounter_token]"); [done.. |].
       iApply (aacc_aupd_commit with "HΦ"); first done. clear. iIntros "%vss Hmodel".
       iAaccIntro with "Hmodel"; first auto with iFrame. iIntros "%j %v %vs ((%Hj & %Hlookup) & Hmodel) !>".
       iExists j, vs, v. iSplitL; first auto. iIntros "HΦ !> Hcounter_token".
@@ -366,8 +360,7 @@ Next Obligation.
   wp_smart_apply (random_make_spec with "[//]"). iIntros "%rng #Hrandom_inv".
   wp_smart_apply (ws_deques_size_spec with "Hinv"). iIntros "_".
   wp_smart_apply (random_gen_Z_spec with "Hrandom_inv"); first lia. iIntros "%j %Hj".
-  wp_smart_apply (ws_deques_steal_spec with "Hinv"); first (apply Z.rem_bound_pos; lia).
-  iAuIntro.
+  awp_smart_apply (ws_deques_steal_spec with "Hinv"); first (apply Z.rem_bound_pos; lia).
   iApply (aacc_aupd_commit with "HΦ"); first done. iIntros "%vss Hmodel".
   iAaccIntro with "Hmodel"; first auto with iFrame. iIntros "%o [((%Hlookup & ->) & Hmodel) | (%v & %vs & (%Hlookup & ->) & Hmodel)] !>".
   - iExists NONEV. iSplitL "Hmodel"; first auto. iIntros "HΦ !> _".

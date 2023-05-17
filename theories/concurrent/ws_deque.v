@@ -155,8 +155,7 @@ Next Obligation.
 Qed.
 Next Obligation.
   iIntros "* !> %Φ (#Hinv & Howner) HΦ".
-  wp_pures.
-  awp_apply (base.(ws_deque_pop_spec) with "[$Hinv $Howner]").
+  awp_smart_apply (base.(ws_deque_pop_spec) with "[$Hinv $Howner]").
   iApply (aacc_aupd_commit with "HΦ"); first done. iIntros "%vs (%ls & Hmodel & Hls)".
   iAaccIntro with "Hmodel".
   - iIntros "Hmodel !>". iFrame. iSplitL; auto with iFrame.
@@ -181,8 +180,7 @@ Next Obligation.
 Qed.
 Next Obligation.
   iIntros "* !> %Φ #Hinv HΦ".
-  wp_pures.
-  awp_apply (base.(ws_deque_steal_spec) with "Hinv").
+  awp_smart_apply (base.(ws_deque_steal_spec) with "Hinv").
   iApply (aacc_aupd_commit with "HΦ"); first done. iIntros "%vs (%ls & Hmodel & Hls)".
   iAaccIntro with "Hmodel".
   - iIntros "Hmodel !>". iFrame. iSplitL; auto with iFrame.
