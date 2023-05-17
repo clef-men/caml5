@@ -207,22 +207,6 @@ Section ws_bag_of_ws_deque.
     intros Ψ1 Ψ2 HΨ. f_equiv. intros v. apply dist_dist_later. done.
   Qed.
 
-  #[local] Instance ws_bag_of_ws_deque_inv_persistent t γ ι Ψ :
-    Persistent (ws_bag_of_ws_deque_inv t γ ι Ψ).
-  Proof.
-    apply _.
-  Qed.
-  #[local] Instance ws_bag_of_ws_deque_model_timeless t γ pot :
-    Timeless (ws_bag_of_ws_deque_model t γ pot).
-  Proof.
-    apply _.
-  Qed.
-  #[local] Instance ws_bag_of_ws_deque_owner_timeless t γ :
-    Timeless (ws_bag_of_ws_deque_owner t γ).
-  Proof.
-    apply _.
-  Qed.
-
   #[local] Lemma ws_bag_of_ws_deque_owner_exclusive t γ :
     ws_bag_of_ws_deque_owner t γ -∗
     ws_bag_of_ws_deque_owner t γ -∗
@@ -474,22 +458,6 @@ Section ws_bag_of_spmc_stack.
     Proper (pointwise_relation val (≡{n}≡) ==> (≡{n}≡)) (ws_bag_of_spmc_stack_inv t γ ι).
   Proof.
     intros Ψ1 Ψ2 HΨ. f_equiv. intros v. apply dist_dist_later. done.
-  Qed.
-
-  #[local] Instance ws_bag_of_spmc_stack_inv_persistent t γ ι Ψ :
-    Persistent (ws_bag_of_spmc_stack_inv t γ ι Ψ).
-  Proof.
-    apply _.
-  Qed.
-  #[local] Instance ws_bag_of_spmc_stack_model_timeless t γ pot :
-    Timeless (ws_bag_of_spmc_stack_model t γ pot).
-  Proof.
-    apply _.
-  Qed.
-  #[local] Instance ws_bag_of_spmc_stack_owner_timeless t γ :
-    Timeless (ws_bag_of_spmc_stack_owner t γ).
-  Proof.
-    apply _.
   Qed.
 
   #[local] Lemma ws_bag_of_spmc_stack_owner_exclusive t γ :
@@ -765,22 +733,6 @@ Section ws_bag_of_spmc_queue.
     Proper (pointwise_relation val (≡{n}≡) ==> (≡{n}≡)) (ws_bag_of_spmc_queue_inv t γ ι).
   Proof.
     intros Ψ1 Ψ2 HΨ. f_equiv. intros v. apply dist_dist_later. done.
-  Qed.
-
-  #[local] Instance ws_bag_of_spmc_queue_inv_persistent t γ ι Ψ :
-    Persistent (ws_bag_of_spmc_queue_inv t γ ι Ψ).
-  Proof.
-    apply _.
-  Qed.
-  #[local] Instance ws_bag_of_spmc_queue_model_timeless t γ pot :
-    Timeless (ws_bag_of_spmc_queue_model t γ pot).
-  Proof.
-    apply _.
-  Qed.
-  #[local] Instance ws_bag_of_spmc_queue_owner_timeless t γ :
-    Timeless (ws_bag_of_spmc_queue_owner t γ).
-  Proof.
-    apply _.
   Qed.
 
   #[local] Lemma ws_bag_of_spmc_queue_owner_exclusive t γ :
