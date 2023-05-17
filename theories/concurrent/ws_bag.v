@@ -250,8 +250,7 @@ Section ws_bag_of_ws_deque.
     iIntros "!> %Φ ((#Hbase_inv & #Hextra_inv) & Howner & Hv) HΦ".
     awp_apply (ws_deque_push_spec with "[$Hbase_inv $Howner]").
     iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
-    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
+    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
@@ -287,8 +286,7 @@ Section ws_bag_of_ws_deque.
     wp_rec.
     awp_apply (ws_deque_pop_spec with "[$Hbase_inv $Howner]").
     iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
-    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
+    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
@@ -332,8 +330,7 @@ Section ws_bag_of_ws_deque.
     wp_rec.
     awp_apply (ws_deque_steal_spec with "Hbase_inv").
     iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
-    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
+    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
@@ -503,8 +500,7 @@ Section ws_bag_of_spmc_stack.
     iIntros "!> %Φ ((#Hbase_inv & #Hextra_inv) & Howner & Hv) HΦ".
     awp_apply (spmc_stack_push_spec with "[$Hbase_inv $Howner]").
     iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
-    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
+    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
@@ -540,8 +536,7 @@ Section ws_bag_of_spmc_stack.
     wp_rec.
     awp_apply (spmc_stack_pop_spec with "Hbase_inv").
     iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
-    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
+    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
@@ -584,8 +579,7 @@ Section ws_bag_of_spmc_stack.
     wp_rec.
     awp_apply (spmc_stack_pop_spec with "Hbase_inv").
     iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
-    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
+    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
@@ -778,8 +772,7 @@ Section ws_bag_of_spmc_queue.
     iIntros "!> %Φ ((#Hbase_inv & #Hextra_inv) & Howner & Hv) HΦ".
     awp_apply (spmc_queue_push_spec with "[$Hbase_inv $Howner]").
     iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
-    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
+    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
@@ -815,8 +808,7 @@ Section ws_bag_of_spmc_queue.
     wp_rec.
     awp_apply (spmc_queue_pop_spec with "Hbase_inv").
     iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
-    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
+    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
@@ -860,8 +852,7 @@ Section ws_bag_of_spmc_queue.
     wp_rec.
     awp_apply (spmc_queue_pop_spec with "Hbase_inv").
     iInv "Hextra_inv" as "(%vs & >Hmodel₁ & Hvs)".
-    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj.
-    iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
+    iApply (aacc_aupd_commit with "HΦ"); first solve_ndisj. iIntros "%pot (%_vs & -> & Hmodel₂ & Hbase_model)".
     iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
     iAaccIntro with "Hbase_model".
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
