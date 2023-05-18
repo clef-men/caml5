@@ -98,6 +98,7 @@ theories/concurrent/inf_spsc_queue_1.v
 theories/concurrent/ws_deque.v
 theories/concurrent/ws_bag.v
 theories/concurrent/ws_deques.v
+theories/concurrent/ws_bags.v
 theories/concurrent/ws_deques_ext1.v
 theories/concurrent/inf_chaselev_deque.v
 
