@@ -24,39 +24,63 @@ Record deque `{!heapGS Σ} {unboxed : bool} := {
   deque_make_spec :
     {{{ True }}}
       deque_make #()
-    {{{ t, RET t; deque_model t [] }}} ;
+    {{{ t,
+      RET t; deque_model t []
+    }}} ;
 
   deque_is_empty_spec t vs :
-    {{{ deque_model t vs }}}
+    {{{
+      deque_model t vs
+    }}}
       deque_is_empty t
-    {{{ RET #(bool_decide (vs = [])); deque_model t vs }}} ;
+    {{{
+      RET #(bool_decide (vs = [])); deque_model t vs
+    }}} ;
 
   deque_push_front_spec t vs v :
-    {{{ deque_model t vs }}}
+    {{{
+      deque_model t vs
+    }}}
       deque_push_front t v
-    {{{ RET #(); deque_model t (v :: vs) }}} ;
+    {{{
+      RET #(); deque_model t (v :: vs)
+    }}} ;
 
   deque_pop_front_spec t vs :
-    {{{ deque_model t vs }}}
+    {{{
+      deque_model t vs
+    }}}
       deque_pop_front t
     {{{ w,
       RET w;
-      (⌜vs = [] ∧ w = NONEV⌝ ∗ deque_model t []) ∨
-      (∃ v vs', ⌜vs = v :: vs' ∧ w = SOMEV v⌝ ∗ deque_model t vs')
+        ⌜vs = [] ∧ w = NONEV⌝ ∗
+        deque_model t []
+      ∨ ∃ v vs',
+        ⌜vs = v :: vs' ∧ w = SOMEV v⌝ ∗
+        deque_model t vs'
     }}} ;
 
   deque_push_back_spec t vs v :
-    {{{ deque_model t vs }}}
+    {{{
+      deque_model t vs
+    }}}
       deque_push_back t v
-    {{{ RET #(); deque_model t (vs ++ [v]) }}} ;
+    {{{
+      RET #(); deque_model t (vs ++ [v])
+    }}} ;
 
   deque_pop_back_spec t vs :
-    {{{ deque_model t vs }}}
+    {{{
+      deque_model t vs
+    }}}
       deque_pop_back t
     {{{ w,
       RET w;
-      (⌜vs = [] ∧ w = NONEV⌝ ∗ deque_model t []) ∨
-      (∃ vs' v, ⌜vs = vs' ++ [v] ∧ w = SOMEV v⌝ ∗ deque_model t vs')
+        ⌜vs = [] ∧ w = NONEV⌝ ∗
+        deque_model t []
+      ∨ ∃ vs' v,
+        ⌜vs = vs' ++ [v] ∧ w = SOMEV v⌝ ∗
+        deque_model t vs'
     }}} ;
 
   deque_unboxed :
@@ -134,7 +158,9 @@ Section std_deque.
   Lemma std_deque_make_spec :
     {{{ True }}}
       std_deque_make #()
-    {{{ t, RET t; std_deque_model t [] }}}.
+    {{{ t,
+      RET t; std_deque_model t []
+    }}}.
   Proof.
     iIntros "%Φ _ HΦ".
     wp_rec.
@@ -148,9 +174,13 @@ Section std_deque.
   Qed.
 
   Lemma std_deque_is_empty_spec t vs :
-    {{{ std_deque_model t vs }}}
+    {{{
+      std_deque_model t vs
+    }}}
       std_deque_is_empty t
-    {{{ RET #(bool_decide (vs = [])); std_deque_model t vs }}}.
+    {{{
+      RET #(bool_decide (vs = [])); std_deque_model t vs
+    }}}.
   Proof.
     iIntros "%Φ (%back & Hsent) HΦ".
     wp_rec.
@@ -169,37 +199,55 @@ Section std_deque.
   Admitted.
 
   Lemma std_deque_push_front_spec t vs v :
-    {{{ std_deque_model t vs }}}
+    {{{
+      std_deque_model t vs
+    }}}
       std_deque_push_front t v
-    {{{ RET #(); std_deque_model t (v :: vs) }}}.
+    {{{
+      RET #(); std_deque_model t (v :: vs)
+    }}}.
   Proof.
   Admitted.
 
   Lemma std_deque_pop_front_spec t vs :
-    {{{ std_deque_model t vs }}}
+    {{{
+      std_deque_model t vs
+    }}}
       std_deque_pop_front t
     {{{ w,
       RET w;
-      (⌜vs = [] ∧ w = NONEV⌝ ∗ std_deque_model t []) ∨
-      (∃ v vs', ⌜vs = v :: vs' ∧ w = SOMEV v⌝ ∗ std_deque_model t vs')
+        ⌜vs = [] ∧ w = NONEV⌝ ∗
+        std_deque_model t []
+      ∨ ∃ v vs',
+        ⌜vs = v :: vs' ∧ w = SOMEV v⌝ ∗
+        std_deque_model t vs'
     }}}.
   Proof.
   Admitted.
 
   Lemma std_deque_push_back_spec t vs v :
-    {{{ std_deque_model t vs }}}
+    {{{
+      std_deque_model t vs
+    }}}
       std_deque_push_back t v
-    {{{ RET #(); std_deque_model t (vs ++ [v]) }}}.
+    {{{
+      RET #(); std_deque_model t (vs ++ [v])
+    }}}.
   Proof.
   Admitted.
 
   Lemma std_deque_pop_back_spec t vs :
-    {{{ std_deque_model t vs }}}
+    {{{
+      std_deque_model t vs
+    }}}
       std_deque_pop_back t
     {{{ w,
       RET w;
-      (⌜vs = [] ∧ w = NONEV⌝ ∗ std_deque_model t []) ∨
-      (∃ vs' v, ⌜vs = vs' ++ [v] ∧ w = SOMEV v⌝ ∗ std_deque_model t vs')
+        ⌜vs = [] ∧ w = NONEV⌝ ∗
+        std_deque_model t []
+      ∨ ∃ vs' v,
+        ⌜vs = vs' ++ [v] ∧ w = SOMEV v⌝ ∗
+        std_deque_model t vs'
     }}}.
   Proof.
   Admitted.
