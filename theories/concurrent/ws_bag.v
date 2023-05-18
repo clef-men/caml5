@@ -59,7 +59,8 @@ Record ws_bag `{!heapGS Σ} {unboxed : bool} := {
   ws_bag_push_spec t γ ι Ψ v :
     <<<
       ws_bag_inv t γ ι Ψ ∗
-      ws_bag_owner t γ ∗ Ψ v
+      ws_bag_owner t γ ∗
+      Ψ v
     | ∀∀ pot, ws_bag_model t γ pot
     >>>
       ws_bag_push t v @ ↑ι
