@@ -363,7 +363,7 @@ Section ws_bag_of_ws_deque.
   Proof.
     move: ws_deque.(ws_deque_unboxed).
     refine (match unboxed with true => _ | false => _ end); last done.
-    iIntros "%Hunboxed %t %γ %ι %Ψ (#Hbase_inv & #Hinv)".
+    iIntros "%Hunboxed * (#Hbase_inv & #Hinv)".
     iApply (Hunboxed with "Hbase_inv").
   Qed.
 
@@ -612,7 +612,7 @@ Section ws_bag_of_spmc_stack.
   Proof.
     move: spmc_stack.(spmc_stack_unboxed).
     refine (match unboxed with true => _ | false => _ end); last done.
-    iIntros "%Hunboxed %t %γ %ι %Ψ (#Hbase_inv & #Hinv)".
+    iIntros "%Hunboxed * (#Hbase_inv & #Hinv)".
     iApply (Hunboxed with "Hbase_inv").
   Qed.
 
@@ -886,7 +886,7 @@ Section ws_bag_of_spmc_queue.
   Proof.
     move: spmc_queue.(spmc_queue_unboxed).
     refine (match unboxed with true => _ | false => _ end); last done.
-    iIntros "%Hunboxed %t %γ %ι %Ψ (#Hbase_inv & #Hinv)".
+    iIntros "%Hunboxed * (#Hbase_inv & #Hinv)".
     iApply (Hunboxed with "Hbase_inv").
   Qed.
 
