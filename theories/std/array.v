@@ -84,11 +84,11 @@ Section heapGS.
       array_mapi "t" (λ: <> "v", "fn" "v").
 
   Definition array_blit : val :=
-    λ: "t" "i" "t'" "i'" "n",
-      chunk_copy ("t".(data) +ₗ "i") "n" ("t'".(data) +ₗ "i'").
+    λ: "t1" "i1" "t2" "i2" "n",
+      chunk_copy ("t1".(data) +ₗ "i1") "n" ("t2".(data) +ₗ "i2").
   Definition array_copy : val :=
-    λ: "t" "t'" "i'",
-      array_blit "t" #0 "t'" "i'" (array_size "t").
+    λ: "t1" "t2" "i2",
+      array_blit "t1" #0 "t2" "i2" (array_size "t1").
 
   Definition array_grow : val :=
     λ: "t" "sz",
@@ -112,15 +112,18 @@ Section heapGS.
     λ: "t" "i" "v",
       chunk_cset "t".(data) (array_size "t") "i" "v".
 
+  Definition array_cblit : val :=
+    λ: "t1" "i1" "t2" "i2" "n",
+      chunk_ccopy "t1".(data) (array_size "t1") "i1" "t2".(data) (array_size "t2") "i2" "n".
   Definition array_ccopy : val :=
-    λ: "t" "t'" "i" "n",
-      chunk_ccopy "t".(data) (array_size "t") "t'".(data) (array_size "t'") "i" "n".
+    λ: "t1" "i1" "t2" "i2",
+      array_cblit "t1" "i1" "t2" "i2" (array_size "t1").
 
   Definition array_cgrow : val :=
-    λ: "t" "sz'" "i",
-      let: "t'" := array_make "sz'" #() in
-      array_ccopy "t" "t'" "i" (array_size "t") ;;
-      "t'".
+    λ: "t1" "i1" "sz2" "i2",
+      let: "t2" := array_make "sz2" #() in
+      array_ccopy "t1" "i1" "t2" "i2" ;;
+      "t2".
 
   Section array_inv.
     Definition array_inv t (sz : nat) : iProp Σ :=
@@ -1349,6 +1352,7 @@ End heapGS.
 #[global] Opaque array_clone.
 #[global] Opaque array_cget.
 #[global] Opaque array_cset.
+#[global] Opaque array_cblit.
 #[global] Opaque array_ccopy.
 #[global] Opaque array_cgrow.
 

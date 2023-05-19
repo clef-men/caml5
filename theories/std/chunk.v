@@ -109,21 +109,20 @@ Section heapGS.
       "t" +ₗ "i" `rem` "sz" <- "v".
 
   #[local] Definition chunk_ccopy_aux : val :=
-    rec: "chunk_ccopy_aux" "t" "sz" "t'" "sz'" "i" "n" "di" :=
+    rec: "chunk_ccopy_aux" "t1" "sz1" "i1" "t2" "sz2" "i2" "n" "di" :=
       if: "di" = "n" then #() else (
-        let: "j" := "i" + "di" in
-        chunk_cset "t'" "sz'" "j" (chunk_cget "t" "sz" "j") ;;
-        "chunk_ccopy_aux" "t" "sz" "t'" "sz'" "i" "n" ("di" + #1)
+        chunk_cset "t2" "sz2" ("i2" + "di") (chunk_cget "t1" "sz1" ("i1" + "di")) ;;
+        "chunk_ccopy_aux" "t1" "sz1" "i1" "t2" "sz2" "i2" "n" ("di" + #1)
       ).
   Definition chunk_ccopy : val :=
-    λ: "t" "sz" "t'" "sz'" "i" "n",
-      chunk_ccopy_aux "t" "sz" "t'" "sz'" "i" "n" #0.
+    λ: "t1" "sz1" "i1" "t2" "sz2" "i2" "n",
+      chunk_ccopy_aux "t1" "sz1" "i1" "t2" "sz2" "i2" "n" #0.
 
   Definition chunk_cgrow : val :=
-    λ: "t" "sz" "sz'" "i",
-      let: "t'" := chunk_make "sz'" #() in
-      chunk_ccopy "t" "sz" "t'" "sz'" "i" "sz" ;;
-      "t'".
+    λ: "t1" "sz1" "i1" "sz2" "i2",
+      let: "t2" := chunk_make "sz2" #() in
+      chunk_ccopy "t1" "sz1" "i1" "t2" "sz2" "i2" "sz1" ;;
+      "t2".
 
   Section chunk_model.
     Definition chunk_model l dq vs : iProp Σ :=
