@@ -55,13 +55,6 @@ Section heapGS.
     λ: "t" "i" "v",
       "t".(data) +ₗ "i" <- "v".
 
-  Definition array_cget : val :=
-    λ: "t" "i",
-      array_get "t" ("i" `rem` array_size "t").
-  Definition array_cset : val :=
-    λ: "t" "i" "v",
-      array_set "t" ("i" `rem` array_size "t") "v".
-
   Definition array_foldli : val :=
     λ: "t" "acc" "fn",
       chunk_foldli "t".(data) (array_size "t") "acc" "fn".
@@ -111,6 +104,23 @@ Section heapGS.
   Definition array_clone : val :=
     λ: "t",
       array_grow "t" (array_size "t").
+
+  Definition array_cget : val :=
+    λ: "t" "i",
+      chunk_cget "t".(data) (array_size "t") "i".
+  Definition array_cset : val :=
+    λ: "t" "i" "v",
+      chunk_cset "t".(data) (array_size "t") "i" "v".
+
+  Definition array_ccopy : val :=
+    λ: "t" "t'" "i" "n",
+      chunk_ccopy "t".(data) (array_size "t") "t'".(data) (array_size "t'") "i" "n".
+
+  Definition array_cgrow : val :=
+    λ: "t" "sz'" "i",
+      let: "t'" := array_make "sz'" #() in
+      array_ccopy "t" "t'" "i" (array_size "t") ;;
+      "t'".
 
   Section array_inv.
     Definition array_inv t (sz : nat) : iProp Σ :=
@@ -1324,8 +1334,6 @@ End heapGS.
 #[global] Opaque array_size.
 #[global] Opaque array_get.
 #[global] Opaque array_set.
-#[global] Opaque array_cget.
-#[global] Opaque array_cset.
 #[global] Opaque array_foldli.
 #[global] Opaque array_foldl.
 #[global] Opaque array_foldri.
@@ -1339,6 +1347,10 @@ End heapGS.
 #[global] Opaque array_grow.
 #[global] Opaque array_shrink.
 #[global] Opaque array_clone.
+#[global] Opaque array_cget.
+#[global] Opaque array_cset.
+#[global] Opaque array_ccopy.
+#[global] Opaque array_cgrow.
 
 #[global] Opaque array_inv.
 #[global] Opaque array_model.

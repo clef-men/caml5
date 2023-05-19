@@ -101,6 +101,30 @@ Section heapGS.
     λ: "t" "sz",
       chunk_shrink "t" "sz" "sz".
 
+  Definition chunk_cget : val :=
+    λ: "t" "sz" "i",
+      !("t" +ₗ "i" `rem` "sz").
+  Definition chunk_cset : val :=
+    λ: "t" "sz" "i" "v",
+      "t" +ₗ "i" `rem` "sz" <- "v".
+
+  #[local] Definition chunk_ccopy_aux : val :=
+    rec: "chunk_ccopy_aux" "t" "sz" "t'" "sz'" "i" "n" "di" :=
+      if: "di" = "n" then #() else (
+        let: "j" := "i" + "di" in
+        chunk_cset "t'" "sz'" "j" (chunk_cget "t" "sz" "j") ;;
+        "chunk_ccopy_aux" "t" "sz" "t'" "sz'" "i" "n" ("di" + #1)
+      ).
+  Definition chunk_ccopy : val :=
+    λ: "t" "sz" "t'" "sz'" "i" "n",
+      chunk_ccopy_aux "t" "sz" "t'" "sz'" "i" "n" #0.
+
+  Definition chunk_cgrow : val :=
+    λ: "t" "sz" "sz'" "i",
+      let: "t'" := chunk_make "sz'" #() in
+      chunk_ccopy "t" "sz" "t'" "sz'" "i" "sz" ;;
+      "t'".
+
   Section chunk_model.
     Definition chunk_model l dq vs : iProp Σ :=
       [∗ list] i ↦ v ∈ vs, (l +ₗ i) ↦{dq} v.
@@ -701,7 +725,7 @@ Section heapGS.
     iApply ("Hfn" with "[//]"). auto.
   Qed.
 
-  Lemma chunk_get_spec l (i : Z) dq vs v E :
+  Lemma chunk_get_spec v l (i : Z) dq vs E :
     (0 ≤ i)%Z →
     vs !! Z.to_nat i = Some v →
     {{{
@@ -1530,6 +1554,10 @@ End heapGS.
 #[global] Opaque chunk_grow.
 #[global] Opaque chunk_shrink.
 #[global] Opaque chunk_clone.
+#[global] Opaque chunk_cget.
+#[global] Opaque chunk_cset.
+#[global] Opaque chunk_ccopy.
+#[global] Opaque chunk_cgrow.
 
 #[global] Opaque chunk_model.
 #[global] Opaque chunk_span.
