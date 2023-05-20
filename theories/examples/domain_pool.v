@@ -1,5 +1,7 @@
 From caml5 Require Import
   prelude.
+From caml5.base_logic Require Import
+  lib.excl.
 From caml5.lang Require Import
   notations.
 From caml5.std Require Import
@@ -10,32 +12,64 @@ From caml5.concurrent Require Import
   ws_deques_ext1
   condition.
 
+Class DomainPoolGpre Σ `{!heapGS Σ} := {
+  domain_pool_Gpre_domain_G : DomainG Σ ;
+  domain_pool_Gpre_counter_G : CounterG Σ ;
+  domain_pool_Gpre_future_G : ExclG Σ unitO ;
+}.
+#[local] Existing Instance domain_pool_Gpre_domain_G.
+#[local] Existing Instance domain_pool_Gpre_counter_G.
+#[local] Existing Instance domain_pool_Gpre_future_G.
+
+Class DomainPoolG Σ `{!heapGS Σ} := {
+  domain_pool_G_Gpre : DomainPoolGpre Σ ;
+  domain_pool_G_ws_deques : ws_deques_ext1 Σ false ;
+  domain_pool_G_mutex : mutex Σ false ;
+  domain_pool_G_condition : condition Σ domain_pool_G_mutex false ;
+}.
+#[local] Existing Instance domain_pool_G_Gpre.
+
+Definition domain_pool_Σ := #[
+  domain_Σ ;
+  counter_Σ ;
+  excl_Σ unitO
+].
+#[global] Instance subG_domain_pool_Σ Σ `{!heapGS Σ} :
+  subG domain_pool_Σ Σ →
+  DomainPoolGpre Σ.
+Proof.
+  pose subG_domain_Σ.
+  pose subG_counter_Σ.
+  solve_inG.
+Qed.
+
 Section ws_deques_ext1.
-  Context `{!heapGS Σ} `{counter_G : !CounterG Σ}.
-  Context `(ws_deques : ws_deques_ext1 Σ ws_deques_unboxed).
-  Context {mutex_unboxed} {mutex : mutex Σ mutex_unboxed}.
-  Context {condition_unboxed} (condition : condition Σ mutex condition_unboxed).
+  Context `{domain_pool_G : DomainPoolG Σ}.
+
+  Let ws_deques := domain_pool_G_ws_deques.
+  Let mutex := domain_pool_G_mutex.
+  Let condition := domain_pool_G_condition.
 
   Notation "t '.(domains)'" := t.1%stdpp
   ( at level 5
   ) : stdpp_scope.
-  Notation "t '.(ws_deques)'" := t.2%stdpp
+  Notation "t '.(deques)'" := t.2%stdpp
   ( at level 5
   ) : stdpp_scope.
   Notation "t '.(domains)'" := t.1%E
   ( at level 5
   ) : expr_scope.
-  Notation "t '.(ws_deques)'" := t.2%E
+  Notation "t '.(deques)'" := t.2%E
   ( at level 5
   ) : expr_scope.
 
-  Notation "hdl '.(handle_ws_deques)'" := hdl.1
+  Notation "hdl '.(handle_deques)'" := hdl.1
   ( at level 5
   ) : stdpp_scope.
   Notation "hdl '.(handle_id)'" := hdl.2
   ( at level 5
   ) : stdpp_scope.
-  Notation "hdl '.(handle_ws_deques)'" := hdl.1%E
+  Notation "hdl '.(handle_deques)'" := hdl.1%E
   ( at level 5
   ) : expr_scope.
   Notation "hdl '.(handle_id)'" := hdl.2%E
@@ -63,7 +97,7 @@ Section ws_deques_ext1.
 
   #[local] Definition domain_pool_worker_aux : val :=
     rec: "domain_pool_worker_aux" "hdl" :=
-      match: ws_deques.(ws_deques_ext1_try_steal_once) "hdl".(handle_ws_deques) "hdl".(handle_id) with
+      match: ws_deques.(ws_deques_ext1_try_steal_once) "hdl".(handle_deques) "hdl".(handle_id) with
         NONE =>
           "domain_pool_worker_aux" "hdl"
       | SOME "task" =>
@@ -72,7 +106,7 @@ Section ws_deques_ext1.
   #[local] Definition domain_pool_worker : val :=
     rec: "domain_pool_worker" "hdl" :=
       let: "task" :=
-        match: ws_deques.(ws_deques_ext1_pop) "hdl".(handle_ws_deques) "hdl".(handle_id) with
+        match: ws_deques.(ws_deques_ext1_pop) "hdl".(handle_deques) "hdl".(handle_id) with
           NONE =>
             domain_pool_worker_aux "hdl"
         | SOME "task" =>
@@ -89,11 +123,11 @@ Section ws_deques_ext1.
 
   Definition domain_pool_make : val :=
     λ: "sz",
-      let: "ws_deques" := ws_deques.(ws_deques_ext1_make) "sz" in
       let: "cntr" := counter_make #() in
+      let: "ws_deques" := ws_deques.(ws_deques_ext1_make) ("sz" + #1) in
       counter_incr "cntr" ;;
       let: "doms" :=
-        array_init ("sz" - #1) (λ: <>,
+        array_init "sz" (λ: <>,
           let: "id" := counter_incr "cntr" in
           domain_spawn (λ: <>, domain_pool_worker ("ws_deques", "id"))
         )
@@ -116,7 +150,7 @@ Section ws_deques_ext1.
         ) ;;
         condition.(condition_signal) "cond"
       in
-      ws_deques.(ws_deques_ext1_push) "hdl".(handle_ws_deques) "hdl".(handle_id) (SOME "task") ;;
+      ws_deques.(ws_deques_ext1_push) "hdl".(handle_deques) "hdl".(handle_id) (SOME "task") ;;
       "fut".
 
   Definition domain_pool_await : val :=
@@ -135,7 +169,7 @@ Section ws_deques_ext1.
 
   Definition domain_pool_run : val :=
     λ: "t" "task",
-      "task" ("t".(ws_deques), #0).
+      "task" ("t".(deques), #0).
 
   #[local] Definition domain_pool_kill_aux : val :=
     rec: "domain_pool_kill_aux" "ws_deques" "i" :=
@@ -145,7 +179,7 @@ Section ws_deques_ext1.
       ).
   Definition domain_pool_kill : val :=
     λ: "t",
-      domain_pool_kill_aux "t".(ws_deques) (domain_pool_size "t") ;;
+      domain_pool_kill_aux "t".(deques) (domain_pool_size "t") ;;
       array_iter "t".(domains) domain_join.
 End ws_deques_ext1.
 
@@ -157,21 +191,16 @@ End ws_deques_ext1.
 #[global] Opaque domain_pool_kill.
 
 Module fibonacci.
-  Context `{!heapGS Σ} `{counter_G : !CounterG Σ}.
-  Context `(ws_deques : ws_deques_ext1 Σ ws_deques_unboxed).
-  Context {mutex_unboxed} {mutex : mutex Σ mutex_unboxed}.
-  Context {condition_unboxed} (condition : condition Σ mutex condition_unboxed).
+  Context `{domain_pool_G : DomainPoolG Σ}.
 
   Definition fibonacci_aux : val :=
     rec: "fibonacci_aux" "n" "hdl" :=
       if: "n" ≤ #1 then (
         "n"
       ) else (
-        let: "fut1" := (domain_pool_async ws_deques condition) "hdl" ("fibonacci_aux" ("n" - #1)) in
-        let: "fut2" := (domain_pool_async ws_deques condition) "hdl" ("fibonacci_aux" ("n" - #2)) in
-        let: "res1" := (domain_pool_await condition) "fut1" in
-        let: "res1" := (domain_pool_await condition) "fut2" in
-        "res1" + "res2"
+        let: "fut1" := domain_pool_async "hdl" ("fibonacci_aux" ("n" - #1)) in
+        let: "fut2" := domain_pool_async "hdl" ("fibonacci_aux" ("n" - #2)) in
+        domain_pool_await "fut1" + domain_pool_await "fut2"
       ).
   Definition fibonacci : val :=
     λ: "pool" "n",
