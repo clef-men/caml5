@@ -91,8 +91,8 @@ Section heapGS.
       array_blit "t1" #0 "t2" "i2" (array_size "t1").
 
   Definition array_grow : val :=
-    λ: "t" "sz'",
-      let: "t'" := array_make "sz'" #() in
+    λ: "t" "sz'" "v",
+      let: "t'" := array_make "sz'" "v" in
       array_copy "t" "t'" #0 ;;
       "t'".
   Definition array_shrink : val :=
@@ -103,7 +103,7 @@ Section heapGS.
 
   Definition array_clone : val :=
     λ: "t",
-      array_grow "t" (array_size "t").
+      array_shrink "t" (array_size "t").
 
   Definition array_cget : val :=
     λ: "t" "i",
@@ -1540,16 +1540,16 @@ Section heapGS.
     iApply "HΦ". iFrame. rewrite Nat2Z.id drop_0 (firstn_all2 vs1) //.
   Qed.
 
-  Lemma array_grow_spec t dq vs (sz' : Z) :
+  Lemma array_grow_spec t dq vs (sz' : Z) v :
     (length vs ≤ sz')%Z →
     {{{
       array_model t dq vs
     }}}
-      array_grow t #sz'
+      array_grow t #sz' v
     {{{ t',
       RET t';
       array_model t dq vs ∗
-      array_model t' (DfracOwn 1) (vs ++ replicate (Z.to_nat sz' - length vs) #())
+      array_model t' (DfracOwn 1) (vs ++ replicate (Z.to_nat sz' - length vs) v)
     }}}.
   Proof.
     iIntros "% %Φ Hmodel HΦ".
@@ -1598,8 +1598,8 @@ Section heapGS.
     iIntros "%Φ Hmodel HΦ".
     wp_rec.
     wp_apply (array_size_spec' with "Hmodel"). iIntros "Hmodel".
-    wp_apply (array_grow_spec with "Hmodel"); first done. iIntros "%t' (Hmodel & Hmodel')".
-    iApply "HΦ". iFrame. rewrite Nat2Z.id Nat.sub_diag right_id //.
+    wp_apply (array_shrink_spec with "Hmodel"); first lia. iIntros "%t' (Hmodel & Hmodel')".
+    iApply "HΦ". iFrame. rewrite Nat2Z.id firstn_all //.
   Qed.
 
   Lemma array_unboxed t sz :
