@@ -58,22 +58,29 @@ Record ws_deque `{!heapGS Σ} {unboxed : bool} := {
       ws_deque_push t v @ ↑ι
     <<<
       ws_deque_model t γ (vs ++ [v])
-    | RET #(); ws_deque_owner t γ
+    | RET #();
+      ws_deque_owner t γ
     >>> ;
 
   ws_deque_pop_spec t γ ι :
     <<<
-      ws_deque_inv t γ ι ∗ ws_deque_owner t γ
+      ws_deque_inv t γ ι ∗
+      ws_deque_owner t γ
     | ∀∀ vs, ws_deque_model t γ vs
     >>>
       ws_deque_pop t @ ↑ι
     <<< ∃∃ o,
-        ⌜vs = [] ∧ o = NONEV⌝ ∗
-        ws_deque_model t γ []
-      ∨ ∃ vs' v,
-        ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗
-        ws_deque_model t γ vs'
-    | RET o; ws_deque_owner t γ
+      match o with
+      | None =>
+          ⌜vs = []⌝ ∗
+          ws_deque_model t γ []
+      | Some v =>
+          ∃ vs',
+          ⌜vs = vs' ++ [v]⌝ ∗
+          ws_deque_model t γ vs'
+      end
+    | RET o;
+      ws_deque_owner t γ
     >>> ;
 
   ws_deque_steal_spec t γ ι :
@@ -83,11 +90,15 @@ Record ws_deque `{!heapGS Σ} {unboxed : bool} := {
     >>>
       ws_deque_steal t @ ↑ι
     <<< ∃∃ o,
-        ⌜vs = [] ∧ o = NONEV⌝ ∗
-        ws_deque_model t γ []
-      ∨ ∃ v vs',
-        ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗
-        ws_deque_model t γ vs'
+      match o with
+      | None =>
+          ⌜vs = []⌝ ∗
+          ws_deque_model t γ []
+      | Some v =>
+          ∃ vs',
+          ⌜vs = v :: vs'⌝ ∗
+          ws_deque_model t γ vs'
+      end
     | RET o; True
     >>> ;
 
@@ -159,12 +170,9 @@ Next Obligation.
   iApply (aacc_aupd_commit with "HΦ"); first done. iIntros "%vs (%ls & Hmodel & Hls)".
   iAaccIntro with "Hmodel".
   - iIntros "Hmodel !>". iFrame. iSplitL; auto with iFrame.
-  - iIntros "% [((%Heq & ->) & Hmodel) | (%ws & %w & (%Heq & ->) & Hmodel)] !>".
-    + apply fmap_nil_inv in Heq as ->. iDestruct (big_sepL2_nil_inv_l with "Hls") as %->.
-      iExists NONEV. iSplitL; first naive_solver. iIntros "HΦ !> Howner".
-      wp_pures.
-      iApply ("HΦ" with "Howner").
-    + generalize dependent ls. refine (rev_ind _ _ _); [intros Heq | intros l ls _ Heq].
+  - iIntros ([w |]).
+    + iIntros "(%ws & %Heq & Hmodel) !>".
+      generalize dependent ls. refine (rev_ind _ _ _); [intros Heq | intros l ls _ Heq].
       { rewrite fmap_nil in Heq. edestruct app_cons_not_nil. done. }
       rewrite fmap_app app_inj_tail_iff in Heq. destruct Heq as (<- & <-).
       generalize dependent vs. apply rev_ind; [| intros v vs _].
@@ -172,11 +180,16 @@ Next Obligation.
         edestruct app_cons_not_nil. done.
       }
       iDestruct (big_sepL2_snoc with "Hls") as "(Hls & Hl)".
-      iExists (SOMEV v). iSplitR "Hl".
-      * iRight. auto with iFrame.
+      iExists (Some v). iSplitR "Hl".
+      * auto with iFrame.
       * iIntros "HΦ !> Howner".
         wp_pures. wp_load. wp_pures.
         iApply ("HΦ" with "Howner").
+    + iIntros "(%Heq & Hmodel) !>".
+      apply fmap_nil_inv in Heq as ->. iDestruct (big_sepL2_nil_inv_l with "Hls") as %->.
+      iExists None. iSplitL; first naive_solver. iIntros "HΦ !> Howner".
+      wp_pures.
+      iApply ("HΦ" with "Howner").
 Qed.
 Next Obligation.
   iIntros "* !> %Φ #Hinv HΦ".
@@ -184,20 +197,22 @@ Next Obligation.
   iApply (aacc_aupd_commit with "HΦ"); first done. iIntros "%vs (%ls & Hmodel & Hls)".
   iAaccIntro with "Hmodel".
   - iIntros "Hmodel !>". iFrame. iSplitL; auto with iFrame.
-  - iIntros "% [((%Heq & ->) & Hmodel) | (%w & %ws & (%Heq & ->) & Hmodel)] !>".
-    + apply fmap_nil_inv in Heq as ->. iDestruct (big_sepL2_nil_inv_l with "Hls") as %->.
-      iExists NONEV. iSplitL; first naive_solver. iIntros "HΦ !> _".
-      wp_pures.
-      iApply ("HΦ" with "[//]").
-    + destruct ls as [| l ls]; simplify.
+  - iIntros ([w |]).
+    + iIntros "(%ws & %Heq & Hmodel) !>".
+      destruct ls as [| l ls]; simplify.
       destruct vs as [| v vs].
       { iDestruct (big_sepL2_nil_inv_r with "Hls") as %?. simplify. }
       iDestruct (big_sepL2_cons with "Hls") as "(Hl & Hls)".
-      iExists (SOMEV v). iSplitR "Hl".
-      * iRight. auto with iFrame.
+      iExists (Some v). iSplitR "Hl".
+      * auto with iFrame.
       * iIntros "HΦ !> Howner".
         wp_pures. wp_load. wp_pures.
         iApply ("HΦ" with "Howner").
+    + iIntros "(%Heq & Hmodel) !>".
+      apply fmap_nil_inv in Heq as ->. iDestruct (big_sepL2_nil_inv_l with "Hls") as %->.
+      iExists None. iSplitL; first naive_solver. iIntros "HΦ !> _".
+      wp_pures.
+      iApply ("HΦ" with "[//]").
 Qed.
 Next Obligation.
   intros. destruct unboxed; eauto using base.(ws_deque_unboxed).

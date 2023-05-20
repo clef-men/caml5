@@ -66,7 +66,8 @@ Record ws_bag `{!heapGS Σ} {unboxed : bool} := {
       ws_bag_push t v @ ↑ι
     <<<
       ws_bag_model t γ (S pot)
-    | RET #(); ws_bag_owner t γ
+    | RET #();
+      ws_bag_owner t γ
     >>> ;
 
   ws_bag_pop_spec t γ ι Ψ :
@@ -77,12 +78,16 @@ Record ws_bag `{!heapGS Σ} {unboxed : bool} := {
     >>>
       ws_bag_pop t @ ↑ι
     <<< ∃∃ o,
-        ⌜pot = 0 ∧ o = None⌝ ∗
-        ws_bag_model t γ 0
-      ∨ ∃ pot' v,
-        ⌜pot = S pot' ∧ o = Some v⌝ ∗
-        ws_bag_model t γ pot'
-    | RET from_option (λ v, SOMEV v) NONEV o;
+      match o with
+      | None =>
+          ⌜pot = 0⌝ ∗
+          ws_bag_model t γ 0
+      | Some v =>
+          ∃ pot',
+          ⌜pot = S pot'⌝ ∗
+          ws_bag_model t γ pot'
+      end
+    | RET o;
       ws_bag_owner t γ ∗
       from_option Ψ True o
     >>> ;
@@ -94,12 +99,16 @@ Record ws_bag `{!heapGS Σ} {unboxed : bool} := {
     >>>
       ws_bag_steal t @ ↑ι
     <<< ∃∃ o,
-        ⌜pot = 0 ∧ o = None⌝ ∗
-        ws_bag_model t γ 0
-      ∨ ∃ pot' v,
-        ⌜pot = S pot' ∧ o = Some v⌝ ∗
-        ws_bag_model t γ pot'
-    | RET from_option (λ v, SOMEV v) NONEV o;
+      match o with
+      | None =>
+          ⌜pot = 0⌝ ∗
+          ws_bag_model t γ 0
+      | Some v =>
+          ∃ pot',
+          ⌜pot = S pot'⌝ ∗
+          ws_bag_model t γ pot'
+      end
+    | RET o;
       from_option Ψ True o
     >>> ;
 
@@ -245,7 +254,8 @@ Section ws_bag_of_ws_deque.
       ws_bag_of_ws_deque_push t v @ ↑ι
     <<<
       ws_bag_of_ws_deque_model t γ (S pot)
-    | RET #(); ws_bag_of_ws_deque_owner t γ
+    | RET #();
+      ws_bag_of_ws_deque_owner t γ
     >>>.
   Proof.
     iIntros "!> %Φ ((#Hbase_inv & #Hinv) & Howner & Hv) HΦ".
@@ -273,12 +283,16 @@ Section ws_bag_of_ws_deque.
     >>>
       ws_bag_of_ws_deque_pop t @ ↑ι
     <<< ∃∃ o,
-        ⌜pot = 0 ∧ o = None⌝ ∗
-        ws_bag_of_ws_deque_model t γ 0
-      ∨ ∃ pot' v,
-        ⌜pot = S pot' ∧ o = Some v⌝ ∗
-      ws_bag_of_ws_deque_model t γ pot'
-    | RET from_option (λ v, SOMEV v) NONEV o;
+      match o with
+      | None =>
+          ⌜pot = 0⌝ ∗
+          ws_bag_of_ws_deque_model t γ 0
+      | Some v =>
+          ∃ pot',
+          ⌜pot = S pot'⌝ ∗
+          ws_bag_of_ws_deque_model t γ pot'
+      end
+    | RET o;
       ws_bag_of_ws_deque_owner t γ ∗
       from_option Ψ True o
     >>>.
@@ -293,22 +307,23 @@ Section ws_bag_of_ws_deque.
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
       { iExists vs. auto with iFrame. }
       iIntros "$ !>". iExists vs. auto with iFrame.
-    - iIntros "%o [((-> & ->) & Hbase_model) | (%vs' & %v & (-> & ->) & Hbase_model)]".
-      + iModIntro. iExists None. iSplitL "Hmodel₂ Hbase_model".
-        { iLeft. iSplit; first done. iExists []. auto with iFrame. }
-        iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
-        { iExists []. auto. }
-        iIntros "Howner". wp_pures. iApply "HΦ". auto.
-      + iMod (auth_excl_update' (auth_excl_G := ws_bag_of_ws_deque_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
+    - iIntros ([v |]).
+      + iIntros "(%vs' & -> & Hbase_model)".
+        iMod (auth_excl_update' (auth_excl_G := ws_bag_of_ws_deque_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct "Hvs" as "(Hvs' & Hv & _)".
         iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
-        { iRight. iExists (length vs'), v. iSplit.
-          { rewrite app_length (comm Nat.add) //. }
+        { iExists (length vs'). iSplit; first rewrite app_length (comm Nat.add) //.
           iExists vs'. auto with iFrame.
         }
         iIntros "HΦ !>". iSplitL "Hmodel₁ Hvs'".
         { iExists vs'. auto with iFrame. }
         iIntros "Howner". wp_pures. iApply "HΦ". auto with iFrame.
+      + iIntros "(-> & Hbase_model) !>".
+        iExists None. iSplitL "Hmodel₂ Hbase_model".
+        { iSplit; first done. iExists []. auto with iFrame. }
+        iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
+        { iExists []. auto. }
+        iIntros "Howner". wp_pures. iApply "HΦ". auto.
   Qed.
 
   #[local] Lemma ws_bag_of_ws_deque_steal_spec t γ ι Ψ :
@@ -318,12 +333,16 @@ Section ws_bag_of_ws_deque.
     >>>
       ws_bag_of_ws_deque_steal t @ ↑ι
     <<< ∃∃ o,
-        ⌜pot = 0 ∧ o = None⌝ ∗
-        ws_bag_of_ws_deque_model t γ 0
-      ∨ ∃ pot' v,
-        ⌜pot = S pot' ∧ o = Some v⌝ ∗
-        ws_bag_of_ws_deque_model t γ pot'
-    | RET from_option (λ v, SOMEV v) NONEV o;
+      match o with
+      | None =>
+          ⌜pot = 0⌝ ∗
+          ws_bag_of_ws_deque_model t γ 0
+      | Some v =>
+          ∃ pot',
+          ⌜pot = S pot'⌝ ∗
+          ws_bag_of_ws_deque_model t γ pot'
+      end
+    | RET o;
       from_option Ψ True o
     >>>.
   Proof.
@@ -337,21 +356,21 @@ Section ws_bag_of_ws_deque.
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
       { iExists vs. auto with iFrame. }
       iIntros "$ !>". iExists vs. auto with iFrame.
-    - iIntros "%o [((-> & ->) & Hbase_model) | (%v & %vs' & (-> & ->) & Hbase_model)]".
-      + iModIntro. iExists None. iSplitL "Hmodel₂ Hbase_model".
-        { iLeft. iSplit; first done. iExists []. auto with iFrame. }
-        iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
-        { iExists []. auto. }
-        iIntros "Howner". wp_pures. iApply "HΦ". auto.
-      + iMod (auth_excl_update' (auth_excl_G := ws_bag_of_ws_deque_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
+    - iIntros ([v |]).
+      + iIntros "(%vs' & -> & Hbase_model)".
+        iMod (auth_excl_update' (auth_excl_G := ws_bag_of_ws_deque_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct "Hvs" as "(Hv & Hvs')".
         iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
-        { iRight. iExists (length vs'), v. iSplit; first done.
-          iExists vs'. auto with iFrame.
-        }
+        { iExists (length vs'). iSplit; first done. iExists vs'. auto with iFrame. }
         iIntros "HΦ !>". iSplitL "Hmodel₁ Hvs'".
         { iExists vs'. auto with iFrame. }
         iIntros "Howner". wp_pures. iApply "HΦ". auto with iFrame.
+      + iIntros "(-> & Hbase_model) !>".
+        iExists None. iSplitL "Hmodel₂ Hbase_model".
+        { iSplit; first done. iExists []. auto with iFrame. }
+        iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
+        { iExists []. auto. }
+        iIntros "Howner". wp_pures. iApply "HΦ". auto.
   Qed.
 
   #[local] Lemma ws_bag_of_ws_deque_unboxed :
@@ -495,7 +514,8 @@ Section ws_bag_of_spmc_stack.
       ws_bag_of_spmc_stack_push t v @ ↑ι
     <<<
       ws_bag_of_spmc_stack_model t γ (S pot)
-    | RET #(); ws_bag_of_spmc_stack_owner t γ
+    | RET #();
+      ws_bag_of_spmc_stack_owner t γ
     >>>.
   Proof.
     iIntros "!> %Φ ((#Hbase_inv & #Hinv) & Howner & Hv) HΦ".
@@ -523,12 +543,16 @@ Section ws_bag_of_spmc_stack.
     >>>
       ws_bag_of_spmc_stack_pop t @ ↑ι
     <<< ∃∃ o,
-        ⌜pot = 0 ∧ o = None⌝ ∗
-        ws_bag_of_spmc_stack_model t γ 0
-      ∨ ∃ pot' v,
-        ⌜pot = S pot' ∧ o = Some v⌝ ∗
-        ws_bag_of_spmc_stack_model t γ pot'
-    | RET from_option (λ v, SOMEV v) NONEV o;
+      match o with
+      | None =>
+          ⌜pot = 0⌝ ∗
+          ws_bag_of_spmc_stack_model t γ 0
+      | Some v =>
+          ∃ pot',
+          ⌜pot = S pot'⌝ ∗
+          ws_bag_of_spmc_stack_model t γ pot'
+      end
+    | RET o;
       ws_bag_of_spmc_stack_owner t γ ∗
       from_option Ψ True o
     >>>.
@@ -543,20 +567,20 @@ Section ws_bag_of_spmc_stack.
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
       { iExists vs. auto with iFrame. }
       iIntros "$ !>". iFrame. iExists vs. iFrame.
-    - iIntros "%o [((-> & ->) & Hbase_model) | (%v & %vs' & (-> & ->) & Hbase_model)]".
-      + iModIntro. iExists None. iSplitL "Hmodel₂ Hbase_model".
-        { iLeft. iSplit; first done. iExists []. auto with iFrame. }
-        iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
-        { iExists []. auto. }
-        iIntros "_". wp_pures. iApply "HΦ". auto with iFrame.
-      + iMod (auth_excl_update' (auth_excl_G := ws_bag_of_spmc_stack_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
+    - iIntros ([v |]).
+      + iIntros "(%vs' & -> & Hbase_model)".
+        iMod (auth_excl_update' (auth_excl_G := ws_bag_of_spmc_stack_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct "Hvs" as "(Hv & Hvs')".
         iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
-        { iRight. iExists (length vs'), v. iSplit; first done.
-          iExists vs'. auto with iFrame.
-        }
+        { iExists (length vs'). iSplit; first done. iExists vs'. auto with iFrame. }
         iIntros "HΦ !>". iSplitL "Hmodel₁ Hvs'".
         { iExists vs'. auto with iFrame. }
+        iIntros "_". wp_pures. iApply "HΦ". auto with iFrame.
+      + iIntros "(-> & Hbase_model) !>".
+        iExists None. iSplitL "Hmodel₂ Hbase_model".
+        { iSplit; first done. iExists []. auto with iFrame. }
+        iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
+        { iExists []. auto. }
         iIntros "_". wp_pures. iApply "HΦ". auto with iFrame.
   Qed.
 
@@ -567,12 +591,16 @@ Section ws_bag_of_spmc_stack.
     >>>
       ws_bag_of_spmc_stack_steal t @ ↑ι
     <<< ∃∃ o,
-        ⌜pot = 0 ∧ o = None⌝ ∗
-        ws_bag_of_spmc_stack_model t γ 0
-      ∨ ∃ pot' v,
-        ⌜pot = S pot' ∧ o = Some v⌝ ∗
-        ws_bag_of_spmc_stack_model t γ pot'
-    | RET from_option (λ v, SOMEV v) NONEV o;
+      match o with
+      | None =>
+          ⌜pot = 0⌝ ∗
+          ws_bag_of_spmc_stack_model t γ 0
+      | Some v =>
+          ∃ pot',
+          ⌜pot = S pot'⌝ ∗
+          ws_bag_of_spmc_stack_model t γ pot'
+      end
+    | RET o;
       from_option Ψ True o
     >>>.
   Proof.
@@ -586,21 +614,21 @@ Section ws_bag_of_spmc_stack.
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
       { iExists vs. auto with iFrame. }
       iIntros "$ !>". iExists vs. auto with iFrame.
-    - iIntros "%o [((-> & ->) & Hbase_model) | (%v & %vs' & (-> & ->) & Hbase_model)]".
-      + iModIntro. iExists None. iSplitL "Hmodel₂ Hbase_model".
-        { iLeft. iSplit; first done. iExists []. auto with iFrame. }
-        iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
-        { iExists []. auto. }
-        iIntros "_". wp_pures. iApply "HΦ". auto.
-      + iMod (auth_excl_update' (auth_excl_G := ws_bag_of_spmc_stack_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
+    - iIntros ([v |]).
+      + iIntros "(%vs' & -> & Hbase_model)".
+        iMod (auth_excl_update' (auth_excl_G := ws_bag_of_spmc_stack_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct "Hvs" as "(Hv & Hvs')".
         iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
-        { iRight. iExists (length vs'), v. iSplit; first done.
-          iExists vs'. auto with iFrame.
-        }
+        { iExists (length vs'). iSplit; first done. iExists vs'. auto with iFrame. }
         iIntros "HΦ !>". iSplitL "Hmodel₁ Hvs'".
         { iExists vs'. auto with iFrame. }
         iIntros "_". wp_pures. iApply "HΦ". auto with iFrame.
+      + iIntros "(-> & Hbase_model) !>".
+        iExists None. iSplitL "Hmodel₂ Hbase_model".
+        { iSplit; first done. iExists []. auto with iFrame. }
+        iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
+        { iExists []. auto. }
+        iIntros "_". wp_pures. iApply "HΦ". auto.
   Qed.
 
   #[local] Lemma ws_bag_of_spmc_stack_unboxed :
@@ -767,7 +795,8 @@ Section ws_bag_of_spmc_queue.
       ws_bag_of_spmc_queue_push t v @ ↑ι
     <<<
       ws_bag_of_spmc_queue_model t γ (S pot)
-    | RET #(); ws_bag_of_spmc_queue_owner t γ
+    | RET #();
+      ws_bag_of_spmc_queue_owner t γ
     >>>.
   Proof.
     iIntros "!> %Φ ((#Hbase_inv & #Hinv) & Howner & Hv) HΦ".
@@ -795,12 +824,16 @@ Section ws_bag_of_spmc_queue.
     >>>
       ws_bag_of_spmc_queue_pop t @ ↑ι
     <<< ∃∃ o,
-        ⌜pot = 0 ∧ o = None⌝ ∗
-        ws_bag_of_spmc_queue_model t γ 0
-      ∨ ∃ pot' v,
-        ⌜pot = S pot' ∧ o = Some v⌝ ∗
-        ws_bag_of_spmc_queue_model t γ pot'
-    | RET from_option (λ v, SOMEV v) NONEV o;
+      match o with
+      | None =>
+          ⌜pot = 0⌝ ∗
+          ws_bag_of_spmc_queue_model t γ 0
+      | Some v =>
+          ∃ pot',
+          ⌜pot = S pot'⌝ ∗
+          ws_bag_of_spmc_queue_model t γ pot'
+      end
+    | RET o;
       ws_bag_of_spmc_queue_owner t γ ∗
       from_option Ψ True o
     >>>.
@@ -815,21 +848,22 @@ Section ws_bag_of_spmc_queue.
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
       { iExists vs. auto with iFrame. }
       iIntros "$ !>". iFrame. iExists vs. iFrame.
-    - iIntros "%o [((-> & ->) & Hbase_model) | (%vs' & %v & (-> & ->) & Hbase_model)]".
-      + iModIntro. iExists None. iSplitL "Hmodel₂ Hbase_model".
-        { iLeft. iSplit; first done. iExists []. auto with iFrame. }
-        iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
-        { iExists []. auto. }
-        iIntros "_". wp_pures. iApply "HΦ". auto with iFrame.
-      + iMod (auth_excl_update' (auth_excl_G := ws_bag_of_spmc_queue_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
+    - iIntros ([v |]).
+      + iIntros "(%vs' & -> & Hbase_model)".
+        iMod (auth_excl_update' (auth_excl_G := ws_bag_of_spmc_queue_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct "Hvs" as "(Hvs' & Hv & _)".
         iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
-        { iRight. iExists (length vs'), v. iSplit.
-          { rewrite app_length (comm Nat.add) //. }
+        { iExists (length vs'). iSplit; first rewrite app_length (comm Nat.add) //.
           iExists vs'. auto with iFrame.
         }
         iIntros "HΦ !>". iSplitL "Hmodel₁ Hvs'".
         { iExists vs'. auto with iFrame. }
+        iIntros "_". wp_pures. iApply "HΦ". auto with iFrame.
+      + iIntros "(-> & Hbase_model) !>".
+        iExists None. iSplitL "Hmodel₂ Hbase_model".
+        { iSplit; first done. iExists []. auto with iFrame. }
+        iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
+        { iExists []. auto. }
         iIntros "_". wp_pures. iApply "HΦ". auto with iFrame.
   Qed.
 
@@ -840,12 +874,16 @@ Section ws_bag_of_spmc_queue.
     >>>
       ws_bag_of_spmc_queue_steal t @ ↑ι
     <<< ∃∃ o,
-        ⌜pot = 0 ∧ o = None⌝ ∗
-        ws_bag_of_spmc_queue_model t γ 0
-      ∨ ∃ pot' v,
-        ⌜pot = S pot' ∧ o = Some v⌝ ∗
-        ws_bag_of_spmc_queue_model t γ pot'
-    | RET from_option (λ v, SOMEV v) NONEV o;
+      match o with
+      | None =>
+          ⌜pot = 0⌝ ∗
+          ws_bag_of_spmc_queue_model t γ 0
+      | Some v =>
+          ∃ pot',
+          ⌜pot = S pot'⌝ ∗
+          ws_bag_of_spmc_queue_model t γ pot'
+      end
+    | RET o;
       from_option Ψ True o
     >>>.
   Proof.
@@ -859,22 +897,23 @@ Section ws_bag_of_spmc_queue.
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
       { iExists vs. auto with iFrame. }
       iIntros "$ !>". iExists vs. auto with iFrame.
-    - iIntros "%o [((-> & ->) & Hbase_model) | (%vs' & %v & (-> & ->) & Hbase_model)]".
-      + iModIntro. iExists None. iSplitL "Hmodel₂ Hbase_model".
-        { iLeft. iSplit; first done. iExists []. auto with iFrame. }
-        iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
-        { iExists []. auto. }
-        iIntros "_". wp_pures. iApply "HΦ". auto.
-      + iMod (auth_excl_update' (auth_excl_G := ws_bag_of_spmc_queue_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
+    - iIntros ([v |]).
+      + iIntros "(%vs' & -> & Hbase_model)".
+        iMod (auth_excl_update' (auth_excl_G := ws_bag_of_spmc_queue_G_model_G) vs' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct "Hvs" as "(Hvs' & Hv & _)".
         iModIntro. iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
-        { iRight. iExists (length vs'), v. iSplit.
-          { rewrite app_length (comm Nat.add) //. }
+        { iExists (length vs'). iSplit; first rewrite app_length (comm Nat.add) //.
           iExists vs'. auto with iFrame.
         }
         iIntros "HΦ !>". iSplitL "Hmodel₁ Hvs'".
         { iExists vs'. auto with iFrame. }
         iIntros "_". wp_pures. iApply "HΦ". auto with iFrame.
+      + iIntros "(-> & Hbase_model) !>".
+        iExists None. iSplitL "Hmodel₂ Hbase_model".
+        { iSplit; first done. iExists []. auto with iFrame. }
+        iIntros "HΦ !>". iFrame. iSplitL "Hmodel₁ Hvs".
+        { iExists []. auto. }
+        iIntros "_". wp_pures. iApply "HΦ". auto.
   Qed.
 
   #[local] Lemma ws_bag_of_spmc_queue_unboxed :

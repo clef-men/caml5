@@ -76,7 +76,8 @@ Record ws_bags `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool} := {
     <<< ∃∃ pot,
       ⌜pots !! i = Some pot⌝ ∗
       ws_bags_model t γ (<[i := S pot]> pots)
-    | RET #(); counter_token cntr i
+    | RET #();
+      counter_token cntr i
     >>> ;
 
   ws_bags_pop_spec t γ ι cntr sz Ψ i i' :
@@ -88,12 +89,16 @@ Record ws_bags `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool} := {
     >>>
       ws_bags_pop t #i' @ ↑ι
     <<< ∃∃ o,
-        ⌜pots !! i = Some 0 ∧ o = None⌝ ∗
-        ws_bags_model t γ pots
-      ∨ ∃ pot v,
-        ⌜pots !! i = Some (S pot) ∧ o = Some v⌝ ∗
-        ws_bags_model t γ (<[i := pot]> pots)
-    | RET from_option (λ v, SOMEV v) NONEV o;
+      match o with
+      | None =>
+          ⌜pots !! i = Some 0⌝ ∗
+          ws_bags_model t γ pots
+      | Some v =>
+          ∃ pot,
+          ⌜pots !! i = Some (S pot)⌝ ∗
+          ws_bags_model t γ (<[i := pot]> pots)
+      end
+    | RET o;
       counter_token cntr i ∗
       from_option Ψ True o
     >>> ;
@@ -107,12 +112,16 @@ Record ws_bags `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool} := {
       ws_bags_steal t #i @ ↑ι
     <<< ∃∃ o,
       let i := Z.to_nat i in
-        ⌜pots !! i = Some 0 ∧ o = None⌝ ∗
-        ws_bags_model t γ pots
-      ∨ ∃ pot v,
-        ⌜pots !! i = Some (S pot) ∧ o = Some v⌝ ∗
-        ws_bags_model t γ (<[i := pot]> pots)
-    | RET from_option (λ v, SOMEV v) NONEV o;
+      match o with
+      | None =>
+          ⌜pots !! i = Some 0⌝ ∗
+          ws_bags_model t γ pots
+      | Some v =>
+          ∃ pot,
+          ⌜pots !! i = Some (S pot)⌝ ∗
+          ws_bags_model t γ (<[i := pot]> pots)
+      end
+    | RET o;
       from_option Ψ True o
     >>> ;
 
@@ -275,7 +284,8 @@ Section ws_bags_of_ws_deques.
     <<< ∃∃ pot,
       ⌜pots !! i = Some pot⌝ ∗
       ws_bags_of_ws_deques_model t γ (<[i := S pot]> pots)
-    | RET #(); counter_token cntr i
+    | RET #();
+      counter_token cntr i
     >>>.
   Proof.
     iIntros (->) "!> %Φ ((#Hbase_inv & #Hinv) & Htoken_cntr & HΨ) HΦ".
@@ -312,12 +322,16 @@ Section ws_bags_of_ws_deques.
     >>>
       ws_bags_of_ws_deques_pop t #i' @ ↑ι
     <<< ∃∃ o,
-        ⌜pots !! i = Some 0 ∧ o = None⌝ ∗
-        ws_bags_of_ws_deques_model t γ pots
-      ∨ ∃ pot v,
-        ⌜pots !! i = Some (S pot) ∧ o = Some v⌝ ∗
-        ws_bags_of_ws_deques_model t γ (<[i := pot]> pots)
-    | RET from_option (λ v, SOMEV v) NONEV o;
+      match o with
+      | None =>
+          ⌜pots !! i = Some 0⌝ ∗
+          ws_bags_of_ws_deques_model t γ pots
+      | Some v =>
+          ∃ pot,
+          ⌜pots !! i = Some (S pot)⌝ ∗
+          ws_bags_of_ws_deques_model t γ (<[i := pot]> pots)
+      end
+    | RET o;
       counter_token cntr i ∗
       from_option Ψ True o
     >>>.
@@ -332,25 +346,27 @@ Section ws_bags_of_ws_deques.
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
       { iExists vss. auto with iFrame. }
       iIntros "$ !>". iFrame. iExists vss. auto with iFrame.
-    - iIntros "%o [((% & ->) & Hbase_model) | (%vs & %v & (% & ->) & Hbase_model)]"; list_simplifier.
-      + iExists None. iSplitL "Hmodel₂ Hbase_model".
-        { iLeft. iSplitR; first done. iExists vss. auto with iFrame. }
-        iIntros "!> HΦ !>". iSplitR "HΦ"; first (iExists vss; iFrame). iIntros "Htoken_cntr".
-        wp_pures.
-        iApply ("HΦ" with "[$Htoken_cntr //]").
-      + set vss' := <[i := vs]> vss.
+    - iIntros ([v |]).
+      + iIntros "(%vs & % & Hbase_model)". list_simplifier.
+        set vss' := <[i := vs]> vss.
         iMod (auth_excl_update' (auth_excl_G := ws_bags_of_ws_deques_G_model_G) vss' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct (big_sepL_insert_acc with "HΨss") as "(HΨs & HΨss)"; first done.
         iDestruct "HΨs" as "(HΨs & HΨ & _)".
         iSpecialize ("HΨss" with "HΨs").
         iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
-        { iRight. iExists (length vs), v. iSplitR.
+        { iExists (length vs). iSplitR.
           { rewrite -Nat.add_1_r -(app_length vs [v]) //. }
           iExists vss'. iFrame. iPureIntro. apply Forall2_insert; done.
         }
         iIntros "!> HΦ !>". iSplitR "HΨ HΦ"; first (iExists vss'; iFrame). iIntros "Htoken_cntr".
         wp_pures.
         iApply ("HΦ" with "[$Htoken_cntr $HΨ]").
+      + iIntros "(% & Hbase_model) !>". list_simplifier.
+        iExists None. iSplitL "Hmodel₂ Hbase_model".
+        { iSplitR; first done. iExists vss. auto with iFrame. }
+        iIntros "HΦ !>". iSplitR "HΦ"; first (iExists vss; iFrame). iIntros "Htoken_cntr".
+        wp_pures.
+        iApply ("HΦ" with "[$Htoken_cntr //]").
   Qed.
 
   #[local] Lemma ws_bags_of_ws_deques_steal_spec t γ ι cntr Ψ (sz : nat) i :
@@ -362,12 +378,16 @@ Section ws_bags_of_ws_deques.
       ws_bags_of_ws_deques_steal t #i @ ↑ι
     <<< ∃∃ o,
       let i := Z.to_nat i in
-        ⌜pots !! i = Some 0 ∧ o = None⌝ ∗
-        ws_bags_of_ws_deques_model t γ pots
-      ∨ ∃ pot v,
-        ⌜pots !! i = Some (S pot) ∧ o = Some v⌝ ∗
-        ws_bags_of_ws_deques_model t γ (<[i := pot]> pots)
-    | RET from_option (λ v, SOMEV v) NONEV o;
+      match o with
+      | None =>
+          ⌜pots !! i = Some 0⌝ ∗
+          ws_bags_of_ws_deques_model t γ pots
+      | Some v =>
+          ∃ pot,
+          ⌜pots !! i = Some (S pot)⌝ ∗
+          ws_bags_of_ws_deques_model t γ (<[i := pot]> pots)
+      end
+    | RET o;
       from_option Ψ True o
     >>>.
   Proof.
@@ -381,24 +401,26 @@ Section ws_bags_of_ws_deques.
     - iIntros "Hbase_model !>". iSplitL "Hmodel₂ Hbase_model".
       { iExists vss. auto with iFrame. }
       iIntros "$ !>". iFrame. iExists vss. auto with iFrame.
-    - iIntros "%o [((% & ->) & Hbase_model) | (%v & %vs & (% & ->) & Hbase_model)]"; list_simplifier.
-      + iExists None. iSplitL "Hmodel₂ Hbase_model".
-        { iLeft. iSplitR; first done. iExists vss. auto with iFrame. }
-        iIntros "!> HΦ !>". iSplitR "HΦ"; first (iExists vss; iFrame). iIntros "Htoken_cntr".
-        wp_pures.
-        iApply ("HΦ" with "[$Htoken_cntr //]").
-      + set (vss' := <[Z.to_nat i := vs]> vss).
+    - iIntros ([v |]).
+      + iIntros "(%vs & % & Hbase_model)". list_simplifier.
+        set (vss' := <[Z.to_nat i := vs]> vss).
         iMod (auth_excl_update' (auth_excl_G := ws_bags_of_ws_deques_G_model_G) vss' with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
         iDestruct (big_sepL_insert_acc with "HΨss") as "(HΨs & HΨss)"; first done.
         iDestruct "HΨs" as "(HΨ & HΨs)".
         iSpecialize ("HΨss" with "HΨs").
         iExists (Some v). iSplitL "Hmodel₂ Hbase_model".
-        { iRight. iExists (length vs), v. iSplitR; first done.
+        { iExists (length vs). iSplitR; first done.
           iExists vss'. iFrame. iPureIntro. apply Forall2_insert; done.
         }
         iIntros "!> HΦ !>". iSplitR "HΨ HΦ"; first (iExists vss'; iFrame). iIntros "Htoken_cntr".
         wp_pures.
         iApply ("HΦ" with "HΨ").
+      + iIntros "(% & Hbase_model) !>". list_simplifier.
+        iExists None. iSplitL "Hmodel₂ Hbase_model".
+        { iSplitR; first done. iExists vss. auto with iFrame. }
+        iIntros "HΦ !>". iSplitR "HΦ"; first (iExists vss; iFrame). iIntros "Htoken_cntr".
+        wp_pures.
+        iApply ("HΦ" with "[$Htoken_cntr //]").
   Qed.
 
   #[local] Lemma ws_bags_of_ws_deques_unboxed :

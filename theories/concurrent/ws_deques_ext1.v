@@ -41,7 +41,9 @@ Record ws_deques_ext1 `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool}
 
   ws_deques_ext1_make_spec ι cntr ι_cntr sz sz' :
     sz' = Z.of_nat sz →
-    {{{ counter_inv cntr ι_cntr (Some sz) }}}
+    {{{
+      counter_inv cntr ι_cntr (Some sz)
+    }}}
       ws_deques_ext1_make #sz'
     {{{ t γ,
       RET t;
@@ -69,7 +71,8 @@ Record ws_deques_ext1 `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool}
     <<< ∃∃ vs,
       ⌜vss !! i = Some vs⌝ ∗
       ws_deques_ext1_model t γ (<[i := vs ++ [v]]> vss)
-    | RET #(); counter_token cntr i
+    | RET #();
+      counter_token cntr i
     >>> ;
 
   ws_deques_ext1_pop_spec t γ ι cntr sz i i' :
@@ -81,12 +84,17 @@ Record ws_deques_ext1 `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool}
     >>>
       ws_deques_ext1_pop t #i' @ ↑ι
     <<< ∃∃ o,
-        ⌜vss !! i = Some [] ∧ o = NONEV⌝ ∗
-        ws_deques_ext1_model t γ vss
-      ∨ ∃ vs v,
-        ⌜vss !! i = Some (vs ++ [v]) ∧ o = SOMEV v⌝ ∗
-        ws_deques_ext1_model t γ (<[i := vs]> vss)
-    | RET o; counter_token cntr i
+      match o with
+      | None =>
+          ⌜vss !! i = Some []⌝ ∗
+          ws_deques_ext1_model t γ vss
+      | Some v =>
+          ∃ vs,
+          ⌜vss !! i = Some (vs ++ [v])⌝ ∗
+          ws_deques_ext1_model t γ (<[i := vs]> vss)
+      end
+    | RET o;
+      counter_token cntr i
     >>> ;
 
   ws_deques_ext1_try_steal_once_spec t γ ι cntr sz i i' :
@@ -99,12 +107,16 @@ Record ws_deques_ext1 `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool}
     >>>
       ws_deques_ext1_try_steal_once t #i' @ ↑ι
     <<< ∃∃ o,
-        ⌜o = NONEV⌝ ∗
-        ws_deques_ext1_model t γ vss
-      ∨ ∃ j v vs,
-        ⌜j ≠ i ∧ vss !! j = Some (v :: vs) ∧ o = SOMEV v⌝ ∗
-        ws_deques_ext1_model t γ (<[j := vs]> vss)
-    | RET o; counter_token cntr i
+      match o with
+      | None =>
+          ws_deques_ext1_model t γ vss
+      | Some v =>
+          ∃ j vs,
+          ⌜j ≠ i ∧ vss !! j = Some (v :: vs)⌝ ∗
+          ws_deques_ext1_model t γ (<[j := vs]> vss)
+      end
+    | RET o;
+      counter_token cntr i
     >>> ;
 
   ws_deques_ext1_unboxed :
@@ -165,12 +177,16 @@ Section ws_deques_ext1.
     >>>
       ws_deques_ext1_try_steal t #i' #cnt @ ↑ι
     <<< ∃∃ o,
-        ⌜o = NONEV⌝ ∗
-        ws_deques.(ws_deques_ext1_model) t γ vss
-      ∨ ∃ j v vs,
-        ⌜j ≠ i ∧ vss !! j = Some (v :: vs) ∧ o = SOMEV v⌝ ∗
-        ws_deques.(ws_deques_ext1_model) t γ (<[j := vs]> vss)
-    | RET o; counter_token cntr i
+      match o with
+      | None =>
+          ws_deques.(ws_deques_ext1_model) t γ vss
+      | Some v =>
+          ∃ j vs,
+          ⌜j ≠ i ∧ vss !! j = Some (v :: vs)⌝ ∗
+          ws_deques.(ws_deques_ext1_model) t γ (<[j := vs]> vss)
+      end
+    | RET o;
+      counter_token cntr i
     >>>.
   Proof.
     iIntros (-> Hsz) "!> %Φ (#Hinv & Hcounter_token) HΦ".
@@ -178,18 +194,20 @@ Section ws_deques_ext1.
     wp_rec. wp_pures.
     case_decide as Hcnt; wp_pures.
     - iMod "HΦ" as "(%vss & Hmodel & _ & HΦ)".
-      iMod ("HΦ" $! NONEV with "[Hmodel]") as "HΦ"; first auto.
+      iMod ("HΦ" $! None with "[Hmodel]") as "HΦ"; first auto.
       iApply ("HΦ" with "Hcounter_token").
     - awp_apply (ws_deques_ext1_try_steal_once_spec with "[$Hinv $Hcounter_token]"); [done.. |].
       iApply (aacc_aupd with "HΦ"); first done. iIntros "%vss Hmodel".
-      iAaccIntro with "Hmodel"; first auto with iFrame. iIntros "%o [(-> & Hmodel) | (%j & %v & %vs & (%Hj & %Hlookup & ->) & Hmodel)] !>".
-      + iLeft. iFrame. iIntros "HΦ !> Hcounter_token".
-        wp_smart_apply ("IH" with "Hcounter_token HΦ").
-      + iRight. iExists (SOMEV v). iSplitL.
-        { iRight. iExists j, v, vs. auto. }
+      iAaccIntro with "Hmodel"; first auto with iFrame. iIntros ([v |]).
+      + iIntros "(%j & %vs & (%Hj & %Hlookup) & Hmodel) !>".
+        iRight. iExists (Some v). iSplitL.
+        { iExists j, vs. auto. }
         iIntros "HΦ !> Hcounter_token".
         wp_pures.
         iApply ("HΦ" with "Hcounter_token").
+      + iIntros "Hmodel !>".
+        iLeft. iFrame. iIntros "HΦ !> Hcounter_token".
+        wp_smart_apply ("IH" with "Hcounter_token HΦ").
   Qed.
 
   Lemma ws_deques_ext1_steal_spec t γ ι cntr sz i i' :
@@ -204,7 +222,8 @@ Section ws_deques_ext1.
     <<< ∃∃ j v vs,
       ⌜j ≠ i ∧ vss !! j = Some (v :: vs)⌝ ∗
       ws_deques.(ws_deques_ext1_model) t γ (<[j := vs]> vss)
-    | RET SOMEV v; counter_token cntr i
+    | RET SOMEV v;
+      counter_token cntr i
     >>>.
   Proof.
     iIntros (-> Hsz) "!> %Φ (#Hinv & Hcounter_token) HΦ".
@@ -212,12 +231,14 @@ Section ws_deques_ext1.
     wp_rec.
     awp_smart_apply (ws_deques_ext1_try_steal_once_spec with "[$Hinv $Hcounter_token]"); [done.. |].
     iApply (aacc_aupd with "HΦ"); first done. iIntros "%vss Hmodel".
-    iAaccIntro with "Hmodel"; first auto with iFrame. iIntros "%o [(-> & Hmodel) | (%j & %v & %vs & (%Hj & %Hlookup & ->) & Hmodel)] !>".
-    - iLeft. iFrame. iIntros "HΦ !> Hcounter_token".
-      wp_smart_apply ("IH" with "Hcounter_token HΦ").
-    - iRight. iExists j, v, vs. iSplitL; first auto. iIntros "HΦ !> Hcounter_token".
+    iAaccIntro with "Hmodel"; first auto with iFrame. iIntros ([v |]).
+    - iIntros "(%j & %vs & (%Hj & %Hlookup) & Hmodel) !>".
+      iRight. iExists j, v, vs. iSplitL; first auto. iIntros "HΦ !> Hcounter_token".
       wp_pures.
       iApply ("HΦ" with "Hcounter_token").
+    - iIntros "Hmodel !>".
+      iLeft. iFrame. iIntros "HΦ !> Hcounter_token".
+      wp_smart_apply ("IH" with "Hcounter_token HΦ").
   Qed.
 
   Lemma ws_deques_ext1_pop_try_steal_spec t γ ι cntr sz i i' (cnt : Z) :
@@ -230,34 +251,42 @@ Section ws_deques_ext1.
     >>>
       ws_deques_ext1_pop_try_steal t #i' #cnt @ ↑ι
     <<< ∃∃ o,
-        ⌜o = NONEV⌝ ∗
-        ws_deques.(ws_deques_ext1_model) t γ vss
-      ∨ ∃ j vs v,
-        ⌜(j = i ∧ vss !! i = Some (vs ++ [v]) ∨ j ≠ i ∧ vss !! j = Some (v :: vs)) ∧ o = SOMEV v⌝ ∗
-        ws_deques.(ws_deques_ext1_model) t γ (<[j := vs]> vss)
-    | RET o; counter_token cntr i
+      match o with
+      | None =>
+          ws_deques.(ws_deques_ext1_model) t γ vss
+      | Some v =>
+          ∃ j vs,
+          ⌜(j = i ∧ vss !! i = Some (vs ++ [v]) ∨ j ≠ i ∧ vss !! j = Some (v :: vs))⌝ ∗
+          ws_deques.(ws_deques_ext1_model) t γ (<[j := vs]> vss)
+      end
+    | RET o;
+      counter_token cntr i
     >>>.
   Proof.
     iIntros (-> Hsz) "!> %Φ (#Hinv & Hcounter_token) HΦ".
     wp_rec.
     awp_smart_apply (ws_deques_ext1_pop_spec with "[$Hinv $Hcounter_token]"); first done.
     iApply (aacc_aupd with "HΦ"); first done. iIntros "%vss Hmodel".
-    iAaccIntro with "Hmodel"; first auto with iFrame. iIntros "%o [((_ & ->) & Hmodel) | (%vs & %v & (%Hlookup & ->) & Hmodel)] !>".
-    - iLeft. iFrame. iIntros "HΦ !> Hcounter_token".
-      awp_smart_apply (ws_deques_ext1_try_steal_spec with "[$Hinv $Hcounter_token]"); [done.. |].
-      iApply (aacc_aupd_commit with "HΦ"); first done. clear. iIntros "%vss Hmodel".
-      iAaccIntro with "Hmodel"; first auto with iFrame. iIntros "%o [(-> & Hmodel) | (%j & %v & %vs & (%Hj & %Hlookup & ->) & Hmodel)] !>".
-      + iExists NONEV. iSplitL; first auto. iIntros "HΦ !> Hcounter_token".
-        iApply ("HΦ" with "Hcounter_token").
-      + iExists (SOMEV v). iSplitL.
-        { iRight. iExists j, vs, v. auto 10 with iFrame. }
-        iIntros "HΦ !> Hcounter_token".
-        iApply ("HΦ" with "Hcounter_token").
-    - iRight. iExists (SOMEV v). iSplitL.
-      { iRight. iExists i, vs, v. auto 10 with iFrame. }
+    iAaccIntro with "Hmodel"; first auto with iFrame. iIntros ([v |]).
+    - iIntros "(%vs & %Hlookup & Hmodel) !>".
+      iRight. iExists (Some v). iSplitL.
+      { iExists i, vs. auto. }
       iIntros "HΦ !> Hcounter_token".
       wp_pures.
       iApply ("HΦ" with "Hcounter_token").
+    - iIntros "(_ & Hmodel) !>".
+      iLeft. iFrame. iIntros "HΦ !> Hcounter_token".
+      awp_smart_apply (ws_deques_ext1_try_steal_spec with "[$Hinv $Hcounter_token]"); [done.. |].
+      iApply (aacc_aupd_commit with "HΦ"); first done. clear. iIntros "%vss Hmodel".
+      iAaccIntro with "Hmodel"; first auto with iFrame. iIntros ([v |]).
+      + iIntros "(%j & %vs & (%Hj & %Hlookup) & Hmodel) !>".
+        iExists (Some v). iSplitL.
+        { iExists j, vs. auto. }
+        iIntros "HΦ !> Hcounter_token".
+        iApply ("HΦ" with "Hcounter_token").
+      + iIntros "Hmodel !>".
+        iExists None. iSplitL; first auto. iIntros "HΦ !> Hcounter_token".
+        iApply ("HΦ" with "Hcounter_token").
   Qed.
 
   Lemma ws_deques_ext1_pop_steal_spec t γ ι cntr sz i i' :
@@ -272,22 +301,25 @@ Section ws_deques_ext1.
     <<< ∃∃ j vs v,
       ⌜j = i ∧ vss !! i = Some (vs ++ [v]) ∨ j ≠ i ∧ vss !! j = Some (v :: vs)⌝ ∗
       ws_deques.(ws_deques_ext1_model) t γ (<[j := vs]> vss)
-    | RET SOMEV v; counter_token cntr i
+    | RET SOMEV v;
+      counter_token cntr i
     >>>.
   Proof.
     iIntros (-> Hsz) "!> %Φ (#Hinv & Hcounter_token) HΦ".
     wp_rec.
     awp_smart_apply (ws_deques_ext1_pop_spec with "[$Hinv $Hcounter_token]"); first done.
     iApply (aacc_aupd with "HΦ"); first done. iIntros "%vss Hmodel".
-    iAaccIntro with "Hmodel"; first auto with iFrame. iIntros "%o [((_ & ->) & Hmodel) | (%vs & %v & (%Hlookup & ->) & Hmodel)] !>".
-    - iLeft. iFrame. iIntros "HΦ !> Hcounter_token".
+    iAaccIntro with "Hmodel"; first auto with iFrame. iIntros ([v |]).
+    - iIntros "(%vs & %Hlookup & Hmodel) !>".
+      iRight. iExists i, vs, v. iSplitL; first auto. iIntros "HΦ !> Hcounter_token".
+      wp_pures.
+      iApply ("HΦ" with "Hcounter_token").
+    - iIntros "(_ & Hmodel) !>".
+      iLeft. iFrame. iIntros "HΦ !> Hcounter_token".
       awp_smart_apply (ws_deques_ext1_steal_spec with "[$Hinv $Hcounter_token]"); [done.. |].
       iApply (aacc_aupd_commit with "HΦ"); first done. clear. iIntros "%vss Hmodel".
       iAaccIntro with "Hmodel"; first auto with iFrame. iIntros "%j %v %vs ((%Hj & %Hlookup) & Hmodel) !>".
       iExists j, vs, v. iSplitL; first auto. iIntros "HΦ !> Hcounter_token".
-      iApply ("HΦ" with "Hcounter_token").
-    - iRight. iExists i, vs, v. iSplitL; first auto. iIntros "HΦ !> Hcounter_token".
-      wp_pures.
       iApply ("HΦ" with "Hcounter_token").
   Qed.
 End ws_deques_ext1.
@@ -362,11 +394,10 @@ Next Obligation.
   wp_smart_apply (random_gen_Z_spec with "Hrandom_inv"); first lia. iIntros "%j %Hj".
   awp_smart_apply (ws_deques_steal_spec with "Hinv"); first (apply Z.rem_bound_pos; lia).
   iApply (aacc_aupd_commit with "HΦ"); first done. iIntros "%vss Hmodel".
-  iAaccIntro with "Hmodel"; first auto with iFrame. iIntros "%o [((%Hlookup & ->) & Hmodel) | (%v & %vs & (%Hlookup & ->) & Hmodel)] !>".
-  - iExists NONEV. iSplitL "Hmodel"; first auto. iIntros "HΦ !> _".
-    iApply ("HΦ" with "Hcounter_token").
-  - iExists (SOMEV v). iSplitL "Hmodel".
-    { iRight. iExists (Z.to_nat ((i + j + 1) `rem` sz)), v, vs. iFrame.
+  iAaccIntro with "Hmodel"; first auto with iFrame. iIntros ([v |]).
+  - iIntros "(%vs & %Hlookup & Hmodel) !>".
+    iExists (Some v). iSplitL "Hmodel".
+    { iExists (Z.to_nat ((i + j + 1) `rem` sz)), vs. iFrame.
       iPureIntro. split_and!; try done.
       destruct (decide (i + j + 1 < sz)%Z).
       - rewrite Z.rem_small; lia.
@@ -377,6 +408,9 @@ Next Obligation.
         lia.
     }
     iIntros "HΦ !> _".
+    iApply ("HΦ" with "Hcounter_token").
+  - iIntros "(%Hlookup & Hmodel) !>".
+    iExists None. iSplitL "Hmodel"; first auto. iIntros "HΦ !> _".
     iApply ("HΦ" with "Hcounter_token").
 Qed.
 Next Obligation.

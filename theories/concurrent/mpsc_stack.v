@@ -69,9 +69,17 @@ Record mpsc_stack `{!heapGS Σ} {unboxed : bool} := {
     >>>
       mpsc_stack_pop t @ ↑ι
     <<< ∃∃ o,
-      (⌜vs = [] ∧ o = NONEV⌝ ∗ mpsc_stack_model t γ []) ∨
-      (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ mpsc_stack_model t γ vs')
-    | RET o; mpsc_stack_consumer t γ
+      match o with
+      | None =>
+          ⌜vs = []⌝ ∗
+          mpsc_stack_model t γ []
+      | Some v =>
+          ∃ vs',
+          ⌜vs = v :: vs'⌝ ∗
+          mpsc_stack_model t γ vs'
+      end
+    | RET o;
+      mpsc_stack_consumer t γ
     >>> ;
 
   mpsc_stack_unboxed :

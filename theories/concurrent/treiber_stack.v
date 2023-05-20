@@ -175,8 +175,15 @@ Section treiber_stack_G.
     >>>
       treiber_stack_pop t @ ↑ι
     <<< ∃∃ o,
-      (⌜vs = [] ∧ o = NONEV⌝ ∗ treiber_stack_model t []) ∨
-      (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ treiber_stack_model t vs')
+      match o with
+      | None =>
+          ⌜vs = []⌝ ∗
+          treiber_stack_model t []
+      | Some v =>
+          ∃ vs',
+          ⌜vs = v :: vs'⌝ ∗
+          treiber_stack_model t vs'
+      end
     | RET o; True
     >>>.
   Proof.
@@ -193,8 +200,8 @@ Section treiber_stack_G.
     - iMod "HΦ" as "(%_vs1 & (%_l & %_γ & %Heq & #_Hmeta & Hmodel₂) & _ & HΦ)". injection Heq as <-.
       iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
       iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
-      iMod ("HΦ" with "[Hmodel₂] [//]") as "HΦ".
-      { iLeft. iSplit; first done. iExists l, γ. auto with iFrame. }
+      iMod ("HΦ" $! None with "[Hmodel₂] [//]") as "HΦ".
+      { iSplit; first done. iExists l, γ. auto. }
       iModIntro. iSplitL "Hl Hmodel₁".
       { iExists lst1, []. auto with iFrame. }
 
@@ -232,8 +239,8 @@ Section treiber_stack_G.
         iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
         iDestruct (auth_excl_agree_L with "Hmodel₂ Hmodel₁") as %->.
         iMod (auth_excl_update' (auth_excl_G := treiber_stack_G_model_G) vs1 with "Hmodel₂ Hmodel₁") as "(Hmodel₂ & Hmodel₁)".
-        iMod ("HΦ" with "[Hmodel₂] [//]") as "HΦ".
-        { iRight. iExists v1, vs1. iSplit; first done. iExists l, γ. auto with iFrame. }
+        iMod ("HΦ" $! (Some v1) with "[Hmodel₂] [//]") as "HΦ".
+        { iExists vs1. iSplit; first done. iExists l, γ. auto. }
         iModIntro. iSplitL "Hl Hmodel₁".
         { iExists lst1', vs1. auto with iFrame. }
 

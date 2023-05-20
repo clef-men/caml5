@@ -69,7 +69,8 @@ Record spsc_queue `{!heapGS Σ} {unboxed : bool} := {
       spsc_queue_push t v @ ↑ι
     <<<
       spsc_queue_model t γ (v :: vs)
-    | RET #(); spsc_queue_producer t γ
+    | RET #();
+      spsc_queue_producer t γ
     >>> ;
 
   spsc_queue_pop_spec t γ ι :
@@ -80,9 +81,17 @@ Record spsc_queue `{!heapGS Σ} {unboxed : bool} := {
     >>>
       spsc_queue_pop t @ ↑ι
     <<< ∃∃ o,
-      (⌜vs = [] ∧ o = NONEV⌝ ∗ spsc_queue_model t γ []) ∨
-      (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ spsc_queue_model t γ vs')
-    | RET o; spsc_queue_consumer t γ
+      match o with
+      | None =>
+          ⌜vs = []⌝ ∗
+          spsc_queue_model t γ []
+      | Some v =>
+          ∃ vs',
+          ⌜vs = vs' ++ [v]⌝ ∗
+          spsc_queue_model t γ vs'
+      end
+    | RET o;
+      spsc_queue_consumer t γ
     >>> ;
 
   spsc_queue_unboxed :

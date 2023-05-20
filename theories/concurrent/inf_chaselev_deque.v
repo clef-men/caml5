@@ -1024,7 +1024,8 @@ Section inf_chaselev_deque_G.
       inf_chaselev_deque_push t v @ ↑ι
     <<<
       inf_chaselev_deque_model t (model ++ [v])
-    | RET #(); inf_chaselev_deque_owner t
+    | RET #();
+      inf_chaselev_deque_owner t
     >>>.
   Proof.
     iIntros "!> %Φ ((%l & %γ & %data & %p & -> & #Hmeta & #Hdata & #Hp & #Hinv) & (%_l & %_γ & %back & %priv & %Heq & #_Hmeta & Hctl₂ & Hlock)) HΦ". injection Heq as <-.
@@ -1147,11 +1148,15 @@ Section inf_chaselev_deque_G.
     >>>
       inf_chaselev_deque_steal t @ ↑ι
     <<< ∃∃ o,
-        ⌜model = [] ∧ o = InjLV #()⌝ ∗
-        inf_chaselev_deque_model t []
-      ∨ ∃ v model',
-        ⌜model = v :: model' ∧ o = SOMEV v⌝ ∗
-        inf_chaselev_deque_model t model'
+      match o with
+      | None =>
+          ⌜model = []⌝ ∗
+          inf_chaselev_deque_model t []
+      | Some v =>
+          ∃ model',
+          ⌜model = v :: model'⌝ ∗
+          inf_chaselev_deque_model t model'
+      end
     | RET o; True
     >>>.
   Proof.
@@ -1197,8 +1202,8 @@ Section inf_chaselev_deque_G.
       iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
       iDestruct (inf_chaselev_deque_model_agree with "Hmodel₁ Hmodel₂") as %<-.
       (* end transation *)
-      iMod ("HΦ" with "[Hmodel₂] [//]") as "HΦ".
-      { iLeft. iSplit; first done. repeat iExists _. naive_solver. }
+      iMod ("HΦ" $! None with "[Hmodel₂] [//]") as "HΦ".
+      { iSplit; first done. repeat iExists _. naive_solver. }
       (* close invariant *)
       iModIntro. iSplitR "Hid HΦ".
       { repeat iExists _. iFrame. done. }
@@ -1355,8 +1360,8 @@ Section inf_chaselev_deque_G.
       { iIntros "Hmodel₂ !>". iSplitL "Hmodel₂"; last auto.
         repeat iExists _. iFrame "#∗". done.
       }
-      iIntros "%w %model' (-> & Hmodel₂) !>". iExists (SOMEV w). iSplitL.
-      - iRight. repeat iExists _. iSplit; first done. repeat iExists _. naive_solver.
+      iIntros "%w %model' (-> & Hmodel₂) !>". iExists (Some w). iSplitL.
+      - repeat iExists _. iSplit; first done. repeat iExists _. naive_solver.
       - iIntros "HΦ". iApply ("HΦ" with "[//]").
     }
     clear- Hbranch1 Hbranch3.
@@ -1486,12 +1491,17 @@ Section inf_chaselev_deque_G.
     >>>
       inf_chaselev_deque_pop t @ ↑ι
     <<< ∃∃ o,
-        ⌜model = [] ∧ o = NONEV⌝ ∗
-        inf_chaselev_deque_model t []
-      ∨ ∃ model' v,
-        ⌜model = model' ++ [v] ∧ o = SOMEV v⌝ ∗
-        inf_chaselev_deque_model t model'
-    | RET o; inf_chaselev_deque_owner t
+      match o with
+      | None =>
+          ⌜model = []⌝ ∗
+          inf_chaselev_deque_model t []
+      | Some v =>
+          ∃ model',
+          ⌜model = model' ++ [v]⌝ ∗
+          inf_chaselev_deque_model t model'
+      end
+    | RET o;
+      inf_chaselev_deque_owner t
     >>>.
   Proof.
     iIntros "!> %Φ ((%l & %γ & %data & %p & -> & #Hmeta & #Hdata & #Hp & #Hinv) & (%_l & %_γ & %back & %priv & %Heq & #_Hmeta & Hctl₂ & Hlock)) HΦ". injection Heq as <-.
@@ -1545,8 +1555,8 @@ Section inf_chaselev_deque_G.
       iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
       iDestruct (inf_chaselev_deque_model_agree with "Hmodel₁ Hmodel₂") as %<-.
       (* end transaction *)
-      iMod ("HΦ" with "[Hmodel₂]") as "HΦ".
-      { iLeft. iSplit; first done. repeat iExists _. naive_solver. }
+      iMod ("HΦ" $! None with "[Hmodel₂]") as "HΦ".
+      { iSplit; first done. repeat iExists _. naive_solver. }
       (* close invariant *)
       iModIntro. iSplitR "Hctl₂ HΦ".
       { iExists front2, (front2 - 1)%Z, hist, [], priv, past2, prophs2. iFrame.
@@ -1621,8 +1631,8 @@ Section inf_chaselev_deque_G.
       (* update model values *)
       iMod (inf_chaselev_deque_model_update (w :: model) with "Hmodel₁ Hmodel₂") as "(Hmodel₁ & Hmodel₂)".
       (* end transaction *)
-      iMod ("HΦ" with "[Hmodel₂]") as "HΦ".
-      { iRight. repeat iExists _. iSplit; first done. repeat iExists _. naive_solver. }
+      iMod ("HΦ" $! (Some v) with "[Hmodel₂]") as "HΦ".
+      { repeat iExists _. iSplit; first done. repeat iExists _. naive_solver. }
       (* close invariant *)
       iModIntro. iSplitR "Hctl₂ Hlock HΦ".
       { iExists front2, (back - 1)%Z, hist, (w :: model), priv', past2, prophs2. iFrame.
@@ -1791,8 +1801,8 @@ Section inf_chaselev_deque_G.
         iMod (inf_chaselev_deque_model_update [] with "Hmodel₁ Hmodel₂") as "(Hmodel₁ & Hmodel₂)".
         iDestruct "Hstate" as "(% & % & % & Hwinner₁ & Hwinner₂)".
         (* end transaction *)
-        iMod ("HΦ" with "[Hmodel₂]") as "_".
-        { iRight. iExists [], v. iSplit; first done. repeat iExists _. naive_solver. }
+        iMod ("HΦ" $! (Some v) with "[Hmodel₂]") as "_".
+        { iExists []. iSplit; first done. repeat iExists _. naive_solver. }
         (* update winner tokens *)
         iMod (inf_chaselev_deque_winner_update front2 Φ with "Hwinner₁ Hwinner₂") as "(Hwinner₁ & Hwinner₂)".
         (* close invariant *)
@@ -1858,8 +1868,8 @@ Section inf_chaselev_deque_G.
         (* update model values *)
         iMod (inf_chaselev_deque_model_update [] with "Hmodel₁ Hmodel₂") as "(Hmodel₁ & Hmodel₂)".
         (* end transaction *)
-        iMod ("HΦ" with "[Hmodel₂]") as "HΦ".
-        { iRight. iExists [], v. iSplit; first done. repeat iExists _. naive_solver. }
+        iMod ("HΦ" $! (Some v) with "[Hmodel₂]") as "HΦ".
+        { iExists []. iSplit; first done. repeat iExists _. naive_solver. }
         (* we own the winner tokens *)
         iDestruct "Hstate" as "[(% & % & % & Hwinner₁ & Hwinner₂) | (Hid' & _)]"; last first.
         { iDestruct (identifier_model_exclusive with "Hid Hid'") as %[]. }
@@ -1988,8 +1998,8 @@ Section inf_chaselev_deque_G.
           (* update model values *)
           iMod (inf_chaselev_deque_model_update [] with "Hmodel₁ Hmodel₂") as "(Hmodel₁ & Hmodel₂)".
           (* end transaction *)
-          iMod ("HΦ" with "[Hmodel₂]") as "HΦ".
-          { iRight. iExists [], v. iSplit; first done. repeat iExists _. naive_solver. }
+          iMod ("HΦ" $! (Some v) with "[Hmodel₂]") as "HΦ".
+          { iExists []. iSplit; first done. repeat iExists _. naive_solver. }
           (* update winner tokens *)
           set Ψ := (λ v, inf_chaselev_deque_owner #l -∗ Φ v)%I.
           iMod (inf_chaselev_deque_winner_update front2 Ψ with "Hwinner₁ Hwinner₂") as "(Hwinner₁ & Hwinner₂)".
@@ -2057,8 +2067,8 @@ Section inf_chaselev_deque_G.
           iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
           iDestruct (inf_chaselev_deque_model_agree with "Hmodel₁ Hmodel₂") as %<-.
           (* end transaction *)
-          iMod ("HΦ" with "[Hmodel₂]") as "HΦ".
-          { iLeft. iSplit; first done. repeat iExists _. iFrame "#∗". done. }
+          iMod ("HΦ" $! None with "[Hmodel₂]") as "HΦ".
+          { iSplit; first done. repeat iExists _. iFrame "#∗". done. }
           (* close invariant *)
           iModIntro. iSplitR "Hctl₂ HΦ".
           { iExists front2, front2, (hist ++ [v]), [], priv, past2, prophs2. iFrame.

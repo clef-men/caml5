@@ -406,7 +406,8 @@ Section inf_spsc_queue_G.
       inf_spsc_queue_push t v @ ↑ι
     <<<
       inf_spsc_queue_model t (v :: model)
-    | RET #(); inf_spsc_queue_producer t
+    | RET #();
+      inf_spsc_queue_producer t
     >>>.
   Proof.
     iIntros "!> %Φ ((%l & %γ & %data & -> & #Hmeta & #Hdata & #Hinv) & (%_l & %_γ & %back & %priv & %Heq & #_Hmeta & Hproducer₁)) HΦ". injection Heq as <-.
@@ -494,9 +495,17 @@ Section inf_spsc_queue_G.
     >>>
       inf_spsc_queue_pop t @ ↑ι
     <<< ∃∃ o,
-      (⌜model = [] ∧ o = NONEV⌝ ∗ inf_spsc_queue_model t []) ∨
-      (∃ model' v, ⌜model = model' ++ [v] ∧ o = SOMEV v⌝ ∗ inf_spsc_queue_model t model')
-    | RET o; inf_spsc_queue_consumer t
+      match o with
+      | None =>
+          ⌜model = []⌝ ∗
+          inf_spsc_queue_model t []
+      | Some v =>
+          ∃ model',
+          ⌜model = model' ++ [v]⌝ ∗
+          inf_spsc_queue_model t model'
+      end
+    | RET o;
+      inf_spsc_queue_consumer t
     >>>.
   Proof.
     iIntros "!> %Φ ((%l & %γ & %data & -> & #Hmeta & #Hdata & #Hinv) & (%_l & %_γ & %hist & %Heq & #_Hmeta & Hfront & Hconsumer₁)) HΦ". injection Heq as <-.
@@ -527,8 +536,8 @@ Section inf_spsc_queue_G.
       iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
       iDestruct (inf_spsc_queue_model_agree with "Hmodel₁ Hmodel₂") as %->.
       (* end transaction *)
-      iMod ("HΦ" with "[Hmodel₁]") as "HΦ".
-      { iLeft. iSplit; first done. repeat iExists _. auto with iFrame. }
+      iMod ("HΦ" $! None with "[Hmodel₁]") as "HΦ".
+      { iSplit; first done. repeat iExists _. auto. }
       (* close invariant *)
       iModIntro. iSplitR "Hfront Hconsumer₁ HΦ".
       { repeat iExists _. iFrame. rewrite replicate_length //. }
@@ -593,9 +602,9 @@ Section inf_spsc_queue_G.
       (* update model values *)
       iMod (inf_spsc_queue_model_update (reverse rev_model) with "Hmodel₁ Hmodel₂") as "(Hmodel₁ & Hmodel₂)".
       (* end transaction *)
-      iMod ("HΦ" $! (SOMEV v) with "[Hmodel₁]") as "HΦ".
-      { iRight. repeat iExists _. iSplit; first rewrite reverse_cons //.
-        repeat iExists _. auto with iFrame.
+      iMod ("HΦ" $! (Some v) with "[Hmodel₁]") as "HΦ".
+      { repeat iExists _. iSplit; first rewrite reverse_cons //.
+        repeat iExists _. auto.
       }
       (* update consumer tokens *)
       set hist' := hist ++ [v].
@@ -678,7 +687,7 @@ Section inf_spsc_queue_G.
     simpl. eauto using inf_spsc_queue_consumer_exclusive.
   Qed.
   Next Obligation.
-    simpl. iIntros "* _ HΦ".
+    iIntros "/= * _ HΦ".
     wp_apply (inf_spsc_queue_make_spec with "[//]"). iIntros "%t".
     iApply ("HΦ" $! t ()).
   Qed.

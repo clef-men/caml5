@@ -4,6 +4,12 @@ From iris.heap_lang Require Export
 From caml5 Require Import
   prelude.
 
+Coercion val_of_option opt :=
+  match opt with
+  | None => NONEV
+  | Some v => SOMEV v
+  end.
+
 Notation Fail := (App #() #())
 ( only parsing
 ).

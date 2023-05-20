@@ -54,8 +54,15 @@ Record mpmc_stack `{!heapGS Σ} {unboxed : bool} := {
     >>>
       mpmc_stack_pop t @ ↑ι
     <<< ∃∃ o,
-      (⌜vs = [] ∧ o = NONEV⌝ ∗ mpmc_stack_model t γ []) ∨
-      (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ mpmc_stack_model t γ vs')
+      match o with
+      | None =>
+          ⌜vs = []⌝ ∗
+          mpmc_stack_model t γ []
+      | Some v =>
+          ∃ vs',
+          ⌜vs = v :: vs'⌝ ∗
+          mpmc_stack_model t γ vs'
+      end
     | RET o; True
     >>> ;
 

@@ -66,7 +66,8 @@ Record ws_deques `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool} := {
     <<< ∃∃ vs,
       ⌜vss !! i = Some vs⌝ ∗
       ws_deques_model t γ (<[i := vs ++ [v]]> vss)
-    | RET #(); counter_token cntr i
+    | RET #();
+      counter_token cntr i
     >>> ;
 
   ws_deques_pop_spec t γ ι cntr sz i i' :
@@ -78,12 +79,17 @@ Record ws_deques `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool} := {
     >>>
       ws_deques_pop t #i' @ ↑ι
     <<< ∃∃ o,
-        ⌜vss !! i = Some [] ∧ o = NONEV⌝ ∗
-        ws_deques_model t γ vss
-      ∨ ∃ vs v,
-        ⌜vss !! i = Some (vs ++ [v]) ∧ o = SOMEV v⌝ ∗
-        ws_deques_model t γ (<[i := vs]> vss)
-    | RET o; counter_token cntr i
+      match o with
+      | None =>
+          ⌜vss !! i = Some []⌝ ∗
+          ws_deques_model t γ vss
+      | Some v =>
+          ∃ vs,
+          ⌜vss !! i = Some (vs ++ [v])⌝ ∗
+          ws_deques_model t γ (<[i := vs]> vss)
+      end
+    | RET o;
+      counter_token cntr i
     >>> ;
 
   ws_deques_steal_spec t γ ι cntr (sz : nat) i :
@@ -95,11 +101,15 @@ Record ws_deques `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool} := {
       ws_deques_steal t #i @ ↑ι
     <<< ∃∃ o,
       let i := Z.to_nat i in
-        ⌜vss !! i = Some [] ∧ o = NONEV⌝ ∗
-        ws_deques_model t γ vss
-      ∨ ∃ v vs,
-        ⌜vss !! i = Some (v :: vs) ∧ o = SOMEV v⌝ ∗
-        ws_deques_model t γ (<[i := vs]> vss)
+      match o with
+      | None =>
+          ⌜vss !! i = Some []⌝ ∗
+          ws_deques_model t γ vss
+      | Some v =>
+          ∃ vs,
+          ⌜vss !! i = Some (v :: vs)⌝ ∗
+          ws_deques_model t γ (<[i := vs]> vss)
+      end
     | RET o; True
     >>> ;
 

@@ -69,7 +69,8 @@ Record spsc_stack `{!heapGS Σ} {unboxed : bool} := {
       spsc_stack_push t v @ ↑ι
     <<<
       spsc_stack_model t γ (v :: vs)
-    | RET #(); spsc_stack_producer t γ
+    | RET #();
+      spsc_stack_producer t γ
     >>> ;
 
   spsc_stack_pop_spec t γ ι :
@@ -80,9 +81,17 @@ Record spsc_stack `{!heapGS Σ} {unboxed : bool} := {
     >>>
       spsc_stack_pop t @ ↑ι
     <<< ∃∃ o,
-      (⌜vs = [] ∧ o = NONEV⌝ ∗ spsc_stack_model t γ []) ∨
-      (∃ v vs', ⌜vs = v :: vs' ∧ o = SOMEV v⌝ ∗ spsc_stack_model t γ vs')
-    | RET o; spsc_stack_consumer t γ
+      match o with
+      | None =>
+          ⌜vs = []⌝ ∗
+          spsc_stack_model t γ []
+      | Some v =>
+          ∃ vs',
+          ⌜vs = v :: vs'⌝ ∗
+          spsc_stack_model t γ vs'
+      end
+    | RET o;
+      spsc_stack_consumer t γ
     >>> ;
 
   spsc_stack_unboxed :

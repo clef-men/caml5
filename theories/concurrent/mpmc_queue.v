@@ -54,8 +54,15 @@ Record mpmc_queue `{!heapGS Σ} {unboxed : bool} := {
     >>>
       mpmc_queue_pop t @ ↑ι
     <<< ∃∃ o,
-      (⌜vs = [] ∧ o = NONEV⌝ ∗ mpmc_queue_model t γ []) ∨
-      (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ mpmc_queue_model t γ vs')
+      match o with
+      | None =>
+          ⌜vs = []⌝ ∗
+          mpmc_queue_model t γ []
+      | Some v =>
+          ∃ vs',
+          ⌜vs = vs' ++ [v]⌝ ∗
+          mpmc_queue_model t γ vs'
+      end
     | RET o; True
     >>> ;
 
