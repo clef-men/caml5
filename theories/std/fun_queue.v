@@ -24,25 +24,46 @@ Record fun_queue `{!heapGS Σ} {unboxed : bool} := {
   fun_queue_make_spec :
     {{{ True }}}
       fun_queue_make #()
-    {{{ t, RET t; fun_queue_model t [] }}} ;
+    {{{ t,
+      RET t;
+      fun_queue_model t []
+    }}} ;
 
   fun_queue_is_empty_spec t vs :
-    {{{ fun_queue_model t vs }}}
+    {{{
+      fun_queue_model t vs
+    }}}
       fun_queue_is_empty t
-    {{{ RET #(bool_decide (vs = [])); True }}} ;
+    {{{
+      RET #(bool_decide (vs = []));
+      True
+    }}} ;
 
   fun_queue_push_spec t vs v :
-    {{{ fun_queue_model t vs }}}
+    {{{
+      fun_queue_model t vs
+    }}}
       fun_queue_push t v
-    {{{ t', RET t'; fun_queue_model t' (v :: vs) }}} ;
+    {{{ t',
+      RET t';
+      fun_queue_model t' (v :: vs)
+    }}} ;
 
   fun_queue_pop_spec t vs :
-    {{{ fun_queue_model t vs }}}
+    {{{
+      fun_queue_model t vs
+    }}}
       fun_queue_pop t
-    {{{ w,
-      RET w;
-      (⌜vs = [] ∧ w = NONEV⌝) ∨
-      (∃ vs' v t', ⌜vs = vs' ++ [v] ∧ w = SOMEV (v, t')⌝ ∗ fun_queue_model t' vs')
+    {{{ o,
+      RET o : val;
+      match o with
+      | None =>
+          ⌜vs = []⌝
+      | Some p =>
+          ∃ vs' v t',
+          ⌜vs = vs' ++ [v] ∧ p = (v, t')%V⌝ ∗
+          fun_queue_model t' vs'
+      end
     }}} ;
 
   fun_queue_unboxed :
@@ -112,7 +133,10 @@ Section std_fun_queue.
   Lemma std_fun_queue_make_spec :
     {{{ True }}}
       std_fun_queue_make #()
-    {{{ t, RET t; std_fun_queue_model t [] }}}.
+    {{{ t,
+      RET t;
+      std_fun_queue_model t []
+    }}}.
   Proof.
     iIntros "%Φ _ HΦ".
     wp_rec. wp_pures.
@@ -121,9 +145,14 @@ Section std_fun_queue.
   Qed.
 
   Lemma std_fun_queue_is_empty_spec t vs :
-    {{{ std_fun_queue_model t vs }}}
+    {{{
+      std_fun_queue_model t vs
+    }}}
       std_fun_queue_is_empty t
-    {{{ RET #(bool_decide (vs = [])); True }}}.
+    {{{
+      RET #(bool_decide (vs = []));
+      True
+    }}}.
   Proof.
     iIntros "%Φ (%back & %vs_back & %front & %vs_front & (-> & ->) & #Hback & #Hfront) HΦ".
     wp_rec. wp_pures.
@@ -137,9 +166,14 @@ Section std_fun_queue.
   Qed.
 
   Lemma std_fun_queue_push_spec t vs v :
-    {{{ std_fun_queue_model t vs }}}
+    {{{
+      std_fun_queue_model t vs
+    }}}
       std_fun_queue_push t v
-    {{{ t', RET t'; std_fun_queue_model t' (v :: vs) }}}.
+    {{{ t',
+      RET t';
+      std_fun_queue_model t' (v :: vs)
+    }}}.
   Proof.
     iIntros "%Φ (%back & %vs_back & %front & %vs_front & (-> & ->) & #Hback & #Hfront) HΦ".
     wp_rec. wp_pures.
@@ -149,12 +183,20 @@ Section std_fun_queue.
   Qed.
 
   Lemma std_fun_queue_pop_spec t vs :
-    {{{ std_fun_queue_model t vs }}}
+    {{{
+      std_fun_queue_model t vs
+    }}}
       std_fun_queue_pop t
-    {{{ w,
-      RET w;
-      (⌜vs = [] ∧ w = NONEV⌝) ∨
-      (∃ vs' v t', ⌜vs = vs' ++ [v] ∧ w = SOMEV (v, t')⌝ ∗ std_fun_queue_model t' vs')
+    {{{ o,
+      RET o : val;
+      match o with
+      | None =>
+          ⌜vs = []⌝
+      | Some p =>
+          ∃ vs' v t',
+          ⌜vs = vs' ++ [v] ∧ p = (v, t')%V⌝ ∗
+          std_fun_queue_model t' vs'
+      end
     }}}.
   Proof.
     iIntros "%Φ (%back & %vs_back & %front & %vs_front & (-> & ->) & #Hback & #Hfront) HΦ".
@@ -168,12 +210,12 @@ Section std_fun_queue.
       destruct (reverse vs_back) as [| v vs_front] eqn:Heq;
         apply (f_equal reverse) in Heq; rewrite reverse_involutive in Heq; subst;
         wp_pures.
-      + iApply "HΦ". iLeft. done.
+      + iApply ("HΦ" $! None). done.
       + wp_apply (lst_tail_spec with "Hfront"); first done. iIntros "%front' #Hfront'".
         wp_pures.
         wp_apply (lst_head_spec with "Hfront"); first done. iIntros "_".
         wp_pures.
-        iModIntro. iApply "HΦ". iRight. iExists (reverse vs_front), v, _. iSplit.
+        iModIntro. iApply ("HΦ" $! (Some (_, _)%V)). iExists (reverse vs_front), v, _. iSplit.
         { iPureIntro. split; last done.
           rewrite reverse_nil reverse_cons. list_simplifier. done.
         }
@@ -182,7 +224,7 @@ Section std_fun_queue.
       wp_pures.
       wp_apply (lst_head_spec with "Hfront"); first done. iIntros "_".
       wp_pures.
-      iModIntro. iApply "HΦ". iRight. iExists (vs_back ++ reverse vs_front), v_front, _. iSplit.
+      iModIntro. iApply ("HΦ" $! (Some (_, _)%V)). iExists (vs_back ++ reverse vs_front), v_front, _. iSplit.
       { iPureIntro. split; last done. list_simplifier. rewrite reverse_cons //. }
       iExists back, vs_back, front', vs_front. auto with iFrame.
   Qed.

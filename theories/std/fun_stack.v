@@ -24,25 +24,46 @@ Record fun_stack `{!heapGS Σ} {unboxed : bool} := {
   fun_stack_make_spec :
     {{{ True }}}
       fun_stack_make #()
-    {{{ t, RET t; fun_stack_model t [] }}} ;
+    {{{ t,
+      RET t;
+      fun_stack_model t []
+    }}} ;
 
   fun_stack_is_empty_spec t vs :
-    {{{ fun_stack_model t vs }}}
+    {{{
+      fun_stack_model t vs
+    }}}
       fun_stack_is_empty t
-    {{{ RET #(bool_decide (vs = [])); True }}} ;
+    {{{
+      RET #(bool_decide (vs = []));
+      True
+    }}} ;
 
   fun_stack_push_spec t vs v :
-    {{{ fun_stack_model t vs }}}
+    {{{
+      fun_stack_model t vs
+    }}}
       fun_stack_push t v
-    {{{ t', RET t'; fun_stack_model t' (v :: vs) }}} ;
+    {{{ t',
+      RET t';
+      fun_stack_model t' (v :: vs)
+    }}} ;
 
   fun_stack_pop_spec t vs :
-    {{{ fun_stack_model t vs }}}
+    {{{
+      fun_stack_model t vs
+    }}}
       fun_stack_pop t
-    {{{ w,
-      RET w;
-      (⌜vs = [] ∧ w = NONEV⌝) ∨
-      (∃ v vs' t', ⌜vs = v :: vs' ∧ w = SOMEV (v, t')⌝ ∗ fun_stack_model t' vs')
+    {{{ o,
+      RET o : val;
+      match o with
+      | None =>
+          ⌜vs = []⌝
+      | Some p =>
+          ∃ v vs' t',
+          ⌜vs = v :: vs' ∧ p = (v, t')%V⌝ ∗
+          fun_stack_model t' vs'
+      end
     }}} ;
 
   fun_stack_unboxed :
@@ -97,7 +118,10 @@ Section std_fun_stack.
   Lemma std_fun_stack_make_spec :
     {{{ True }}}
       std_fun_stack_make #()
-    {{{ t, RET t; std_fun_stack_model t [] }}}.
+    {{{ t,
+      RET t;
+      std_fun_stack_model t []
+    }}}.
   Proof.
     iIntros "%Φ _ HΦ".
     wp_rec.
@@ -105,18 +129,28 @@ Section std_fun_stack.
   Qed.
 
   Lemma std_fun_stack_is_empty_spec t vs :
-    {{{ std_fun_stack_model t vs }}}
+    {{{
+      std_fun_stack_model t vs
+    }}}
       std_fun_stack_is_empty t
-    {{{ RET #(bool_decide (vs = [])); True }}}.
+    {{{
+      RET #(bool_decide (vs = []));
+      True
+    }}}.
   Proof.
     iIntros "%Φ #Hlst HΦ".
     wp_apply (lst_is_empty_spec with "Hlst"). done.
   Qed.
 
   Lemma std_fun_stack_push_spec t vs v :
-    {{{ std_fun_stack_model t vs }}}
+    {{{
+      std_fun_stack_model t vs
+    }}}
       std_fun_stack_push t v
-    {{{ t', RET t'; std_fun_stack_model t' (v :: vs) }}}.
+    {{{ t',
+      RET t';
+      std_fun_stack_model t' (v :: vs)
+    }}}.
   Proof.
     iIntros "%Φ #Hlst HΦ".
     rewrite /std_fun_stack_push. wp_pures.
@@ -125,23 +159,31 @@ Section std_fun_stack.
   Qed.
 
   Lemma std_fun_stack_pop_spec t vs :
-    {{{ std_fun_stack_model t vs }}}
+    {{{
+      std_fun_stack_model t vs
+    }}}
       std_fun_stack_pop t
-    {{{ w,
-      RET w;
-      (⌜vs = [] ∧ w = NONEV⌝) ∨
-      (∃ v vs' t', ⌜vs = v :: vs' ∧ w = SOMEV (v, t')⌝ ∗ std_fun_stack_model t' vs')
+    {{{ o,
+      RET o : val;
+      match o with
+      | None =>
+          ⌜vs = []⌝
+      | Some p =>
+          ∃ v vs' t',
+          ⌜vs = v :: vs' ∧ p = (v, t')%V⌝ ∗
+          std_fun_stack_model t' vs'
+      end
     }}}.
   Proof.
     iIntros "%Φ #Hlst HΦ".
     wp_rec.
     wp_apply (lst_is_empty_spec with "Hlst"). iIntros "_".
     destruct vs as [| v vs]; wp_pures.
-    - iApply "HΦ". iLeft. done.
+    - iApply ("HΦ" $! None). done.
     - wp_apply (lst_tail_spec with "Hlst"); first done. iIntros "%lst' #Hlst'".
       wp_apply (lst_head_spec with "Hlst"); first done. iIntros "_".
       wp_pures.
-      iApply "HΦ". iRight. iExists v, vs, lst'. auto with iFrame.
+      iApply ("HΦ" $! (Some (v, lst')%V)). iExists v, vs, lst'. auto with iFrame.
   Qed.
 
   Definition std_fun_stack :=

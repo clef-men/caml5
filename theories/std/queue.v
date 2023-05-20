@@ -22,25 +22,47 @@ Record queue `{!heapGS Σ} {unboxed : bool} := {
   queue_make_spec :
     {{{ True }}}
       queue_make #()
-    {{{ t, RET t; queue_model t [] }}} ;
+    {{{ t,
+      RET t;
+      queue_model t []
+    }}} ;
 
   queue_is_empty_spec t vs :
-    {{{ queue_model t vs }}}
+    {{{
+      queue_model t vs
+    }}}
       queue_is_empty t
-    {{{ RET #(bool_decide (vs = [])); queue_model t vs }}} ;
+    {{{
+      RET #(bool_decide (vs = []));
+      queue_model t vs
+    }}} ;
 
   queue_push_spec t vs v :
-    {{{ queue_model t vs }}}
+    {{{
+      queue_model t vs
+    }}}
       queue_push t v
-    {{{ RET #(); queue_model t (v :: vs) }}} ;
+    {{{
+      RET #();
+      queue_model t (v :: vs)
+    }}} ;
 
   queue_pop_spec t vs :
-    {{{ queue_model t vs }}}
+    {{{
+      queue_model t vs
+    }}}
       queue_pop t
     {{{ o,
-      RET o;
-      (⌜vs = [] ∧ o = NONEV⌝ ∗ queue_model t []) ∨
-      (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ queue_model t vs')
+      RET o : val;
+      match o with
+      | None =>
+          ⌜vs = []⌝ ∗
+          queue_model t []
+      | Some v =>
+          ∃ vs',
+          ⌜vs = vs' ++ [v]⌝ ∗
+          queue_model t vs'
+      end
     }}} ;
 
   queue_unboxed :
@@ -116,7 +138,10 @@ Section std_queue.
   Lemma std_queue_make_spec :
     {{{ True }}}
       std_queue_make #()
-    {{{ t, RET t; std_queue_model t [] }}}.
+    {{{ t,
+      RET t;
+      std_queue_model t []
+    }}}.
   Proof.
     iIntros "%Φ _ HΦ".
     wp_rec.
@@ -129,9 +154,14 @@ Section std_queue.
   Qed.
 
   Lemma std_queue_is_empty_spec t vs :
-    {{{ std_queue_model t vs }}}
+    {{{
+      std_queue_model t vs
+    }}}
       std_queue_is_empty t
-    {{{ RET #(bool_decide (vs = [])); std_queue_model t vs }}}.
+    {{{
+      RET #(bool_decide (vs = []));
+      std_queue_model t vs
+    }}}.
   Proof.
     iIntros "%Φ (%l & %hd & %sent & -> & Hhd & Hsent & Hhd_model & Hsent_model) HΦ".
     wp_rec. wp_pures. wp_load. wp_pures. wp_load.
@@ -148,9 +178,14 @@ Section std_queue.
   Qed.
 
   Lemma std_queue_push_spec t vs v :
-    {{{ std_queue_model t vs }}}
+    {{{
+      std_queue_model t vs
+    }}}
       std_queue_push t v
-    {{{ RET #(); std_queue_model t (v :: vs) }}}.
+    {{{
+      RET #();
+      std_queue_model t (v :: vs)
+    }}}.
   Proof.
     iIntros "%Φ (%l & %hd & %sent & -> & Hhd & Hsent & Hhd_model & Hsent_model) HΦ".
     wp_rec. wp_pures.
@@ -166,12 +201,20 @@ Section std_queue.
   Qed.
 
   Lemma std_queue_pop_spec t vs :
-    {{{ std_queue_model t vs }}}
+    {{{
+      std_queue_model t vs
+    }}}
       std_queue_pop t
     {{{ o,
-      RET o;
-      (⌜vs = [] ∧ o = NONEV⌝ ∗ std_queue_model t []) ∨
-      (∃ vs' v, ⌜vs = vs' ++ [v] ∧ o = SOMEV v⌝ ∗ std_queue_model t vs')
+      RET o : val;
+      match o with
+      | None =>
+          ⌜vs = []⌝ ∗
+          std_queue_model t []
+      | Some v =>
+          ∃ vs', ⌜vs = vs' ++ [v]⌝ ∗
+          std_queue_model t vs'
+      end
     }}}.
   Proof.
     iIntros "%Φ Hmodel HΦ".
@@ -180,14 +223,14 @@ Section std_queue.
     destruct (reverse vs) as [| v rev_vs] eqn:Heq;
       apply (f_equal reverse) in Heq; rewrite reverse_involutive in Heq; subst;
       wp_pures.
-    { iModIntro. iApply "HΦ". iLeft. iSplit; first done. iExists l, hd, sent. auto with iFrame. }
+    { iModIntro. iApply ("HΦ" $! None). iSplit; first done. iExists l, hd, sent. auto with iFrame. }
     rewrite reverse_cons bool_decide_eq_false_2; last eauto using app_cons_not_nil.
     wp_pures. wp_load.
     wp_apply (chain_head_spec with "Hhd_model"). iIntros "Hhd_model".
     wp_pures. wp_load.
     wp_apply (chain_tail_spec with "Hhd_model"). iIntros "%hd' (Hhd_model & Hhd'_model)".
     wp_store. wp_pures.
-    iModIntro. iApply "HΦ". iRight. iExists (reverse rev_vs), v. iSplit; first done.
+    iModIntro. iApply ("HΦ" $! (Some v)). iExists (reverse rev_vs). iSplit; first done.
     iExists l, hd', sent. rewrite reverse_involutive. auto with iFrame.
   Qed.
 

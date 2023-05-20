@@ -25,7 +25,8 @@ Record deque `{!heapGS Σ} {unboxed : bool} := {
     {{{ True }}}
       deque_make #()
     {{{ t,
-      RET t; deque_model t []
+      RET t;
+      deque_model t []
     }}} ;
 
   deque_is_empty_spec t vs :
@@ -34,7 +35,8 @@ Record deque `{!heapGS Σ} {unboxed : bool} := {
     }}}
       deque_is_empty t
     {{{
-      RET #(bool_decide (vs = [])); deque_model t vs
+      RET #(bool_decide (vs = []));
+      deque_model t vs
     }}} ;
 
   deque_push_front_spec t vs v :
@@ -43,7 +45,8 @@ Record deque `{!heapGS Σ} {unboxed : bool} := {
     }}}
       deque_push_front t v
     {{{
-      RET #(); deque_model t (v :: vs)
+      RET #();
+      deque_model t (v :: vs)
     }}} ;
 
   deque_pop_front_spec t vs :
@@ -51,13 +54,17 @@ Record deque `{!heapGS Σ} {unboxed : bool} := {
       deque_model t vs
     }}}
       deque_pop_front t
-    {{{ w,
-      RET w;
-        ⌜vs = [] ∧ w = NONEV⌝ ∗
-        deque_model t []
-      ∨ ∃ v vs',
-        ⌜vs = v :: vs' ∧ w = SOMEV v⌝ ∗
-        deque_model t vs'
+    {{{ o,
+      RET o : val;
+      match o with
+      | None =>
+          ⌜vs = []⌝ ∗
+          deque_model t []
+      | Some v =>
+          ∃ vs',
+          ⌜vs = v :: vs'⌝ ∗
+          deque_model t vs'
+      end
     }}} ;
 
   deque_push_back_spec t vs v :
@@ -66,7 +73,8 @@ Record deque `{!heapGS Σ} {unboxed : bool} := {
     }}}
       deque_push_back t v
     {{{
-      RET #(); deque_model t (vs ++ [v])
+      RET #();
+      deque_model t (vs ++ [v])
     }}} ;
 
   deque_pop_back_spec t vs :
@@ -74,13 +82,17 @@ Record deque `{!heapGS Σ} {unboxed : bool} := {
       deque_model t vs
     }}}
       deque_pop_back t
-    {{{ w,
-      RET w;
-        ⌜vs = [] ∧ w = NONEV⌝ ∗
-        deque_model t []
-      ∨ ∃ vs' v,
-        ⌜vs = vs' ++ [v] ∧ w = SOMEV v⌝ ∗
-        deque_model t vs'
+    {{{ o,
+      RET o : val;
+      match o with
+      | None =>
+          ⌜vs = []⌝ ∗
+          deque_model t []
+      | Some v =>
+          ∃ vs',
+          ⌜vs = vs' ++ [v]⌝ ∗
+          deque_model t vs'
+      end
     }}} ;
 
   deque_unboxed :
@@ -159,7 +171,8 @@ Section std_deque.
     {{{ True }}}
       std_deque_make #()
     {{{ t,
-      RET t; std_deque_model t []
+      RET t;
+      std_deque_model t []
     }}}.
   Proof.
     iIntros "%Φ _ HΦ".
@@ -179,7 +192,8 @@ Section std_deque.
     }}}
       std_deque_is_empty t
     {{{
-      RET #(bool_decide (vs = [])); std_deque_model t vs
+      RET #(bool_decide (vs = []));
+      std_deque_model t vs
     }}}.
   Proof.
     iIntros "%Φ (%back & Hsent) HΦ".
@@ -190,9 +204,7 @@ Section std_deque.
     - iDestruct (dlchain_model_nil_2 with "Hfront") as %(-> & ->).
       rewrite /= bool_decide_eq_true_2; last done.
       iApply "HΦ". iExists back. auto with iFrame.
-    - iAssert ⌜t ≠ front⌝%I as %?.
-      { admit.
-      }
+    - iAssert ⌜t ≠ front⌝%I as %?; first admit.
       rewrite /= bool_decide_eq_false_2; last done.
       iDestruct (dlchain_model_app_1 with "Hsent Hfront") as "Hsent".
       iApply "HΦ". iExists back. auto with iFrame.
@@ -204,7 +216,8 @@ Section std_deque.
     }}}
       std_deque_push_front t v
     {{{
-      RET #(); std_deque_model t (v :: vs)
+      RET #();
+      std_deque_model t (v :: vs)
     }}}.
   Proof.
   Admitted.
@@ -214,13 +227,17 @@ Section std_deque.
       std_deque_model t vs
     }}}
       std_deque_pop_front t
-    {{{ w,
-      RET w;
-        ⌜vs = [] ∧ w = NONEV⌝ ∗
-        std_deque_model t []
-      ∨ ∃ v vs',
-        ⌜vs = v :: vs' ∧ w = SOMEV v⌝ ∗
-        std_deque_model t vs'
+    {{{ o,
+      RET o : val;
+      match o with
+      | None =>
+          ⌜vs = []⌝ ∗
+          std_deque_model t []
+      | Some v =>
+          ∃ vs',
+          ⌜vs = v :: vs'⌝ ∗
+          std_deque_model t vs'
+      end
     }}}.
   Proof.
   Admitted.
@@ -231,7 +248,8 @@ Section std_deque.
     }}}
       std_deque_push_back t v
     {{{
-      RET #(); std_deque_model t (vs ++ [v])
+      RET #();
+      std_deque_model t (vs ++ [v])
     }}}.
   Proof.
   Admitted.
@@ -241,13 +259,17 @@ Section std_deque.
       std_deque_model t vs
     }}}
       std_deque_pop_back t
-    {{{ w,
-      RET w;
-        ⌜vs = [] ∧ w = NONEV⌝ ∗
-        std_deque_model t []
-      ∨ ∃ vs' v,
-        ⌜vs = vs' ++ [v] ∧ w = SOMEV v⌝ ∗
-        std_deque_model t vs'
+    {{{ o,
+      RET o : val;
+      match o with
+      | None =>
+          ⌜vs = []⌝ ∗
+          std_deque_model t []
+      | Some v =>
+          ∃ vs',
+          ⌜vs = vs' ++ [v]⌝ ∗
+          std_deque_model t vs'
+      end
     }}}.
   Proof.
   Admitted.
