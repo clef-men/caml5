@@ -86,6 +86,17 @@ Section blocking_stack_G.
   Definition blocking_stack_model t γ vs :=
     auth_excl_auth γ (DfracOwn 1) vs.
 
+  #[global] Instance blocking_stack_inv_persistent t γ :
+    Persistent (blocking_stack_inv t γ).
+  Proof.
+    apply _.
+  Qed.
+  #[global] Instance blocking_stack_model_timeless t γ vs :
+    Timeless (blocking_stack_model t γ vs).
+  Proof.
+    apply _.
+  Qed.
+
   Lemma blocking_stack_make_spec :
     {{{ True }}}
       blocking_stack_make #()

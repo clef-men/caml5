@@ -86,6 +86,17 @@ Section blocking_queue_G.
   Definition blocking_queue_model t γ vs :=
     auth_excl_auth γ (DfracOwn 1) vs.
 
+  #[global] Instance blocking_queue_inv_persistent t γ :
+    Persistent (blocking_queue_inv t γ).
+  Proof.
+    apply _.
+  Qed.
+  #[global] Instance blocking_queue_model_timeless t γ vs :
+    Timeless (blocking_queue_model t γ vs).
+  Proof.
+    apply _.
+  Qed.
+
   Lemma blocking_queue_make_spec :
     {{{ True }}}
       blocking_queue_make #()
