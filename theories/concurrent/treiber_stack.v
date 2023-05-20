@@ -10,10 +10,10 @@ From caml5.lang Require Import
   proofmode.
 From caml5.std Require Import
   mlst.
-From caml5.concurrent Require Import
-  mpmc_stack.
 From caml5.concurrent Require Export
   base.
+From caml5.concurrent Require Import
+  mpmc_stack.
 
 Class TreiberG Σ `{!heapGS Σ} := {
   treiber_stack_G_model_G : AuthExclG Σ (listO valO) ;
