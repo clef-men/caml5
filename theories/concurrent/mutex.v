@@ -89,7 +89,7 @@ Section mutex.
       mutex.(mutex_unlock) "t" ;;
       "res".
 
-  Lemma mutex_protect_spec t P fn Ψ :
+  Lemma mutex_protect_spec Ψ t P fn :
     {{{
       mutex.(mutex_inv) t P ∗
       ( mutex.(mutex_locked) t -∗
