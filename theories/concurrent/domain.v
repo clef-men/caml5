@@ -88,9 +88,15 @@ Section domain_G.
   Qed.
 
   Lemma domain_spawn_spec ι fn Ψ :
-    {{{ WP fn #() {{ Ψ }} }}}
+    {{{
+      WP fn #() {{ Ψ }}
+    }}}
       domain_spawn fn
-    {{{ t, RET t; domain_inv t ι Ψ ∗ domain_model t }}}.
+    {{{ t,
+      RET t;
+      domain_inv t ι Ψ ∗
+      domain_model t
+    }}}.
   Proof.
     iIntros "%Φ HΨ HΦ".
     wp_rec. wp_pures.
@@ -113,9 +119,14 @@ Section domain_G.
   Qed.
 
   Lemma domain_join_spec t ι Ψ :
-    {{{ domain_inv t ι Ψ ∗ domain_model t }}}
+    {{{
+      domain_inv t ι Ψ ∗
+      domain_model t
+    }}}
       domain_join t
-    {{{ v, RET v; Ψ v }}}.
+    {{{ v,
+      RET v; Ψ v
+    }}}.
   Proof.
     iIntros "%Φ ((%l & %γ & -> & #Hmeta & #Hinv) & (%_l & %_γ & %Heq & #_Hmeta & Hmodel)) HΦ". injection Heq as <-.
     iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
