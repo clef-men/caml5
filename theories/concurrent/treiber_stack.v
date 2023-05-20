@@ -1,6 +1,3 @@
-From iris.algebra Require Import
-  list.
-
 From caml5 Require Import
   prelude.
 From caml5.base_logic Require Import
@@ -16,12 +13,12 @@ From caml5.concurrent Require Import
   mpmc_stack.
 
 Class TreiberG Σ `{!heapGS Σ} := {
-  treiber_stack_G_model_G : AuthExclG Σ (listO valO) ;
+  treiber_stack_G_model_G : AuthExclG Σ (leibnizO (list val)) ;
 }.
 #[local] Existing Instance treiber_stack_G_model_G.
 
 Definition treiber_stack_Σ := #[
-  auth_excl_Σ (listO valO)
+  auth_excl_Σ (leibnizO (list val))
 ].
 #[global] Instance subG_treiber_stack_Σ Σ `{!heapGS Σ} :
   subG treiber_stack_Σ Σ →
