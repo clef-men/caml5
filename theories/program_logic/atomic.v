@@ -193,6 +193,16 @@ Section atomic_wp.
     iIntros "H HR". iApply (atomic_wp_wand with "[HR] H"). auto with iFrame.
   Qed.
 
+  Lemma atomic_wp_mask_weaken E1 E2 e α β Ψ f :
+    E1 ⊆ E2 →
+    atomic_wp e E1 α β Ψ f -∗
+    atomic_wp e E2 α β Ψ f.
+  Proof.
+    intros. rewrite /atomic_wp.
+    setoid_rewrite (atomic_update_mask_weaken _ (⊤ ∖ E1)); last solve_ndisj.
+    done.
+  Qed.
+
   Lemma atomic_wp_seq e E α β Ψ f :
     atomic_wp e E α β Ψ f -∗
     ∀ Φ, ∀.. x, α x -∗ (∀.. y, β x y -∗ Ψ x y -∗ Φ (f x y)) -∗ WP e {{ Φ }}.
@@ -450,6 +460,16 @@ Section atomic_triple.
     iApply (atomic_update_wand with "[HR] HΦ").
     iIntros "%x %y HΦ". rewrite !tele_app_bind. iIntros "HΨ".
     iApply "HΦ". auto with iFrame.
+  Qed.
+
+  Lemma atomic_triple_mask_weaken E1 E2 e P α β Ψ f :
+    E1 ⊆ E2 →
+    atomic_triple e E1 P α β Ψ f -∗
+    atomic_triple e E2 P α β Ψ f.
+  Proof.
+    intros. rewrite /atomic_triple.
+    setoid_rewrite (atomic_update_mask_weaken _ (⊤ ∖ E1)); last solve_ndisj.
+    done.
   Qed.
 
   Lemma atomic_triple_seq e E P α β Ψ f :
