@@ -93,6 +93,8 @@ theories/concurrent/mpsc_stack.v
 theories/concurrent/mpsc_queue.v
 theories/concurrent/spsc_stack.v
 theories/concurrent/spsc_queue.v
+theories/concurrent/blocking_stack.v
+theories/concurrent/blocking_queue.v
 theories/concurrent/treiber_stack.v
 theories/concurrent/inf_spsc_queue_1.v
 theories/concurrent/ws_deque.v
