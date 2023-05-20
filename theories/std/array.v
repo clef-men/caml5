@@ -91,14 +91,14 @@ Section heapGS.
       array_blit "t1" #0 "t2" "i2" (array_size "t1").
 
   Definition array_grow : val :=
-    λ: "t" "sz",
-      let: "t'" := array_make "sz" #() in
+    λ: "t" "sz'",
+      let: "t'" := array_make "sz'" #() in
       array_copy "t" "t'" #0 ;;
       "t'".
   Definition array_shrink : val :=
-    λ: "t" "sz",
-      let: "t'" := array_make "sz" #() in
-      array_blit "t" "sz" "t'" #0 ;;
+    λ: "t" "sz'",
+      let: "t'" := array_make "sz'" #() in
+      array_blit "t" #0 "t'" #0 "sz'" ;;
       "t'".
 
   Definition array_clone : val :=
@@ -139,6 +139,14 @@ Section heapGS.
   Section array_model.
     Definition array_model t dq vs : iProp Σ :=
       ∃ l, ⌜t = #l⌝ ∗ l.(size) ↦□ #(length vs) ∗ chunk_model l.(data) dq vs.
+
+    Lemma array_model_inv t dq vs :
+      array_model t dq vs -∗
+      array_inv t (length vs).
+    Proof.
+      iIntros "(%l & -> & #Hsz & Hmodel)".
+      iExists l. auto.
+    Qed.
 
     #[global] Instance array_model_timeless t dq vs :
       Timeless (array_model t dq vs).
@@ -252,6 +260,23 @@ Section heapGS.
   Section array_view.
     Definition array_view t i dq vs : iProp Σ :=
       ∃ l, ⌜t = #l⌝ ∗ chunk_model (l.(data) +ₗ i) dq vs.
+
+    Lemma array_view_model t dq vs sz :
+      sz = length vs →
+      array_inv t sz -∗
+      array_view t 0 dq vs -∗
+      array_model t dq vs.
+    Proof.
+      iIntros (->) "(%l & -> & #Hsz) (%_l & %Heq & Hmodel)". injection Heq as <-.
+      iExists l. rewrite !loc_add_0. auto.
+    Qed.
+    Lemma array_model_view t dq vs :
+      array_model t dq vs -∗
+      array_view t 0 dq vs.
+    Proof.
+      iIntros "(%l & -> & #Hsz & Hmodel)".
+      iExists l. rewrite !loc_add_0. auto.
+    Qed.
 
     #[global] Instance array_view_timeless t i dq vs :
       Timeless (array_view t i dq vs).
@@ -393,6 +418,34 @@ Section heapGS.
     Definition array_span t i dq n : iProp Σ :=
       ∃ vs, ⌜length vs = n⌝ ∗ array_view t i dq vs.
 
+    Lemma array_span_view t i dq n :
+      array_span t i dq n -∗
+      ∃ vs, ⌜length vs = n⌝ ∗ array_view t i dq vs.
+    Proof.
+      done.
+    Qed.
+    Lemma array_view_span t i dq vs :
+      array_view t i dq vs -∗
+      array_span t i dq (length vs).
+    Proof.
+      iIntros "Hview". iExists vs. auto.
+    Qed.
+
+    Lemma array_span_model t i dq n sz :
+      array_inv t sz -∗
+      array_span t 0 dq sz -∗
+      ∃ vs, array_model t dq vs.
+    Proof.
+      rewrite array_span_view. iIntros "#Hinv (%vs & <- & Hview)".
+      iExists vs. iApply array_view_model; done.
+    Qed.
+    Lemma array_model_span t dq vs :
+      array_model t dq vs -∗
+      array_span t 0 dq (length vs).
+    Proof.
+      rewrite -array_view_span -array_model_view //.
+    Qed.
+
     #[global] Instance array_span_timeless t i dq n :
       Timeless (array_span t i dq n).
     Proof.
@@ -419,28 +472,6 @@ Section heapGS.
       AsFractional (array_view t i (DfracOwn q) vs) (λ q, array_view t i (DfracOwn q) vs) q.
     Proof.
       apply _.
-    Qed.
-
-    Lemma array_span_view_1 t i dq n :
-      array_span t i dq n -∗
-      ∃ vs, ⌜length vs = n⌝ ∗ array_view t i dq vs.
-    Proof.
-      done.
-    Qed.
-    Lemma array_span_view_2 t i dq vs :
-      array_view t i dq vs -∗
-      array_span t i dq (length vs).
-    Proof.
-      iIntros "Hview". iExists vs. auto.
-    Qed.
-    Lemma array_span_view t i dq n :
-      array_span t i dq n ⊣⊢
-      ∃ vs, ⌜length vs = n⌝ ∗ array_view t i dq vs.
-    Proof.
-      iSplit.
-      - iApply array_span_view_1.
-      - iIntros "(%vs & % & Hview)". simplify.
-        iApply (array_span_view_2 with "Hview").
     Qed.
 
     Lemma array_span_valid t i dq n :
@@ -552,9 +583,7 @@ Section heapGS.
       array_make #sz v
     {{{ t,
       RET t;
-      let sz := Z.to_nat sz in
-      array_inv t sz ∗
-      array_model t (DfracOwn 1) (replicate sz v)
+      array_model t (DfracOwn 1) (replicate (Z.to_nat sz) v)
     }}}.
   Proof.
     iIntros "% %Φ _ HΦ".
@@ -566,9 +595,7 @@ Section heapGS.
     iDestruct (chunk_model_cons with "Hmodel") as "(Hsz & Hmodel)".
     iEval (setoid_rewrite <- (loc_add_0 l)) in "Hsz". wp_store.
     iMod (mapsto_persist with "Hsz") as "#Hsz".
-    iApply "HΦ". iSplitR.
-    - iExists l. auto.
-    - iExists l. rewrite replicate_length. auto.
+    iApply "HΦ". iExists l. rewrite replicate_length. auto.
   Qed.
 
   Lemma array_init_spec Ψ sz fn :
@@ -745,12 +772,14 @@ Section heapGS.
     }}}
       array_size t
     {{{
-      RET #(length vs); True
+      RET #(length vs);
+      array_model t dq vs
     }}}.
   Proof.
-    iIntros "%Φ (%l & -> & #Hsz & Hmodel) HΦ".
-    wp_rec. wp_pures. wp_load.
-    iApply ("HΦ" with "[//]").
+    iIntros "%Φ Hmodel HΦ".
+    iDestruct (array_model_inv with "Hmodel") as "#Hinv".
+    wp_apply (array_size_spec with "Hinv"). iIntros "_".
+    iApply ("HΦ" with "Hmodel").
   Qed.
 
   Lemma array_set_spec t (i : Z) vs v E :
@@ -1156,9 +1185,7 @@ Section heapGS.
       array_model t dq vs ∗
       Ψ (take (length ws) vs) ws
     )%I.
-    wp_smart_apply (array_size_spec with "[#]").
-    { iDestruct "Hmodel" as "(%l & -> & #Hsz & _)". iExists l. auto. }
-    iIntros "_".
+    wp_smart_apply (array_size_spec' with "Hmodel"). iIntros "Hmodel".
     wp_smart_apply (array_init_spec Ψ' with "[$Hmodel $HΨ Hfn]"); first lia.
     { rewrite Nat2Z.id.
       iApply (big_sepL_seq_index vs); first naive_solver.
@@ -1324,11 +1351,268 @@ Section heapGS.
     iApply "Hfn"; last auto. rewrite elem_of_list_lookup. naive_solver.
   Qed.
 
+  Lemma array_blit_spec t1 i1 (i1' : Z) dq1 vs1 t2 i2 (i2' : Z) vs2 (n : Z) :
+    i1' = Z.of_nat i1 →
+    i2' = Z.of_nat i2 →
+    n = length vs1 →
+    length vs1 = length vs2 →
+    {{{
+      array_view t1 i1 dq1 vs1 ∗
+      array_view t2 i2 (DfracOwn 1) vs2
+    }}}
+      array_blit t1 #i1' t2 #i2' #n
+    {{{
+      RET #();
+      array_view t1 i1 dq1 vs1 ∗
+      array_view t2 i2 (DfracOwn 1) vs1
+    }}}.
+  Proof.
+    iIntros (-> -> -> ?) "%Φ ((%l1 & -> & Hmodel1) & (%l2 & -> & Hmodel2)) HΦ".
+    wp_rec.
+    wp_smart_apply (chunk_copy_spec with "[$Hmodel1 $Hmodel2]"); [lia.. |]. iIntros "(Hmodel1 & Hmodel2)".
+    iApply "HΦ". iSplitL "Hmodel1"; iExists _; auto.
+  Qed.
+  Lemma array_blit_spec' t1 i1 (j1 : Z) dq1 vs1 t2 i2 (j2 : Z) vs2 (n : Z) :
+    (0 ≤ n)%Z →
+    (i1 ≤ j1 ≤ i1 + length vs1)%Z →
+    (i1 ≤ j1 + n ≤ i1 + length vs1)%Z →
+    (i2 ≤ j2 ≤ i2 + length vs2)%Z →
+    (i2 ≤ j2 + n ≤ i2 + length vs2)%Z →
+    {{{
+      array_view t1 i1 dq1 vs1 ∗
+      array_view t2 i2 (DfracOwn 1) vs2
+    }}}
+      array_blit t1 #j1 t2 #j2 #n
+    {{{
+      RET #();
+      let j1 := Z.to_nat j1 in
+      let j2 := Z.to_nat j2 in
+      let n := Z.to_nat n in
+      array_view t1 i1 dq1 vs1 ∗
+      array_view t2 i2 (DfracOwn 1) (
+        take (j2 - i2) vs2 ++
+        take n (drop (j1 - i1) vs1) ++
+        drop (j2 - i2 + n) vs2
+      )
+    }}}.
+  Proof.
+    iIntros "% % % % % %Φ (Hview1 & Hview2) HΦ".
+    rename j1 into _j1. destruct (Z_of_nat_complete _j1) as (j1 & ->); first lia.
+    rename j2 into _j2. destruct (Z_of_nat_complete _j2) as (j2 & ->); first lia.
+    rename n into _n. destruct (Z_of_nat_complete _n) as (n & ->); first lia.
+    rewrite !Nat2Z.id.
+    rewrite (Nat.le_add_sub i1 j1); last lia. rewrite (Nat.le_add_sub i2 j2); last lia.
+    set k1 := j1 - i1. set k2 := j2 - i2.
+    rewrite -{1 2}(take_drop k1 vs1) -{1}(take_drop k2 vs2).
+    rewrite -(take_drop n (drop k1 vs1)) -(take_drop n (drop k2 vs2)).
+    rewrite !drop_drop.
+    iDestruct (array_view_app_2 with "Hview1") as "(Hview11 & Hview1)"; first done.
+    iDestruct (array_view_app_2 with "Hview1") as "(Hview12 & Hview13)"; first done.
+    iDestruct (array_view_app_2 with "Hview2") as "(Hview21 & Hview2)"; first done.
+    iDestruct (array_view_app_2 with "Hview2") as "(Hview22 & Hview23)"; first done.
+    rewrite !take_length !drop_length !Nat.min_l; [| lia..].
+    wp_apply (array_blit_spec with "[$Hview12 $Hview22]"); try lia.
+    { rewrite take_length drop_length. lia. }
+    { rewrite !take_length !drop_length. lia. }
+    iIntros "(Hview12 & Hview22)".
+    iApply "HΦ".
+    iDestruct (array_view_app_1 with "Hview12 Hview13") as "Hview1".
+    { rewrite take_length drop_length. lia. }
+    iDestruct (array_view_app_1 with "Hview11 Hview1") as "$".
+    { rewrite take_length. lia. }
+    iDestruct (array_view_app_1 with "Hview22 Hview23") as "Hview2".
+    { rewrite take_length drop_length. lia. }
+    iDestruct (array_view_app_1 with "Hview21 Hview2") as "Hview2".
+    { rewrite take_length. lia. }
+    rewrite -!Nat.le_add_sub //; lia.
+  Qed.
+  Lemma array_blit_spec'' t1 (i1 : Z) dq1 vs1 t2 (i2 : Z) vs2 (n : Z) :
+    (0 ≤ n)%Z →
+    (0 ≤ i1 ≤ length vs1)%Z →
+    (0 ≤ i1 + n ≤ length vs1)%Z →
+    (0 ≤ i2 ≤ length vs2)%Z →
+    (0 ≤ i2 + n ≤ length vs2)%Z →
+    {{{
+      array_model t1 dq1 vs1 ∗
+      array_model t2 (DfracOwn 1) vs2
+    }}}
+      array_blit t1 #i1 t2 #i2 #n
+    {{{
+      RET #();
+      let i1 := Z.to_nat i1 in
+      let i2 := Z.to_nat i2 in
+      let n := Z.to_nat n in
+      array_model t1 dq1 vs1 ∗
+      array_model t2 (DfracOwn 1) (
+        take i2 vs2 ++
+        take n (drop i1 vs1) ++
+        drop (i2 + n) vs2
+      )
+    }}}.
+  Proof.
+    iIntros "% % % % % %Φ (Hmodel1 & Hmodel2) HΦ".
+    iDestruct (array_model_inv with "Hmodel1") as "#Hinv1".
+    iDestruct (array_model_inv with "Hmodel2") as "#Hinv2".
+    iDestruct (array_model_view with "Hmodel1") as "Hview1".
+    iDestruct (array_model_view with "Hmodel2") as "Hview2".
+    wp_apply (array_blit_spec' with "[$Hview1 $Hview2]"); [lia.. |]. iIntros "(Hview1 & Hview2)".
+    rewrite !Nat.sub_0_r.
+    iApply "HΦ".
+    iDestruct (array_view_model with "Hinv1 Hview1") as "$"; first done.
+    iDestruct (array_view_model with "Hinv2 Hview2") as "$".
+    rewrite !app_length !take_length !drop_length. lia.
+  Qed.
+
+  Lemma array_copy_spec t1 dq1 vs1 t2 i2 (i2' : Z) vs2 :
+    i2' = Z.of_nat i2 →
+    length vs1 = length vs2 →
+    {{{
+      array_model t1 dq1 vs1 ∗
+      array_view t2 i2 (DfracOwn 1) vs2
+    }}}
+      array_copy t1 t2 #i2'
+    {{{
+      RET #();
+      array_model t1 dq1 vs1 ∗
+      array_view t2 i2 (DfracOwn 1) vs1
+    }}}.
+  Proof.
+    iIntros (-> ?) "%Φ (Hmodel1 & Hview2) HΦ".
+    iDestruct (array_model_inv with "Hmodel1") as "#Hinv1".
+    iDestruct (array_model_view with "Hmodel1") as "Hview1".
+    wp_rec.
+    wp_smart_apply (array_size_spec with "Hinv1"). iIntros "_".
+    wp_apply (array_blit_spec with "[$Hview1 $Hview2]"); [done.. |]. iIntros "(Hview1 & Hview2)".
+    iApply "HΦ". iFrame.
+    iApply (array_view_model with "Hinv1 Hview1"); first done.
+  Qed.
+  Lemma array_copy_spec' t1 dq1 vs1 t2 i2 (j2 : Z) vs2 :
+    (i2 ≤ j2 ≤ i2 + length vs2)%Z →
+    (i2 ≤ j2 + length vs1 ≤ i2 + length vs2)%Z →
+    {{{
+      array_model t1 dq1 vs1 ∗
+      array_view t2 i2 (DfracOwn 1) vs2
+    }}}
+      array_copy t1 t2 #j2
+    {{{
+      RET #();
+      let j2 := Z.to_nat j2 in
+      array_model t1 dq1 vs1 ∗
+      array_view t2 i2 (DfracOwn 1) (
+      take (j2 - i2) vs2 ++
+        vs1 ++
+        drop (j2 - i2 + length vs1) vs2
+      )
+    }}}.
+  Proof.
+    iIntros "% % %Φ (Hmodel1 & Hview2) HΦ".
+    iDestruct (array_model_inv with "Hmodel1") as "#Hinv1".
+    iDestruct (array_model_view with "Hmodel1") as "Hview1".
+    wp_rec.
+    wp_smart_apply (array_size_spec with "Hinv1"). iIntros "_".
+    wp_apply (array_blit_spec' with "[$Hview1 $Hview2]"); [lia.. |]. iIntros "(Hview1 & Hview2)".
+    iApply "HΦ". rewrite Nat2Z.id Nat.sub_diag drop_0 (firstn_all2 vs1); last lia. iFrame.
+    iApply (array_view_model with "Hinv1 Hview1"); first done.
+  Qed.
+  Lemma array_copy_spec'' t1 dq1 vs1 t2 (i2 : Z) vs2 :
+    (0 ≤ i2 ≤ length vs2)%Z →
+    (0 ≤ i2 + length vs1 ≤ length vs2)%Z →
+    {{{
+      array_model t1 dq1 vs1 ∗
+      array_model t2 (DfracOwn 1) vs2
+    }}}
+      array_copy t1 t2 #i2
+    {{{
+      RET #();
+      let i2 := Z.to_nat i2 in
+      array_model t1 dq1 vs1 ∗
+      array_model t2 (DfracOwn 1) (
+        take i2 vs2 ++
+        take (length vs1) vs1 ++
+        drop (i2 + length vs1) vs2
+      )
+    }}}.
+  Proof.
+    iIntros "% % %Φ (Hmodel1 & Hmodel2) HΦ".
+    wp_rec.
+    wp_smart_apply (array_size_spec' with "Hmodel1"). iIntros "Hmodel1".
+    wp_apply (array_blit_spec'' with "[$Hmodel1 $Hmodel2]"); [lia.. |]. iIntros "(Hmodel1 & Hmodel2)".
+    iApply "HΦ". iFrame. rewrite Nat2Z.id drop_0 (firstn_all2 vs1) //.
+  Qed.
+
+  Lemma array_grow_spec t dq vs (sz' : Z) :
+    (length vs ≤ sz')%Z →
+    {{{
+      array_model t dq vs
+    }}}
+      array_grow t #sz'
+    {{{ t',
+      RET t';
+      array_model t dq vs ∗
+      array_model t' (DfracOwn 1) (vs ++ replicate (Z.to_nat sz' - length vs) #())
+    }}}.
+  Proof.
+    iIntros "% %Φ Hmodel HΦ".
+    wp_rec.
+    wp_smart_apply (array_make_spec with "[//]"); first lia. iIntros "%t' Hmodel'".
+    wp_smart_apply (array_copy_spec'' with "[$Hmodel $Hmodel']"); first lia.
+    { rewrite replicate_length. lia. }
+    iIntros "(Hmodel & Hmodel')".
+    wp_pures.
+    iApply "HΦ". iFrame. rewrite take_0 firstn_all drop_replicate //.
+  Qed.
+
+  Lemma array_shrink_spec t dq vs (sz' : Z) :
+    (0 ≤ sz' ≤ length vs)%Z →
+    {{{
+      array_model t dq vs
+    }}}
+      array_shrink t #sz'
+    {{{ t',
+      RET t';
+      array_model t dq vs ∗
+      array_model t' (DfracOwn 1) (take (Z.to_nat sz') vs)
+    }}}.
+  Proof.
+    iIntros "% %Φ Hmodel HΦ".
+    wp_rec.
+    wp_smart_apply (array_make_spec with "[//]"); first lia. iIntros "%t' Hmodel'".
+    wp_smart_apply (array_blit_spec'' with "[$Hmodel $Hmodel']"); try lia.
+    { rewrite replicate_length. lia. }
+    iIntros "(Hmodel & Hmodel')".
+    wp_pures.
+    iApply "HΦ". iFrame. rewrite take_0 drop_0 drop_replicate Nat.sub_diag right_id //.
+  Qed.
+
+  Lemma array_clone_spec t dq vs :
+    {{{
+      array_model t dq vs
+    }}}
+      array_clone t
+    {{{ t',
+      RET t';
+      array_model t dq vs ∗
+      array_model t' (DfracOwn 1) vs
+    }}}.
+  Proof.
+    iIntros "%Φ Hmodel HΦ".
+    wp_rec.
+    wp_apply (array_size_spec' with "Hmodel"). iIntros "Hmodel".
+    wp_apply (array_grow_spec with "Hmodel"); first done. iIntros "%t' (Hmodel & Hmodel')".
+    iApply "HΦ". iFrame. rewrite Nat2Z.id Nat.sub_diag right_id //.
+  Qed.
+
   Lemma array_unboxed t sz :
     array_inv t sz -∗
     ⌜val_is_unboxed t⌝.
   Proof.
     iIntros "(%l & -> & #Hsz) //".
+  Qed.
+  Lemma array_unboxed' t dq vs :
+    array_model t dq vs -∗
+    ⌜val_is_unboxed t⌝.
+  Proof.
+    iIntros "(%l & -> & #Hsz & Hmodel) //".
   Qed.
 End heapGS.
 
