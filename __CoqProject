@@ -72,11 +72,16 @@ theories/std/lst.v
 theories/std/chain.v
 theories/std/mlst.v
 theories/std/fun_stack.v
+theories/std/std_fun_stack.v
 theories/std/fun_queue.v
+theories/std/std_fun_queue.v
 theories/std/stack.v
+theories/std/std_stack.v
 theories/std/queue.v
+theories/std/std_queue.v
 theories/std/dlchain.v
 theories/std/deque.v
+theories/std/std_deque.v
 theories/std/random.v
 
 theories/concurrent/base.v
