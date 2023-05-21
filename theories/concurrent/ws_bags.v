@@ -166,19 +166,6 @@ Qed.
 Section ws_bags_of_ws_deques.
   Context `{ws_bags_of_ws_deques_G : WsBagsOfWsDequesG Σ}.
   Context {unboxed} (ws_deques : ws_deques Σ unboxed).
-  Implicit Types γ : ws_deques.(ws_deques_name) * gname.
-
-  Notation "γ .(base)" := γ.1
-  ( at level 5
-  ) : stdpp_scope.
-  Notation "γ .(extra)" := γ.2
-  ( at level 5
-  ) : stdpp_scope.
-
-  Notation ws_bags_of_ws_deques_namespace_base ι :=
-    (ι .@ "base").
-  Notation ws_bags_of_ws_deques_namespace_extra ι :=
-    (ι .@ "extra").
 
   #[local] Definition ws_bags_of_ws_deques_make :=
     ws_deques.(ws_deques_make).
@@ -198,6 +185,17 @@ Section ws_bags_of_ws_deques.
     λ: "t" "i",
       let: "o" := ws_deques.(ws_deques_steal) "t" "i" in
       "o".
+
+  Implicit Types γ : ws_deques.(ws_deques_name) * gname.
+  Notation "γ .(base)" := γ.1
+  ( at level 5
+  ) : stdpp_scope.
+  Notation "γ .(extra)" := γ.2
+  ( at level 5
+  ) : stdpp_scope.
+
+  Notation ws_bags_of_ws_deques_namespace_base ι := (ι .@ "base").
+  Notation ws_bags_of_ws_deques_namespace_extra ι := (ι .@ "extra").
 
   #[local] Definition ws_bags_of_ws_deques_model₁ γ vss :=
     auth_excl_frag (auth_excl_G := ws_bags_of_ws_deques_G_model_G) γ.(extra) vss.

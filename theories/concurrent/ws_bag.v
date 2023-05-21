@@ -154,19 +154,6 @@ Qed.
 Section ws_bag_of_ws_deque.
   Context `{ws_bag_of_ws_deque_G : WsBagOfWsDequeG Σ}.
   Context {unboxed} (ws_deque : ws_deque Σ unboxed).
-  Implicit Types γ : ws_deque.(ws_deque_name) * gname.
-
-  Notation "γ .(base)" := γ.1
-  ( at level 5
-  ) : stdpp_scope.
-  Notation "γ .(extra)" := γ.2
-  ( at level 5
-  ) : stdpp_scope.
-
-  Notation ws_bag_of_ws_deque_namespace_base ι :=
-    (ι .@ "base").
-  Notation ws_bag_of_ws_deque_namespace_extra ι :=
-    (ι .@ "extra").
 
   #[local] Definition ws_bag_of_ws_deque_make :=
     ws_deque.(ws_deque_make).
@@ -183,6 +170,17 @@ Section ws_bag_of_ws_deque.
     λ: "t",
       let: "o" := ws_deque.(ws_deque_steal) "t" in
       "o".
+
+  Implicit Types γ : ws_deque.(ws_deque_name) * gname.
+  Notation "γ .(base)" := γ.1
+  ( at level 5
+  ) : stdpp_scope.
+  Notation "γ .(extra)" := γ.2
+  ( at level 5
+  ) : stdpp_scope.
+
+  Notation ws_bag_of_ws_deque_namespace_base ι := (ι .@ "base").
+  Notation ws_bag_of_ws_deque_namespace_extra ι := (ι .@ "extra").
 
   #[local] Definition ws_bag_of_ws_deque_model₁ γ vs :=
     auth_excl_frag γ.(extra) vs.
@@ -414,19 +412,6 @@ Qed.
 Section ws_bag_of_spmc_stack.
   Context `{ws_bag_of_spmc_stack_G : WsBagOfSpmcStackG Σ}.
   Context {unboxed} (spmc_stack : spmc_stack Σ unboxed).
-  Implicit Types γ : spmc_stack.(spmc_stack_name) * gname.
-
-  Notation "γ .(base)" := γ.1
-  ( at level 5
-  ) : stdpp_scope.
-  Notation "γ .(extra)" := γ.2
-  ( at level 5
-  ) : stdpp_scope.
-
-  Notation ws_bag_of_spmc_stack_namespace_base ι :=
-    (ι .@ "base").
-  Notation ws_bag_of_spmc_stack_namespace_extra ι :=
-    (ι .@ "extra").
 
   #[local] Definition ws_bag_of_spmc_stack_make :=
     spmc_stack.(spmc_stack_make).
@@ -443,6 +428,19 @@ Section ws_bag_of_spmc_stack.
     λ: "t",
       let: "o" := spmc_stack.(spmc_stack_pop) "t" in
       "o".
+
+  Implicit Types γ : spmc_stack.(spmc_stack_name) * gname.
+  Notation "γ .(base)" := γ.1
+  ( at level 5
+  ) : stdpp_scope.
+  Notation "γ .(extra)" := γ.2
+  ( at level 5
+  ) : stdpp_scope.
+
+  Notation ws_bag_of_spmc_stack_namespace_base ι :=
+    (ι .@ "base").
+  Notation ws_bag_of_spmc_stack_namespace_extra ι :=
+    (ι .@ "extra").
 
   #[local] Definition ws_bag_of_spmc_stack_model₁ γ vs :=
     auth_excl_frag γ.(extra) vs.
@@ -695,19 +693,6 @@ Qed.
 Section ws_bag_of_spmc_queue.
   Context `{ws_bag_of_spmc_queue_G : WsBagOfSpmcQueueG Σ}.
   Context {unboxed} (spmc_queue : spmc_queue Σ unboxed).
-  Implicit Types γ : spmc_queue.(spmc_queue_name) * gname.
-
-  Notation "γ .(base)" := γ.1
-  ( at level 5
-  ) : stdpp_scope.
-  Notation "γ .(extra)" := γ.2
-  ( at level 5
-  ) : stdpp_scope.
-
-  Notation ws_bag_of_spmc_queue_namespace_base ι :=
-    (ι .@ "base").
-  Notation ws_bag_of_spmc_queue_namespace_extra ι :=
-    (ι .@ "extra").
 
   #[local] Definition ws_bag_of_spmc_queue_make :=
     spmc_queue.(spmc_queue_make).
@@ -724,6 +709,19 @@ Section ws_bag_of_spmc_queue.
     λ: "t",
       let: "o" := spmc_queue.(spmc_queue_pop) "t" in
       "o".
+
+  Implicit Types γ : spmc_queue.(spmc_queue_name) * gname.
+  Notation "γ .(base)" := γ.1
+  ( at level 5
+  ) : stdpp_scope.
+  Notation "γ .(extra)" := γ.2
+  ( at level 5
+  ) : stdpp_scope.
+
+  Notation ws_bag_of_spmc_queue_namespace_base ι :=
+    (ι .@ "base").
+  Notation ws_bag_of_spmc_queue_namespace_extra ι :=
+    (ι .@ "extra").
 
   #[local] Definition ws_bag_of_spmc_queue_model₁ γ vs :=
     auth_excl_frag γ.(extra) vs.
