@@ -85,6 +85,7 @@ theories/concurrent/mutex.v
 theories/concurrent/condition.v
 theories/concurrent/counter.v
 theories/concurrent/inf_array.v
+theories/concurrent/std_inf_array.v
 theories/concurrent/mpmc_stack.v
 theories/concurrent/mpmc_queue.v
 theories/concurrent/spmc_stack.v
