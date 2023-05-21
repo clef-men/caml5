@@ -91,6 +91,7 @@ Section inf_spsc_queue_G.
       ).
 
   Record inf_spsc_queue_name := {
+    inf_spsc_queue_name_data : array.(inf_array_name) ;
     inf_spsc_queue_name_producer : gname ;
     inf_spsc_queue_name_consumer : gname ;
     inf_spsc_queue_name_model : gname ;
@@ -106,12 +107,14 @@ Section inf_spsc_queue_G.
     Countable inf_spsc_queue_name.
   Proof.
     pose encode γ := (
+      γ.(inf_spsc_queue_name_data),
       γ.(inf_spsc_queue_name_producer),
       γ.(inf_spsc_queue_name_consumer),
       γ.(inf_spsc_queue_name_model),
       γ.(inf_spsc_queue_name_hist)
     ).
-    pose decode := λ '(γ_producer, γ_consumer, γ_model, γ_hist), {|
+    pose decode := λ '(γ_data, γ_producer, γ_consumer, γ_model, γ_hist), {|
+      inf_spsc_queue_name_data := γ_data ;
       inf_spsc_queue_name_producer := γ_producer ;
       inf_spsc_queue_name_consumer := γ_consumer ;
       inf_spsc_queue_name_model := γ_model ;
@@ -119,6 +122,9 @@ Section inf_spsc_queue_G.
     |}.
     refine (inj_countable' encode decode _). intros []. done.
   Qed.
+
+  Notation inf_spsc_queue_namespace_data ι := (ι .@ "data").
+  Notation inf_spsc_queue_namespace_inv ι := (ι .@ "inv").
 
   Implicit Types front back : nat.
   Implicit Types l : loc.
@@ -190,7 +196,7 @@ Section inf_spsc_queue_G.
     (* back field *)
     l.(back) ↦ #back ∗
     (* data model *)
-    array.(inf_array_model') data (waste ++ reverse model) priv ∗
+    array.(inf_array_model') data γ.(inf_spsc_queue_name_data) (waste ++ reverse model) priv ∗
     (* history values *)
     inf_spsc_queue_hist_auth γ (hist ++ reverse model) ∗
     (* consumer token *)
@@ -206,8 +212,9 @@ Section inf_spsc_queue_G.
     meta l nroot γ ∗
     (* immutable data field *)
     l.(data) ↦□ data ∗
-    (* invariant *)
-    inv ι (inf_spsc_queue_inv_inner l γ data).
+    (* invariants *)
+    array.(inf_array_inv) data γ.(inf_spsc_queue_name_data) (inf_spsc_queue_namespace_data ι) ∗
+    inv (inf_spsc_queue_namespace_inv ι) (inf_spsc_queue_inv_inner l γ data).
 
   #[global] Instance inf_spsc_queue_inv_persistent t ι :
     Persistent (inf_spsc_queue_inv t ι).
@@ -363,7 +370,7 @@ Section inf_spsc_queue_G.
     wp_rec.
 
     (* → [array.(inf_array_make) #()] *)
-    wp_apply (inf_array_make_spec with "[//]"). iIntros "%data Hdata_model".
+    wp_apply (inf_array_make_spec with "[//]"). iIntros "%data %γ_data (#Hinv_data & Hmodel_data)".
 
     (* → [record3_make #0 #0 data] *)
     iApply wp_fupd.
@@ -379,6 +386,7 @@ Section inf_spsc_queue_G.
     iMod inf_spsc_queue_hist_alloc as "(%γ_hist & Hhist_auth)".
 
     set γ := {|
+      inf_spsc_queue_name_data := γ_data ;
       inf_spsc_queue_name_producer := γ_producer ;
       inf_spsc_queue_name_consumer := γ_consumer ;
       inf_spsc_queue_name_model := γ_model ;
@@ -410,7 +418,7 @@ Section inf_spsc_queue_G.
       inf_spsc_queue_producer t
     >>>.
   Proof.
-    iIntros "!> %Φ ((%l & %γ & %data & -> & #Hmeta & #Hdata & #Hinv) & (%_l & %_γ & %back & %priv & %Heq & #_Hmeta & Hproducer₁)) HΦ". injection Heq as <-.
+    iIntros "!> %Φ ((%l & %γ & %data & -> & #Hmeta & #Hdata & #Hinv_data & #Hinv) & (%_l & %_γ & %back & %priv & %Heq & #_Hmeta & Hproducer₁)) HΦ". injection Heq as <-.
     iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
 
     wp_rec. wp_pures.
@@ -418,7 +426,7 @@ Section inf_spsc_queue_G.
     (* → [!#l.(back)] *)
     wp_bind (!#l.(back))%E.
     (* open invariant *)
-    iInv "Hinv" as "(%_back & %hist & %waste & %model & %_priv & >%Hback & Hback & Hdata_model & Hhist_auth & Hconsumer₂ & Hmodel₂ & >Hproducer₂)".
+    iInv "Hinv" as "(%_back & %hist & %waste & %model & %_priv & >%Hback & Hback & Hmodel_data & Hhist_auth & Hconsumer₂ & Hmodel₂ & >Hproducer₂)".
     iDestruct (inf_spsc_queue_producer_agree with "Hproducer₁ Hproducer₂") as %(<- & <-).
     (* do load *)
     wp_load.
@@ -433,11 +441,11 @@ Section inf_spsc_queue_G.
     wp_load.
 
     (* → [array.(inf_array_set) data #back v] *)
-    awp_apply (inf_array_set_spec' with "[//]"); first lia.
+    awp_apply (inf_array_set_spec' with "Hinv_data"); first lia.
     (* open invariant *)
-    iInv "Hinv" as "(%_back & %hist & %waste & %model & %_priv & >%Hback & Hback & >Hdata_model & Hhist_auth & Hconsumer₂ & Hmodel₂ & >Hproducer₂)".
+    iInv "Hinv" as "(%_back & %hist & %waste & %model & %_priv & >%Hback & Hback & >Hmodel_data & Hhist_auth & Hconsumer₂ & Hmodel₂ & >Hproducer₂)".
     iDestruct (inf_spsc_queue_producer_agree with "Hproducer₁ Hproducer₂") as %(<- & <-).
-    iAaccIntro with "Hdata_model"; iIntros "Hdata_model".
+    iAaccIntro with "Hmodel_data"; iIntros "Hmodel_data".
     { iModIntro. iFrame. repeat iExists _. auto with iFrame. }
     (* update private values *)
     set priv' := <[0 := v]> priv.
@@ -455,7 +463,7 @@ Section inf_spsc_queue_G.
 
     (* → [#l.(back) <- #(back + 1)] *)
     (* open invariant *)
-    iInv "Hinv" as "(%_back & %hist & %waste & %model & %_priv & >%Hback & Hback & Hdata_model & Hhist_auth & Hconsumer₂ & Hmodel₂ & >Hproducer₂)".
+    iInv "Hinv" as "(%_back & %hist & %waste & %model & %_priv & >%Hback & Hback & Hmodel_data & Hhist_auth & Hconsumer₂ & Hmodel₂ & >Hproducer₂)".
     iDestruct (inf_spsc_queue_producer_agree with "Hproducer₁ Hproducer₂") as %(<- & <-).
     (* do store *)
     wp_store.
@@ -480,7 +488,7 @@ Section inf_spsc_queue_G.
       assert (back + 1 = (back + 1)%nat)%Z as -> by lia. iFrame.
       iSplit; first (simpl; auto with lia).
       rewrite reverse_cons !assoc. iFrame.
-      iApply (inf_array_model'_shift_l with "Hdata_model"). intros []; done.
+      iApply (inf_array_model'_shift_l with "Hmodel_data"). intros []; done.
     }
     clear.
 
@@ -508,7 +516,7 @@ Section inf_spsc_queue_G.
       inf_spsc_queue_consumer t
     >>>.
   Proof.
-    iIntros "!> %Φ ((%l & %γ & %data & -> & #Hmeta & #Hdata & #Hinv) & (%_l & %_γ & %hist & %Heq & #_Hmeta & Hfront & Hconsumer₁)) HΦ". injection Heq as <-.
+    iIntros "!> %Φ ((%l & %γ & %data & -> & #Hmeta & #Hdata & #Hinv_data & #Hinv) & (%_l & %_γ & %hist & %Heq & #_Hmeta & Hfront & Hconsumer₁)) HΦ". injection Heq as <-.
     iDestruct (meta_agree with "Hmeta _Hmeta") as %<-. iClear "_Hmeta".
 
     wp_rec. wp_pures.
@@ -521,7 +529,7 @@ Section inf_spsc_queue_G.
     (* → [!#l.(back)] *)
     wp_bind (!#l.(back))%E.
     (* open invariant *)
-    iInv "Hinv" as "(%back & %_hist & %waste & %model & %priv & >%Hback & Hback & Hdata_model & Hhist_auth & >Hconsumer₂ & Hmodel₂ & Hproducer₂)".
+    iInv "Hinv" as "(%back & %_hist & %waste & %model & %priv & >%Hback & Hback & Hmodel_data & Hhist_auth & >Hconsumer₂ & Hmodel₂ & Hproducer₂)".
     iDestruct (inf_spsc_queue_consumer_agree with "Hconsumer₁ Hconsumer₂") as %(<- & <-).
     (* do load *)
     wp_load.
@@ -563,11 +571,11 @@ Section inf_spsc_queue_G.
       wp_load.
 
       (* → [array.(inf_array_get) data #(length hist)] *)
-      awp_apply (inf_array_get_spec' with "[//]"); first lia.
+      awp_apply (inf_array_get_spec' with "Hinv_data"); first lia.
       (* open invariant *)
-      iInv "Hinv" as "(%back & %_hist & %waste & %model & %priv & >%Hback & Hback & >Hdata_model & >Hhist_auth & >Hconsumer₂ & Hmodel₂ & Hproducer₂)".
+      iInv "Hinv" as "(%back & %_hist & %waste & %model & %priv & >%Hback & Hback & >Hmodel_data & >Hhist_auth & >Hconsumer₂ & Hmodel₂ & Hproducer₂)".
       iDestruct (inf_spsc_queue_consumer_agree with "Hconsumer₁ Hconsumer₂") as %(<- & <-).
-      iAaccIntro with "Hdata_model"; iIntros "Hdata_model".
+      iAaccIntro with "Hmodel_data"; iIntros "Hmodel_data".
       { iModIntro. iFrame. repeat iExists _. auto with iFrame. }
       (* exploit history fragment *)
       iDestruct (inf_spsc_queue_hist_agree with "Hhist_auth Hhist_mapsto") as %Hlookup.
@@ -586,7 +594,7 @@ Section inf_spsc_queue_G.
       (* → [#l.(front) <- #(length hist + 1)] *)
       wp_bind (#l.(front) <- #(length hist + 1))%E.
       (* open invariant *)
-      iInv "Hinv" as "(%back & %_hist & %waste & %model & %priv & >%Hback & Hback & Hdata_model & Hhist_auth & >Hconsumer₂ & Hmodel₂ & Hproducer₂)".
+      iInv "Hinv" as "(%back & %_hist & %waste & %model & %priv & >%Hback & Hback & Hmodel_data & Hhist_auth & >Hconsumer₂ & Hmodel₂ & Hproducer₂)".
       iDestruct (inf_spsc_queue_consumer_agree with "Hconsumer₁ Hconsumer₂") as %(<- & <-).
       (* do store *)
       wp_store.
@@ -626,9 +634,9 @@ Section inf_spsc_queue_G.
       (* → [array.(inf_array_set) data #(length hist) #()] *)
       awp_apply (inf_array_set_spec' with "[//]"); first lia.
       (* open invariant *)
-      iInv "Hinv" as "(%back & %_hist & %waste & %model & %priv & >%Hback & Hback & >Hdata_model & Hhist_auth & >Hconsumer₂ & Hmodel₂ & Hproducer₂)".
+      iInv "Hinv" as "(%back & %_hist & %waste & %model & %priv & >%Hback & Hback & >Hmodel_data & Hhist_auth & >Hconsumer₂ & Hmodel₂ & Hproducer₂)".
       iDestruct (inf_spsc_queue_consumer_agree with "Hconsumer₁ Hconsumer₂") as %(<- & <-).
-      iAaccIntro with "Hdata_model"; iIntros "Hdata_model".
+      iAaccIntro with "Hmodel_data"; iIntros "Hmodel_data".
       { iModIntro. iFrame. repeat iExists _. auto with iFrame. }
       (* update consumer tokens *)
       set waste'' := replicate (S (length hist)) #().
