@@ -15,11 +15,11 @@ From caml5.lang Require Import
   notations
   proofmode.
 From caml5.std Require Import
-  record3
-  inf_array.
+  record3.
 From caml5.concurrent Require Export
   base.
 From caml5.concurrent Require Import
+  inf_array
   spsc_queue.
 
 Class InfSpscQueueG Σ `{!heapGS Σ} (array : inf_array Σ false) := {

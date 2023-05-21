@@ -19,11 +19,11 @@ From caml5.lang Require Import
   notations
   proofmode.
 From caml5.std Require Import
-  record4
-  inf_array.
+  record4.
 From caml5.concurrent Require Export
   base.
 From caml5.concurrent Require Import
+  inf_array
   ws_deque.
 
 #[local] Program Definition inf_chaselev_deque_prophet_spec := {|

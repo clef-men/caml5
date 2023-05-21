@@ -66,7 +66,6 @@ theories/std/base.v
 theories/std/record2.v
 theories/std/record3.v
 theories/std/record4.v
-theories/std/inf_array.v
 theories/std/chunk.v
 theories/std/array.v
 theories/std/lst.v
@@ -85,6 +84,7 @@ theories/concurrent/domain.v
 theories/concurrent/mutex.v
 theories/concurrent/condition.v
 theories/concurrent/counter.v
+theories/concurrent/inf_array.v
 theories/concurrent/mpmc_stack.v
 theories/concurrent/mpmc_queue.v
 theories/concurrent/spmc_stack.v
