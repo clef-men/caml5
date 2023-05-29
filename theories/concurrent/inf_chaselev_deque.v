@@ -46,21 +46,14 @@ Next Obligation.
 Qed.
 
 Class InfChaselevDequeG Σ `{!heapGS Σ} (array : inf_array Σ false) := {
-  inf_chaselev_deque_G_ctl_G : AuthExclG Σ (ZO * (nat -d> valO)) ;
-  inf_chaselev_deque_G_front_G : AuthNatMaxG Σ ;
-  inf_chaselev_deque_G_hist_G : MonoListG Σ val ;
-  inf_chaselev_deque_G_model_G : AuthExclG Σ (listO valO) ;
-  inf_chaselev_deque_G_lock_G : ExclG Σ unitO ;
-  inf_chaselev_deque_G_prophet_G : WiseProphetG Σ inf_chaselev_deque_prophet_spec ;
-  inf_chaselev_deque_G_winner_G : AuthExclG Σ (natO * (valO -d> ▶ ∙)) ;
+  #[local] inf_chaselev_deque_G_ctl_G :: AuthExclG Σ (ZO * (nat -d> valO)) ;
+  #[local] inf_chaselev_deque_G_front_G :: AuthNatMaxG Σ ;
+  #[local] inf_chaselev_deque_G_hist_G :: MonoListG Σ val ;
+  #[local] inf_chaselev_deque_G_model_G :: AuthExclG Σ (listO valO) ;
+  #[local] inf_chaselev_deque_G_lock_G :: ExclG Σ unitO ;
+  #[local] inf_chaselev_deque_G_prophet_G :: WiseProphetG Σ inf_chaselev_deque_prophet_spec ;
+  #[local] inf_chaselev_deque_G_winner_G :: AuthExclG Σ (natO * (valO -d> ▶ ∙)) ;
 }.
-#[local] Existing Instance inf_chaselev_deque_G_ctl_G.
-#[local] Existing Instance inf_chaselev_deque_G_front_G.
-#[local] Existing Instance inf_chaselev_deque_G_hist_G.
-#[local] Existing Instance inf_chaselev_deque_G_model_G.
-#[local] Existing Instance inf_chaselev_deque_G_lock_G.
-#[local] Existing Instance inf_chaselev_deque_G_prophet_G.
-#[local] Existing Instance inf_chaselev_deque_G_winner_G.
 
 Definition inf_chaselev_deque_Σ := #[
   auth_excl_Σ (ZO * (nat -d> valO)) ;

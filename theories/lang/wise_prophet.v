@@ -14,19 +14,19 @@ Record wise_strong_prophet `{!heapGS Σ} := {
   wise_strong_prophet_to_val : wise_strong_prophet_type → val * val ;
 
   wise_strong_prophet_name : Type ;
-  wise_strong_prophet_name_eq_dec :
+  #[global] wise_strong_prophet_name_eq_dec ::
     EqDecision wise_strong_prophet_name ;
-  wise_strong_prophet_name_countable :
+  #[global] wise_strong_prophet_name_countable ::
     Countable wise_strong_prophet_name ;
 
   wise_strong_prophet_model : proph_id → wise_strong_prophet_name → list wise_strong_prophet_type → list wise_strong_prophet_type → iProp Σ ;
   wise_strong_prophet_lb : wise_strong_prophet_name → list wise_strong_prophet_type → iProp Σ ;
 
-  wise_strong_prophet_model_timeless p γ past prophs :
+  #[global] wise_strong_prophet_model_timeless p γ past prophs ::
     Timeless (wise_strong_prophet_model p γ past prophs) ;
-  wise_strong_prophet_lb_timeless γ lb :
+  #[global] wise_strong_prophet_lb_timeless γ lb ::
     Timeless (wise_strong_prophet_lb γ lb) ;
-  wise_strong_prophet_lb_persistent γ lb :
+  #[global] wise_strong_prophet_lb_persistent γ lb ::
     Persistent (wise_strong_prophet_lb γ lb) ;
 
   wise_strong_prophet_model_exclusive p γ1 past1 prophs1 γ2 past2 prophs2 :
@@ -66,20 +66,13 @@ Record wise_strong_prophet `{!heapGS Σ} := {
 }.
 #[global] Arguments wise_strong_prophet _ {_} : assert.
 #[global] Arguments Build_wise_strong_prophet {_ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ : assert.
-#[global] Existing Instance wise_strong_prophet_name_eq_dec.
-#[global] Existing Instance wise_strong_prophet_name_countable.
-#[global] Existing Instance wise_strong_prophet_model_timeless.
-#[global] Existing Instance wise_strong_prophet_lb_timeless.
-#[global] Existing Instance wise_strong_prophet_lb_persistent.
 #[global] Opaque wise_strong_prophet_model.
 #[global] Opaque wise_strong_prophet_lb.
 
 Class WiseStrongProphetG Σ `{!heapGS Σ} spec := {
-  wise_strong_prophet_G_full_G : AgreeG Σ (leibnizO (list spec.(typed_strong_prophet_spec_type))) ;
-  wise_strong_prophet_G_past_G : MonoListG Σ spec.(typed_strong_prophet_spec_type) ;
+  #[local] wise_strong_prophet_G_full_G :: AgreeG Σ (leibnizO (list spec.(typed_strong_prophet_spec_type))) ;
+  #[local] wise_strong_prophet_G_past_G :: MonoListG Σ spec.(typed_strong_prophet_spec_type) ;
 }.
-#[local] Existing Instance wise_strong_prophet_G_full_G.
-#[local] Existing Instance wise_strong_prophet_G_past_G.
 
 Definition wise_strong_prophet_Σ spec := #[
   agree_Σ (leibnizO (list spec.(typed_strong_prophet_spec_type))) ;
@@ -180,19 +173,19 @@ Record wise_prophet `{!heapGS Σ} := {
   wise_prophet_to_val : wise_prophet_type → val ;
 
   wise_prophet_name : Type ;
-  wise_prophet_name_eq_dec :
+  #[global] wise_prophet_name_eq_dec ::
     EqDecision wise_prophet_name ;
-  wise_prophet_name_countable :
+  #[global] wise_prophet_name_countable ::
     Countable wise_prophet_name ;
 
   wise_prophet_model : proph_id → wise_prophet_name → list wise_prophet_type → list wise_prophet_type → iProp Σ ;
   wise_prophet_lb : wise_prophet_name → list wise_prophet_type → iProp Σ ;
 
-  wise_prophet_model_timeless p γ past prophs :
+  #[global] wise_prophet_model_timeless p γ past prophs ::
     Timeless (wise_prophet_model p γ past prophs) ;
-  wise_prophet_lb_timeless γ lb :
+  #[global] wise_prophet_lb_timeless γ lb ::
     Timeless (wise_prophet_lb γ lb) ;
-  wise_prophet_lb_persistent γ lb :
+  #[global] wise_prophet_lb_persistent γ lb ::
     Persistent (wise_prophet_lb γ lb) ;
 
   wise_prophet_model_exclusive p γ1 past1 prophs1 γ2 past2 prophs2 :
@@ -231,20 +224,13 @@ Record wise_prophet `{!heapGS Σ} := {
 }.
 #[global] Arguments wise_prophet _ {_} : assert.
 #[global] Arguments Build_wise_prophet {_ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ : assert.
-#[global] Existing Instance wise_prophet_name_eq_dec.
-#[global] Existing Instance wise_prophet_name_countable.
-#[global] Existing Instance wise_prophet_model_timeless.
-#[global] Existing Instance wise_prophet_lb_timeless.
-#[global] Existing Instance wise_prophet_lb_persistent.
 #[global] Opaque wise_prophet_model.
 #[global] Opaque wise_prophet_lb.
 
 Class WiseProphetG Σ `{!heapGS Σ} spec := {
-  wise_prophet_G_full_G : AgreeG Σ (leibnizO (list (val * spec.(typed_prophet_spec_type)))) ;
-  wise_prophet_G_past_G : MonoListG Σ (val * spec.(typed_prophet_spec_type)) ;
+  #[local] wise_prophet_G_full_G :: AgreeG Σ (leibnizO (list (val * spec.(typed_prophet_spec_type)))) ;
+  #[local] wise_prophet_G_past_G :: MonoListG Σ (val * spec.(typed_prophet_spec_type)) ;
 }.
-#[local] Existing Instance wise_prophet_G_full_G.
-#[local] Existing Instance wise_prophet_G_past_G.
 
 Definition wise_prophet_Σ spec := #[
   agree_Σ (leibnizO (list (val * spec.(typed_prophet_spec_type)))) ;

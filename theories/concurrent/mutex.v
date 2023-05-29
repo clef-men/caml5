@@ -16,12 +16,12 @@ Record mutex `{!heapGS Σ} {unboxed : bool} := {
   mutex_inv : val → iProp Σ → iProp Σ ;
   mutex_locked : val → iProp Σ ;
 
-  mutex_inv_contractive t :
+  #[global] mutex_inv_contractive t ::
     Contractive (mutex_inv t) ;
 
-  mutex_inv_persistent t P :
+  #[global] mutex_inv_persistent t P ::
     Persistent (mutex_inv t P) ;
-  mutex_locked_timeless t :
+  #[global] mutex_locked_timeless t ::
     Timeless (mutex_locked t) ;
 
   mutex_locked_exclusive t :
@@ -64,9 +64,6 @@ Record mutex `{!heapGS Σ} {unboxed : bool} := {
 }.
 #[global] Arguments mutex _ {_} _ : assert.
 #[global] Arguments Build_mutex {_ _} _ {_ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
-#[global] Existing Instance mutex_inv_contractive.
-#[global] Existing Instance mutex_inv_persistent.
-#[global] Existing Instance mutex_locked_timeless.
 
 Section mutex.
   Context `{!heapGS Σ} {unboxed} (mutex : mutex Σ unboxed).

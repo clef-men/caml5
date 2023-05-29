@@ -11,9 +11,8 @@ From caml5.algebra Require Import
   lib.auth_natinf_min.
 
 Class AuthNatinfMinG Σ := {
-  auth_natinf_min_G_inG : inG Σ auth_natinf_min_R ;
+  #[local] auth_natinf_min_G_inG :: inG Σ auth_natinf_min_R ;
 }.
-#[local] Existing Instance auth_natinf_min_G_inG.
 
 Definition auth_natinf_min_Σ := #[
   GFunctor auth_natinf_min_R

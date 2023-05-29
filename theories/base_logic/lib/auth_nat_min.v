@@ -9,9 +9,8 @@ From caml5.algebra Require Import
   lib.auth_nat_min.
 
 Class AuthNatMinG Σ := {
-  auth_nat_min_G_inG : inG Σ auth_nat_min_R ;
+  #[local] auth_nat_min_G_inG :: inG Σ auth_nat_min_R ;
 }.
-#[local] Existing Instance auth_nat_min_G_inG.
 
 Definition auth_nat_min_Σ := #[
   GFunctor auth_nat_min_R

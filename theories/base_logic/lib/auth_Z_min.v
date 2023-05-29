@@ -9,9 +9,8 @@ From caml5.algebra Require Import
   lib.auth_Z_min.
 
 Class AuthZMinG Σ := {
-  auth_Z_min_G_inG : inG Σ auth_Z_min_R ;
+  #[local] auth_Z_min_G_inG :: inG Σ auth_Z_min_R ;
 }.
-#[local] Existing Instance auth_Z_min_G_inG.
 
 Definition auth_Z_min_Σ := #[
   GFunctor auth_Z_min_R

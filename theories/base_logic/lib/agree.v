@@ -9,9 +9,8 @@ From caml5 Require Export
   base.
 
 Class AgreeG Σ F := {
-  agree_G_inG : inG Σ (agreeR $ oFunctor_apply F $ iPropO Σ) ;
+  #[local] agree_G_inG :: inG Σ (agreeR $ oFunctor_apply F $ iPropO Σ) ;
 }.
-#[local] Existing Instance agree_G_inG.
 
 Definition agree_Σ F `{!oFunctorContractive F} := #[
   GFunctor (agreeRF F)

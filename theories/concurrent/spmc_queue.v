@@ -19,20 +19,20 @@ Record spmc_queue `{!heapGS Σ} {unboxed : bool} := {
   spmc_queue_pop : val ;
 
   spmc_queue_name : Type ;
-  spmc_queue_name_eq_dec :
+  #[global] spmc_queue_name_eq_dec ::
     EqDecision spmc_queue_name ;
-  spmc_queue_name_countable :
+  #[global] spmc_queue_name_countable ::
     Countable spmc_queue_name ;
 
   spmc_queue_inv : val → spmc_queue_name → namespace → iProp Σ ;
   spmc_queue_model : val → spmc_queue_name → list val → iProp Σ ;
   spmc_queue_producer : val → spmc_queue_name → iProp Σ ;
 
-  spmc_queue_inv_persistent t γ ι :
+  #[global] spmc_queue_inv_persistent t γ ι ::
     Persistent (spmc_queue_inv t γ ι) ;
-  spmc_queue_model_timeless t γ vs :
+  #[global] spmc_queue_model_timeless t γ vs ::
     Timeless (spmc_queue_model t γ vs) ;
-  spmc_queue_producer_timeless t γ :
+  #[global] spmc_queue_producer_timeless t γ ::
     Timeless (spmc_queue_producer t γ) ;
 
   spmc_queue_producer_exclusive t γ :
@@ -91,16 +91,10 @@ Record spmc_queue `{!heapGS Σ} {unboxed : bool} := {
 }.
 #[global] Arguments spmc_queue _ {_} _ : assert.
 #[global] Arguments Build_spmc_queue {_ _} _ {_ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
-#[global] Existing Instance spmc_queue_name_eq_dec.
-#[global] Existing Instance spmc_queue_name_countable.
-#[global] Existing Instance spmc_queue_inv_persistent.
-#[global] Existing Instance spmc_queue_model_timeless.
-#[global] Existing Instance spmc_queue_producer_timeless.
 
 Class SpmcQueueOfMpmcQueueG Σ `{!heapGS Σ} := {
-  spmc_queue_of_mpmc_queue_G_producer_G : ExclG Σ unitO ;
+  #[local] spmc_queue_of_mpmc_queue_G_producer_G :: ExclG Σ unitO ;
 }.
-#[local] Existing Instance spmc_queue_of_mpmc_queue_G_producer_G.
 
 Definition spmc_queue_of_mpmc_queue_Σ := #[
   excl_Σ unitO

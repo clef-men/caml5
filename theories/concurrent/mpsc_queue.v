@@ -19,20 +19,20 @@ Record mpsc_queue `{!heapGS Σ} {unboxed : bool} := {
   mpsc_queue_pop : val ;
 
   mpsc_queue_name : Type ;
-  mpsc_queue_name_eq_dec :
+  #[global] mpsc_queue_name_eq_dec ::
     EqDecision mpsc_queue_name ;
-  mpsc_queue_name_countable :
+  #[global] mpsc_queue_name_countable ::
     Countable mpsc_queue_name ;
 
   mpsc_queue_inv : val → mpsc_queue_name → namespace → iProp Σ ;
   mpsc_queue_model : val → mpsc_queue_name → list val → iProp Σ ;
   mpsc_queue_consumer : val → mpsc_queue_name → iProp Σ ;
 
-  mpsc_queue_inv_persistent t γ ι :
+  #[global] mpsc_queue_inv_persistent t γ ι ::
     Persistent (mpsc_queue_inv t γ ι) ;
-  mpsc_queue_model_timeless t γ vs :
+  #[global] mpsc_queue_model_timeless t γ vs ::
     Timeless (mpsc_queue_model t γ vs) ;
-  mpsc_queue_consumer_timeless t γ :
+  #[global] mpsc_queue_consumer_timeless t γ ::
     Timeless (mpsc_queue_consumer t γ) ;
 
   mpsc_queue_consumer_exclusive t γ :
@@ -91,16 +91,10 @@ Record mpsc_queue `{!heapGS Σ} {unboxed : bool} := {
 }.
 #[global] Arguments mpsc_queue _ {_} _ : assert.
 #[global] Arguments Build_mpsc_queue {_ _} _ {_ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
-#[global] Existing Instance mpsc_queue_name_eq_dec.
-#[global] Existing Instance mpsc_queue_name_countable.
-#[global] Existing Instance mpsc_queue_inv_persistent.
-#[global] Existing Instance mpsc_queue_model_timeless.
-#[global] Existing Instance mpsc_queue_consumer_timeless.
 
 Class MpscQueueOfMpmcQueueG Σ `{!heapGS Σ} := {
-  mpsc_queue_of_mpmc_queue_G_consumer_G : ExclG Σ unitO ;
+  #[local] mpsc_queue_of_mpmc_queue_G_consumer_G :: ExclG Σ unitO ;
 }.
-#[local] Existing Instance mpsc_queue_of_mpmc_queue_G_consumer_G.
 
 Definition mpsc_queue_of_mpmc_queue_Σ := #[
   excl_Σ unitO

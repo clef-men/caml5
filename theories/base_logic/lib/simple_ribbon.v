@@ -40,10 +40,9 @@ Proof.
 Qed.
 
 Class SimpleRibbonG Σ val := {
-  simple_ribbon_G_ribbon_G : RibbonG (simple_ribbon_step val) Σ ;
+  #[local] simple_ribbon_G_ribbon_G :: RibbonG (simple_ribbon_step val) Σ ;
 }.
 #[global] Arguments SimpleRibbonG : clear implicits.
-#[local] Existing Instance simple_ribbon_G_ribbon_G.
 
 Definition simple_ribbon_Σ val := #[
   ribbon_Σ (simple_ribbon_step val)

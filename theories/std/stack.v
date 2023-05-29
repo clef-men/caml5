@@ -13,7 +13,7 @@ Record stack `{!heapGS Σ} {unboxed : bool} := {
 
   stack_model : val → list val → iProp Σ ;
 
-  stack_model_timeless t vs :
+  #[global] stack_model_timeless t vs ::
     Timeless (stack_model t vs) ;
 
   stack_make_spec :
@@ -71,4 +71,3 @@ Record stack `{!heapGS Σ} {unboxed : bool} := {
 }.
 #[global] Arguments stack _ {_} _ : assert.
 #[global] Arguments Build_stack {_ _} _ {_ _ _ _ _ _} _ _ _ _ _ : assert.
-#[global] Existing Instance stack_model_timeless.

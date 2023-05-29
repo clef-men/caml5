@@ -21,9 +21,9 @@ Record spsc_queue `{!heapGS Σ} {unboxed : bool} := {
   spsc_queue_pop : val ;
 
   spsc_queue_name : Type ;
-  spsc_queue_name_eq_dec :
+  #[global] spsc_queue_name_eq_dec ::
     EqDecision spsc_queue_name ;
-  spsc_queue_name_countable :
+  #[global] spsc_queue_name_countable ::
     Countable spsc_queue_name ;
 
   spsc_queue_inv : val → spsc_queue_name → namespace → iProp Σ ;
@@ -31,13 +31,13 @@ Record spsc_queue `{!heapGS Σ} {unboxed : bool} := {
   spsc_queue_producer : val → spsc_queue_name → iProp Σ ;
   spsc_queue_consumer : val → spsc_queue_name → iProp Σ ;
 
-  spsc_queue_inv_persistent t γ ι :
+  #[global] spsc_queue_inv_persistent t γ ι ::
     Persistent (spsc_queue_inv t γ ι) ;
-  spsc_queue_model_timeless t γ vs :
+  #[global] spsc_queue_model_timeless t γ vs ::
     Timeless (spsc_queue_model t γ vs) ;
-  spsc_queue_producer_timeless t γ :
+  #[global] spsc_queue_producer_timeless t γ ::
     Timeless (spsc_queue_producer t γ) ;
-  spsc_queue_consumer_timeless t γ :
+  #[global] spsc_queue_consumer_timeless t γ ::
     Timeless (spsc_queue_consumer t γ) ;
 
   spsc_queue_producer_exclusive t γ :
@@ -103,17 +103,10 @@ Record spsc_queue `{!heapGS Σ} {unboxed : bool} := {
 }.
 #[global] Arguments spsc_queue _ {_} _ : assert.
 #[global] Arguments Build_spsc_queue {_ _} _ {_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
-#[global] Existing Instance spsc_queue_name_eq_dec.
-#[global] Existing Instance spsc_queue_name_countable.
-#[global] Existing Instance spsc_queue_inv_persistent.
-#[global] Existing Instance spsc_queue_model_timeless.
-#[global] Existing Instance spsc_queue_producer_timeless.
-#[global] Existing Instance spsc_queue_consumer_timeless.
 
 Class SpscQueueOfSpmcQueueG Σ `{!heapGS Σ} := {
-  spsc_queue_of_spmc_queue_G_consumer_G : ExclG Σ unitO ;
+  #[local] spsc_queue_of_spmc_queue_G_consumer_G :: ExclG Σ unitO ;
 }.
-#[local] Existing Instance spsc_queue_of_spmc_queue_G_consumer_G.
 
 Definition spsc_queue_of_spmc_queue_Σ := #[
   excl_Σ unitO
@@ -175,9 +168,8 @@ Next Obligation.
 Qed.
 
 Class SpscQueueOfMpscQueueG Σ `{!heapGS Σ} := {
-  spsc_queue_of_mpsc_queue_G_producer_G : ExclG Σ unitO ;
+  #[local] spsc_queue_of_mpsc_queue_G_producer_G :: ExclG Σ unitO ;
 }.
-#[local] Existing Instance spsc_queue_of_mpsc_queue_G_producer_G.
 
 Definition spsc_queue_of_mpsc_queue_Σ := #[
   excl_Σ unitO
@@ -239,11 +231,9 @@ Next Obligation.
 Qed.
 
 Class SpscQueueOfMpmcQueueG Σ `{!heapGS Σ} := {
-  spsc_queue_of_mpmc_queue_G_mpmc_queue_G : SpmcQueueOfMpmcQueueG Σ ;
-  spsc_queue_of_mpmc_queue_G_spmc_queue_G : SpscQueueOfSpmcQueueG Σ ;
+  #[local] spsc_queue_of_mpmc_queue_G_mpmc_queue_G :: SpmcQueueOfMpmcQueueG Σ ;
+  #[local] spsc_queue_of_mpmc_queue_G_spmc_queue_G :: SpscQueueOfSpmcQueueG Σ ;
 }.
-#[local] Existing Instance spsc_queue_of_mpmc_queue_G_mpmc_queue_G.
-#[local] Existing Instance spsc_queue_of_mpmc_queue_G_spmc_queue_G.
 
 Definition spsc_queue_of_mpmc_queue_Σ := #[
   spmc_queue_of_mpmc_queue_Σ ;

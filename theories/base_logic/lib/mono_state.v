@@ -14,9 +14,8 @@ Section sts.
   Notation steps := (rtc step).
 
   Class StsCellG Σ := {
-    mono_state_G_inG : inG Σ (mono_state_UR step) ;
+    #[local] mono_state_G_inG :: inG Σ (mono_state_UR step) ;
   }.
-  #[local] Existing Instance mono_state_G_inG.
 
   Definition mono_state_Σ := #[
     GFunctor (mono_state_UR step)

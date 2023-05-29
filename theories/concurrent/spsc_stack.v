@@ -21,9 +21,9 @@ Record spsc_stack `{!heapGS Σ} {unboxed : bool} := {
   spsc_stack_pop : val ;
 
   spsc_stack_name : Type ;
-  spsc_stack_name_eq_dec :
+  #[global] spsc_stack_name_eq_dec ::
     EqDecision spsc_stack_name ;
-  spsc_stack_name_countable :
+  #[global] spsc_stack_name_countable ::
     Countable spsc_stack_name ;
 
   spsc_stack_inv : val → spsc_stack_name → namespace → iProp Σ ;
@@ -31,13 +31,13 @@ Record spsc_stack `{!heapGS Σ} {unboxed : bool} := {
   spsc_stack_producer : val → spsc_stack_name → iProp Σ ;
   spsc_stack_consumer : val → spsc_stack_name → iProp Σ ;
 
-  spsc_stack_inv_persistent t γ ι :
+  #[global] spsc_stack_inv_persistent t γ ι ::
     Persistent (spsc_stack_inv t γ ι) ;
-  spsc_stack_model_timeless t γ vs :
+  #[global] spsc_stack_model_timeless t γ vs ::
     Timeless (spsc_stack_model t γ vs) ;
-  spsc_stack_producer_timeless t γ :
+  #[global] spsc_stack_producer_timeless t γ ::
     Timeless (spsc_stack_producer t γ) ;
-  spsc_stack_consumer_timeless t γ :
+  #[global] spsc_stack_consumer_timeless t γ ::
     Timeless (spsc_stack_consumer t γ) ;
 
   spsc_stack_producer_exclusive t γ :
@@ -103,17 +103,10 @@ Record spsc_stack `{!heapGS Σ} {unboxed : bool} := {
 }.
 #[global] Arguments spsc_stack _ {_} _ : assert.
 #[global] Arguments Build_spsc_stack {_ _} _ {_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
-#[global] Existing Instance spsc_stack_name_eq_dec.
-#[global] Existing Instance spsc_stack_name_countable.
-#[global] Existing Instance spsc_stack_inv_persistent.
-#[global] Existing Instance spsc_stack_model_timeless.
-#[global] Existing Instance spsc_stack_producer_timeless.
-#[global] Existing Instance spsc_stack_consumer_timeless.
 
 Class SpscStackOfSpmcStackG Σ `{!heapGS Σ} := {
-  spsc_stack_of_spmc_stack_G_consumer_G : ExclG Σ unitO ;
+  #[local] spsc_stack_of_spmc_stack_G_consumer_G :: ExclG Σ unitO ;
 }.
-#[local] Existing Instance spsc_stack_of_spmc_stack_G_consumer_G.
 
 Definition spsc_stack_of_spmc_stack_Σ := #[
   excl_Σ unitO
@@ -175,9 +168,8 @@ Next Obligation.
 Qed.
 
 Class SpscStackOfMpscStackG Σ `{!heapGS Σ} := {
-  spsc_stack_of_mpsc_stack_G_producer_G : ExclG Σ unitO ;
+  #[local] spsc_stack_of_mpsc_stack_G_producer_G :: ExclG Σ unitO ;
 }.
-#[local] Existing Instance spsc_stack_of_mpsc_stack_G_producer_G.
 
 Definition spsc_stack_of_mpsc_stack_Σ := #[
   excl_Σ unitO
@@ -239,11 +231,9 @@ Next Obligation.
 Qed.
 
 Class SpscStackOfMpmcStackG Σ `{!heapGS Σ} := {
-  spsc_stack_of_mpmc_stack_G_mpmc_stack_G : SpmcStackOfMpmcStackG Σ ;
-  spsc_stack_of_mpmc_stack_G_spmc_stack_G : SpscStackOfSpmcStackG Σ ;
+  #[local] spsc_stack_of_mpmc_stack_G_mpmc_stack_G :: SpmcStackOfMpmcStackG Σ ;
+  #[local] spsc_stack_of_mpmc_stack_G_spmc_stack_G :: SpscStackOfSpmcStackG Σ ;
 }.
-#[local] Existing Instance spsc_stack_of_mpmc_stack_G_mpmc_stack_G.
-#[local] Existing Instance spsc_stack_of_mpmc_stack_G_spmc_stack_G.
 
 Definition spsc_stack_of_mpmc_stack_Σ := #[
   spmc_stack_of_mpmc_stack_Σ ;

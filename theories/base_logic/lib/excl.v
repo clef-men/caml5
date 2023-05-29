@@ -9,9 +9,8 @@ From caml5 Require Export
   base.
 
 Class ExclG Σ F := {
-  excl_G_inG : inG Σ (exclR $ oFunctor_apply F $ iPropO Σ) ;
+  #[local] excl_G_inG :: inG Σ (exclR $ oFunctor_apply F $ iPropO Σ) ;
 }.
-#[local] Existing Instance excl_G_inG.
 
 Definition excl_Σ F `{!oFunctorContractive F} := #[
   GFunctor (exclRF F)

@@ -18,15 +18,13 @@ From caml5.concurrent Require Import
   inf_array.
 
 Class StdInfArrayGpre Σ `{!heapGS Σ} := {
-  std_inf_array_Gpre_model_G : AuthExclG Σ (nat -d> valO) ;
+  #[local] std_inf_array_Gpre_model_G :: AuthExclG Σ (nat -d> valO) ;
 }.
-#[local] Existing Instance std_inf_array_Gpre_model_G.
 
 Class StdInfArrayG Σ `{!heapGS Σ} := {
-  std_inf_array_G_Gpre : StdInfArrayGpre Σ ;
+  #[local] std_inf_array_G_Gpre :: StdInfArrayGpre Σ ;
   std_inf_array_G_mutex : mutex Σ false ;
 }.
-#[local] Existing Instance std_inf_array_G_Gpre.
 
 Definition std_inf_array_Σ := #[
   auth_excl_Σ (nat -d> valO)

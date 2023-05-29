@@ -11,9 +11,8 @@ From caml5.base_logic Require Import
   algebra.auth_excl.
 
 Class AuthExclG Σ F := {
-  auth_excl_G_inG : inG Σ (auth_excl_R $ oFunctor_apply F $ iPropO Σ) ;
+  #[local] auth_excl_G_inG :: inG Σ (auth_excl_R $ oFunctor_apply F $ iPropO Σ) ;
 }.
-#[local] Existing Instance auth_excl_G_inG.
 
 Definition auth_excl_Σ F `{!oFunctorContractive F} := #[
   GFunctor (auth_excl_RF F)

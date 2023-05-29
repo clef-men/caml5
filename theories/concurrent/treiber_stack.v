@@ -13,9 +13,8 @@ From caml5.concurrent Require Import
   mpmc_stack.
 
 Class TreiberG Σ `{!heapGS Σ} := {
-  treiber_stack_G_model_G : AuthExclG Σ (leibnizO (list val)) ;
+  #[local] treiber_stack_G_model_G :: AuthExclG Σ (leibnizO (list val)) ;
 }.
-#[local] Existing Instance treiber_stack_G_model_G.
 
 Definition treiber_stack_Σ := #[
   auth_excl_Σ (leibnizO (list val))

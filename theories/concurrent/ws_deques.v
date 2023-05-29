@@ -17,17 +17,17 @@ Record ws_deques `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool} := {
   ws_deques_steal : val ;
 
   ws_deques_name : Type ;
-  ws_deques_name_eq_dec :
+  #[global] ws_deques_name_eq_dec ::
     EqDecision ws_deques_name ;
-  ws_deques_name_countable :
+  #[global] ws_deques_name_countable ::
     Countable ws_deques_name ;
 
   ws_deques_inv : val → ws_deques_name → namespace → val → nat → iProp Σ ;
   ws_deques_model : val → ws_deques_name → list (list val) → iProp Σ ;
 
-  ws_deques_inv_persistent t γ ι cntr sz :
+  #[global] ws_deques_inv_persistent t γ ι cntr sz ::
     Persistent (ws_deques_inv t γ ι cntr sz) ;
-  ws_deques_model_timeless t γ vss :
+  #[global] ws_deques_model_timeless t γ vss ::
     Timeless (ws_deques_model t γ vss) ;
 
   ws_deques_inv_valid t γ ι cntr sz :
@@ -122,7 +122,3 @@ Record ws_deques `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool} := {
 }.
 #[global] Arguments ws_deques _ {_ _} _ : assert.
 #[global] Arguments Build_ws_deques {_ _ _} _ {_ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ _ _ : assert.
-#[global] Existing Instance ws_deques_name_eq_dec.
-#[global] Existing Instance ws_deques_name_countable.
-#[global] Existing Instance ws_deques_inv_persistent.
-#[global] Existing Instance ws_deques_model_timeless.

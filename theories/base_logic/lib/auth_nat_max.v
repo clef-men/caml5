@@ -9,9 +9,8 @@ From caml5.algebra Require Import
   lib.auth_nat_max.
 
 Class AuthNatMaxG Σ := {
-  auth_nat_max_G_inG : inG Σ auth_nat_max_R ;
+  #[local] auth_nat_max_G_inG :: inG Σ auth_nat_max_R ;
 }.
-#[local] Existing Instance auth_nat_max_G_inG.
 
 Definition auth_nat_max_Σ := #[
   GFunctor auth_nat_max_R

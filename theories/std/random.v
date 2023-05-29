@@ -14,7 +14,7 @@ Record random `{!heapGS Σ} {unboxed : bool} := {
 
   random_inv : val → iProp Σ ;
 
-  random_inv_persistent t :
+  #[global] random_inv_persistent t ::
     Persistent (random_inv t) ;
 
   random_make_spec :
@@ -37,7 +37,6 @@ Record random `{!heapGS Σ} {unboxed : bool} := {
 }.
 #[global] Arguments random _ {_} _ : assert.
 #[global] Arguments Build_random {_ _} _ {_ _ _ _} _ _ _ : assert.
-#[global] Existing Instance random_inv_persistent.
 
 Section random.
   Context `{!heapGS Σ} {unboxed} (random : random Σ unboxed).

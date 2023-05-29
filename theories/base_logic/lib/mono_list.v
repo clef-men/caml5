@@ -10,9 +10,8 @@ From iris.prelude Require Import
   options.
 
 Class MonoListG Σ A := {
-  mono_list_G_inG : inG Σ (mono_listR $ leibnizO A) ;
+  #[local] mono_list_G_inG :: inG Σ (mono_listR $ leibnizO A) ;
 }.
-#[local] Existing Instance mono_list_G_inG.
 
 Definition mono_list_Σ A := #[
   GFunctor (mono_listR $ leibnizO A)

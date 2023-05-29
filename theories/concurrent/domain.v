@@ -9,9 +9,8 @@ From caml5.concurrent Require Export
   base.
 
 Class DomainG Σ `{!heapGS Σ} := {
-  domain_G_model_G : ExclG Σ unitO ;
+  #[local] domain_G_model_G :: ExclG Σ unitO ;
 }.
-#[local] Existing Instance domain_G_model_G.
 
 Definition domain_Σ := #[
   excl_Σ unitO

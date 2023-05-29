@@ -9,9 +9,8 @@ From caml5.algebra Require Import
   lib.auth_Z_max.
 
 Class AuthZMaxG Σ := {
-  auth_Z_max_G_inG : inG Σ auth_Z_max_R ;
+  #[local] auth_Z_max_G_inG :: inG Σ auth_Z_max_R ;
 }.
-#[local] Existing Instance auth_Z_max_G_inG.
 
 Definition auth_Z_max_Σ := #[
   GFunctor auth_Z_max_R

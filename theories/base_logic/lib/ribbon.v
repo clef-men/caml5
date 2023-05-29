@@ -14,9 +14,8 @@ Section sts.
   Notation steps := (rtc step).
 
   Class RibbonG Σ := {
-    ribbon_G_inG : inG Σ (ribbon_UR step) ;
+    #[local] ribbon_G_inG :: inG Σ (ribbon_UR step) ;
   }.
-  #[local] Existing Instance ribbon_G_inG.
 
   Definition ribbon_Σ := #[
     GFunctor (ribbon_UR step)

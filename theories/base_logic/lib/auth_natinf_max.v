@@ -11,9 +11,8 @@ From caml5.algebra Require Import
   lib.auth_natinf_max.
 
 Class AuthNatinfMaxG Σ := {
-  auth_natinf_max_G_inG : inG Σ auth_natinf_max_R ;
+  #[local] auth_natinf_max_G_inG :: inG Σ auth_natinf_max_R ;
 }.
-#[local] Existing Instance auth_natinf_max_G_inG.
 
 Definition auth_natinf_max_Σ := #[
   GFunctor auth_natinf_max_R

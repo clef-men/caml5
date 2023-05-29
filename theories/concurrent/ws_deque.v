@@ -18,20 +18,20 @@ Record ws_deque `{!heapGS Σ} {unboxed : bool} := {
   ws_deque_steal : val ;
 
   ws_deque_name : Type ;
-  ws_deque_name_eq_dec :
+  #[global] ws_deque_name_eq_dec ::
     EqDecision ws_deque_name ;
-  ws_deque_name_countable :
+  #[global] ws_deque_name_countable ::
     Countable ws_deque_name ;
 
   ws_deque_inv : val → ws_deque_name → namespace → iProp Σ ;
   ws_deque_model : val → ws_deque_name → list val → iProp Σ ;
   ws_deque_owner : val → ws_deque_name → iProp Σ ;
 
-  ws_deque_inv_persistent t γ ι :
+  #[global] ws_deque_inv_persistent t γ ι ::
     Persistent (ws_deque_inv t γ ι) ;
-  ws_deque_model_timeless t γ vs :
+  #[global] ws_deque_model_timeless t γ vs ::
     Timeless (ws_deque_model t γ vs) ;
-  ws_deque_owner_timeless t γ :
+  #[global] ws_deque_owner_timeless t γ ::
     Timeless (ws_deque_owner t γ) ;
 
   ws_deque_owner_exclusive t γ :
@@ -111,11 +111,6 @@ Record ws_deque `{!heapGS Σ} {unboxed : bool} := {
 }.
 #[global] Arguments ws_deque _ {_} _ : assert.
 #[global] Arguments Build_ws_deque {_ _} _ {_ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ _ : assert.
-#[global] Existing Instance ws_deque_name_eq_dec.
-#[global] Existing Instance ws_deque_name_countable.
-#[global] Existing Instance ws_deque_inv_persistent.
-#[global] Existing Instance ws_deque_model_timeless.
-#[global] Existing Instance ws_deque_owner_timeless.
 
 Program Definition ws_deque_wrap `{!heapGS Σ} `(base : ws_deque Σ unboxed) : ws_deque Σ unboxed := {|
   ws_deque_make :=

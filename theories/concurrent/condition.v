@@ -14,7 +14,7 @@ Record condition `{!heapGS Σ} {mutex_unboxed} {mutex : mutex Σ mutex_unboxed} 
 
   condition_inv : val → iProp Σ ;
 
-  condition_inv_persistent t :
+  #[global] condition_inv_persistent t ::
     Persistent (condition_inv t) ;
 
   condition_make_spec :
@@ -63,7 +63,6 @@ Record condition `{!heapGS Σ} {mutex_unboxed} {mutex : mutex Σ mutex_unboxed} 
 }.
 #[global] Arguments condition _ {_ _} _ _ : assert.
 #[global] Arguments Build_condition {_ _ _ _} _ {_ _ _ _ _ _} _ _ _ _ _ : assert.
-#[global] Existing Instance condition_inv_persistent.
 
 Section condition.
   Context `{!heapGS Σ}.

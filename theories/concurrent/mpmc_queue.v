@@ -14,17 +14,17 @@ Record mpmc_queue `{!heapGS Σ} {unboxed : bool} := {
   mpmc_queue_pop : val ;
 
   mpmc_queue_name : Type ;
-  mpmc_queue_name_eq_dec :
+  #[global] mpmc_queue_name_eq_dec ::
     EqDecision mpmc_queue_name ;
-  mpmc_queue_name_countable :
+  #[global] mpmc_queue_name_countable ::
     Countable mpmc_queue_name ;
 
   mpmc_queue_inv : val → mpmc_queue_name → namespace → iProp Σ ;
   mpmc_queue_model : val → mpmc_queue_name → list val → iProp Σ ;
 
-  mpmc_queue_inv_persistent t γ ι :
+  #[global] mpmc_queue_inv_persistent t γ ι ::
     Persistent (mpmc_queue_inv t γ ι) ;
-  mpmc_queue_model_timeless t γ vs :
+  #[global] mpmc_queue_model_timeless t γ vs ::
     Timeless (mpmc_queue_model t γ vs) ;
 
   mpmc_queue_make_spec ι :
@@ -75,7 +75,3 @@ Record mpmc_queue `{!heapGS Σ} {unboxed : bool} := {
 }.
 #[global] Arguments mpmc_queue _ {_} _ : assert.
 #[global] Arguments Build_mpmc_queue {_ _} _ {_ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
-#[global] Existing Instance mpmc_queue_name_eq_dec.
-#[global] Existing Instance mpmc_queue_name_countable.
-#[global] Existing Instance mpmc_queue_inv_persistent.
-#[global] Existing Instance mpmc_queue_model_timeless.

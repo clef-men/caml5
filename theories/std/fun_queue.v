@@ -13,9 +13,9 @@ Record fun_queue `{!heapGS Σ} {unboxed : bool} := {
 
   fun_queue_model : val → list val → iProp Σ ;
 
-  fun_queue_model_persistent t vs :
+  #[global] fun_queue_model_persistent t vs ::
     Persistent (fun_queue_model t vs) ;
-  fun_queue_model_timeless t vs :
+  #[global] fun_queue_model_timeless t vs ::
     Timeless (fun_queue_model t vs) ;
 
   fun_queue_make_spec :
@@ -72,5 +72,3 @@ Record fun_queue `{!heapGS Σ} {unboxed : bool} := {
 }.
 #[global] Arguments fun_queue _ {_} _ : assert.
 #[global] Arguments Build_fun_queue {_ _} _ {_ _ _ _ _ _ _} _ _ _ _ _ : assert.
-#[global] Existing Instance fun_queue_model_persistent.
-#[global] Existing Instance fun_queue_model_timeless.

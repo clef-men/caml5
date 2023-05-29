@@ -13,9 +13,9 @@ Record fun_stack `{!heapGS Σ} {unboxed : bool} := {
 
   fun_stack_model : val → list val → iProp Σ ;
 
-  fun_stack_model_persistent t vs :
+  #[global] fun_stack_model_persistent t vs ::
     Persistent (fun_stack_model t vs) ;
-  fun_stack_model_timeless t vs :
+  #[global] fun_stack_model_timeless t vs ::
     Timeless (fun_stack_model t vs) ;
 
   fun_stack_make_spec :
@@ -72,5 +72,3 @@ Record fun_stack `{!heapGS Σ} {unboxed : bool} := {
 }.
 #[global] Arguments fun_stack _ {_} _ : assert.
 #[global] Arguments Build_fun_stack {_ _} _ {_ _ _ _ _ _ _} _ _ _ _ _ : assert.
-#[global] Existing Instance fun_stack_model_persistent.
-#[global] Existing Instance fun_stack_model_timeless.

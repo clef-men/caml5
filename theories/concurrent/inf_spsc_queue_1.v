@@ -23,15 +23,11 @@ From caml5.concurrent Require Import
   spsc_queue.
 
 Class InfSpscQueueG Σ `{!heapGS Σ} (array : inf_array Σ false) := {
-  inf_spsc_queue_G_producer_G : AuthExclG Σ (natO * (nat -d> valO)) ;
-  inf_spsc_queue_G_consumer_G : AuthExclG Σ (listO valO * listO valO) ;
-  inf_spsc_queue_G_model_G : AuthExclG Σ (listO valO) ;
-  inf_spsc_queue_G_hist_G : MonoListG Σ val ;
+  #[local] inf_spsc_queue_G_producer_G :: AuthExclG Σ (natO * (nat -d> valO)) ;
+  #[local] inf_spsc_queue_G_consumer_G :: AuthExclG Σ (listO valO * listO valO) ;
+  #[local] inf_spsc_queue_G_model_G :: AuthExclG Σ (listO valO) ;
+  #[local] inf_spsc_queue_G_hist_G :: MonoListG Σ val ;
 }.
-#[local] Existing Instance inf_spsc_queue_G_producer_G.
-#[local] Existing Instance inf_spsc_queue_G_consumer_G.
-#[local] Existing Instance inf_spsc_queue_G_model_G.
-#[local] Existing Instance inf_spsc_queue_G_hist_G.
 
 Definition inf_spsc_queue_Σ := #[
   auth_excl_Σ (natO * (nat -d> valO)) ;

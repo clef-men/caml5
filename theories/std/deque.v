@@ -15,7 +15,7 @@ Record deque `{!heapGS Σ} {unboxed : bool} := {
 
   deque_model : val → list val → iProp Σ ;
 
-  deque_model_timeless t vs :
+  #[global] deque_model_timeless t vs ::
     Timeless (deque_model t vs) ;
 
   deque_make_spec :
@@ -101,4 +101,3 @@ Record deque `{!heapGS Σ} {unboxed : bool} := {
 }.
 #[global] Arguments deque _ {_} _ : assert.
 #[global] Arguments Build_deque {_ _} _ {_ _ _ _ _ _ _ _} _ _ _ _ _ _ _ : assert.
-#[global] Existing Instance deque_model_timeless.

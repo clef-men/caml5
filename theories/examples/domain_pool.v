@@ -13,21 +13,17 @@ From caml5.concurrent Require Import
   condition.
 
 Class DomainPoolGpre Σ `{!heapGS Σ} := {
-  domain_pool_Gpre_domain_G : DomainG Σ ;
-  domain_pool_Gpre_counter_G : CounterG Σ ;
-  domain_pool_Gpre_future_G : ExclG Σ unitO ;
+  #[local] domain_pool_Gpre_domain_G :: DomainG Σ ;
+  #[local] domain_pool_Gpre_counter_G :: CounterG Σ ;
+  #[local] domain_pool_Gpre_future_G :: ExclG Σ unitO ;
 }.
-#[local] Existing Instance domain_pool_Gpre_domain_G.
-#[local] Existing Instance domain_pool_Gpre_counter_G.
-#[local] Existing Instance domain_pool_Gpre_future_G.
 
 Class DomainPoolG Σ `{!heapGS Σ} := {
-  domain_pool_G_Gpre : DomainPoolGpre Σ ;
+  #[local] domain_pool_G_Gpre :: DomainPoolGpre Σ ;
   domain_pool_G_ws_deques : ws_deques_ext1 Σ false ;
   domain_pool_G_mutex : mutex Σ false ;
   domain_pool_G_condition : condition Σ domain_pool_G_mutex false ;
 }.
-#[local] Existing Instance domain_pool_G_Gpre.
 
 Definition domain_pool_Σ := #[
   domain_Σ ;

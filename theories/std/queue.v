@@ -13,7 +13,7 @@ Record queue `{!heapGS Σ} {unboxed : bool} := {
 
   queue_model : val → list val → iProp Σ ;
 
-  queue_model_timeless t vs :
+  #[global] queue_model_timeless t vs ::
     Timeless (queue_model t vs) ;
 
   queue_make_spec :
@@ -71,4 +71,3 @@ Record queue `{!heapGS Σ} {unboxed : bool} := {
 }.
 #[global] Arguments queue _ {_} _ : assert.
 #[global] Arguments Build_queue {_ _} _ {_ _ _ _ _ _} _ _ _ _ _ : assert.
-#[global] Existing Instance queue_model_timeless.

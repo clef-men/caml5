@@ -24,19 +24,20 @@ Record ws_bags `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool} := {
   ws_bags_steal : val ;
 
   ws_bags_name : Type ;
-  ws_bags_name_eq_dec :
+  #[global] ws_bags_name_eq_dec ::
     EqDecision ws_bags_name ;
-  ws_bags_name_countable :
+  #[global] ws_bags_name_countable ::
     Countable ws_bags_name ;
 
   ws_bags_inv : val → ws_bags_name → namespace → val → nat → (val → iProp Σ) → iProp Σ ;
   ws_bags_model : val → ws_bags_name → list nat → iProp Σ ;
 
-  ws_bags_inv_ne t γ ι cntr sz n :
+  #[global] ws_bags_inv_ne t γ ι cntr sz n ::
     Proper (pointwise_relation val (≡{n}≡) ==> (≡{n}≡)) (ws_bags_inv t γ ι cntr sz) ;
-  ws_bags_inv_persistent t γ ι cntr sz Ψ :
+
+  #[global] ws_bags_inv_persistent t γ ι cntr sz Ψ ::
     Persistent (ws_bags_inv t γ ι cntr sz Ψ) ;
-  ws_bags_model_timeless t γ pots :
+  #[global] ws_bags_model_timeless t γ pots ::
     Timeless (ws_bags_model t γ pots) ;
 
   ws_bags_inv_valid t γ ι cntr sz Ψ :
@@ -134,11 +135,6 @@ Record ws_bags `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed : bool} := {
 }.
 #[global] Arguments ws_bags _ {_ _} _ : assert.
 #[global] Arguments Build_ws_bags {_ _ _} _ {_ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ _ _ : assert.
-#[global] Existing Instance ws_bags_name_eq_dec.
-#[global] Existing Instance ws_bags_name_countable.
-#[global] Existing Instance ws_bags_inv_ne.
-#[global] Existing Instance ws_bags_inv_persistent.
-#[global] Existing Instance ws_bags_model_timeless.
 
 #[global] Instance ws_bags_inv_proper `{!heapGS Σ} `{counter_G : !CounterG Σ} {unboxed} (ws_bags : ws_bags Σ unboxed) t γ ι cntr sz :
   Proper (pointwise_relation val (≡) ==> (≡)) (ws_bags.(ws_bags_inv) t γ ι cntr sz).
@@ -149,9 +145,8 @@ Proof.
 Qed.
 
 Class WsBagsOfWsDequesG Σ `{!heapGS Σ} `{counter_G : !CounterG Σ} := {
-  ws_bags_of_ws_deques_G_model_G : AuthExclG Σ (leibnizO (list $ list val)) ;
+  #[local] ws_bags_of_ws_deques_G_model_G :: AuthExclG Σ (leibnizO (list $ list val)) ;
 }.
-#[local] Existing Instance ws_bags_of_ws_deques_G_model_G.
 
 Definition ws_bags_of_ws_deques_Σ := #[
   auth_excl_Σ (leibnizO (list $ list val))

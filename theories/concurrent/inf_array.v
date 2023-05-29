@@ -17,17 +17,17 @@ Record inf_array `{!heapGS Σ} {unboxed : bool} := {
   inf_array_set : val ;
 
   inf_array_name : Type ;
-  inf_array_name_eq_dec :
+  #[global] inf_array_name_eq_dec ::
     EqDecision inf_array_name ;
-  inf_array_name_countable :
+  #[global] inf_array_name_countable ::
     Countable inf_array_name ;
 
   inf_array_inv : val → inf_array_name → namespace → iProp Σ ;
   inf_array_model : val → inf_array_name → (nat → val) → iProp Σ ;
 
-  inf_array_inv_persistent t γ ι :
+  #[global] inf_array_inv_persistent t γ ι ::
     Persistent (inf_array_inv t γ ι) ;
-  inf_array_model_timeless t γ vs :
+  #[global] inf_array_model_timeless t γ vs ::
     Timeless (inf_array_model t γ vs) ;
 
   inf_array_make_spec ι v :
@@ -72,10 +72,6 @@ Record inf_array `{!heapGS Σ} {unboxed : bool} := {
 }.
 #[global] Arguments inf_array _ {_} _ : assert.
 #[global] Arguments Build_inf_array {_ _} _ {_ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
-#[global] Existing Instance inf_array_name_eq_dec.
-#[global] Existing Instance inf_array_name_countable.
-#[global] Existing Instance inf_array_inv_persistent.
-#[global] Existing Instance inf_array_model_timeless.
 
 Section inf_array.
   Context `{!heapGS Σ} {unboxed} (inf_array : inf_array Σ unboxed).

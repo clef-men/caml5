@@ -19,20 +19,20 @@ Record spmc_stack `{!heapGS Σ} {unboxed : bool} := {
   spmc_stack_pop : val ;
 
   spmc_stack_name : Type ;
-  spmc_stack_name_eq_dec :
+  #[global] spmc_stack_name_eq_dec ::
     EqDecision spmc_stack_name ;
-  spmc_stack_name_countable :
+  #[global] spmc_stack_name_countable ::
     Countable spmc_stack_name ;
 
   spmc_stack_inv : val → spmc_stack_name → namespace → iProp Σ ;
   spmc_stack_model : val → spmc_stack_name → list val → iProp Σ ;
   spmc_stack_producer : val → spmc_stack_name → iProp Σ ;
 
-  spmc_stack_inv_persistent t γ ι :
+  #[global] spmc_stack_inv_persistent t γ ι ::
     Persistent (spmc_stack_inv t γ ι) ;
-  spmc_stack_model_timeless t γ vs :
+  #[global] spmc_stack_model_timeless t γ vs ::
     Timeless (spmc_stack_model t γ vs) ;
-  spmc_stack_producer_timeless t γ :
+  #[global] spmc_stack_producer_timeless t γ ::
     Timeless (spmc_stack_producer t γ) ;
 
   spmc_stack_producer_exclusive t γ :
@@ -91,16 +91,10 @@ Record spmc_stack `{!heapGS Σ} {unboxed : bool} := {
 }.
 #[global] Arguments spmc_stack _ {_} _ : assert.
 #[global] Arguments Build_spmc_stack {_ _} _ {_ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ : assert.
-#[global] Existing Instance spmc_stack_name_eq_dec.
-#[global] Existing Instance spmc_stack_name_countable.
-#[global] Existing Instance spmc_stack_inv_persistent.
-#[global] Existing Instance spmc_stack_model_timeless.
-#[global] Existing Instance spmc_stack_producer_timeless.
 
 Class SpmcStackOfMpmcStackG Σ `{!heapGS Σ} := {
-  spmc_stack_of_mpmc_stack_G_producer_G : ExclG Σ unitO ;
+  #[local] spmc_stack_of_mpmc_stack_G_producer_G :: ExclG Σ unitO ;
 }.
-#[local] Existing Instance spmc_stack_of_mpmc_stack_G_producer_G.
 
 Definition spmc_stack_of_mpmc_stack_Σ := #[
   excl_Σ unitO

@@ -23,22 +23,23 @@ Record ws_bag `{!heapGS Σ} {unboxed : bool} := {
   ws_bag_steal : val ;
 
   ws_bag_name : Type ;
-  ws_bag_name_eq_dec :
+  #[global] ws_bag_name_eq_dec ::
     EqDecision ws_bag_name ;
-  ws_bag_name_countable :
+  #[global] ws_bag_name_countable ::
     Countable ws_bag_name ;
 
   ws_bag_inv : val → ws_bag_name → namespace → (val → iProp Σ) → iProp Σ ;
   ws_bag_model : val → ws_bag_name → nat → iProp Σ ;
   ws_bag_owner : val → ws_bag_name → iProp Σ ;
 
-  ws_bag_inv_ne t γ ι n :
+  #[global] ws_bag_inv_ne t γ ι n ::
     Proper (pointwise_relation val (≡{n}≡) ==> (≡{n}≡)) (ws_bag_inv t γ ι) ;
-  ws_bag_inv_persistent t γ ι Ψ :
+
+  #[global] ws_bag_inv_persistent t γ ι Ψ ::
     Persistent (ws_bag_inv t γ ι Ψ) ;
-  ws_bag_model_timeless t γ pot :
+  #[global] ws_bag_model_timeless t γ pot ::
     Timeless (ws_bag_model t γ pot) ;
-  ws_bag_owner_timeless t γ :
+  #[global] ws_bag_owner_timeless t γ ::
     Timeless (ws_bag_owner t γ) ;
 
   ws_bag_owner_exclusive t γ :
@@ -121,12 +122,6 @@ Record ws_bag `{!heapGS Σ} {unboxed : bool} := {
 }.
 #[global] Arguments ws_bag _ {_} _ : assert.
 #[global] Arguments Build_ws_bag {_ _} _ {_ _ _ _ _ _ _ _ _ _ _ _ _ _} _ _ _ _ _ _ : assert.
-#[global] Existing Instance ws_bag_name_eq_dec.
-#[global] Existing Instance ws_bag_name_countable.
-#[global] Existing Instance ws_bag_inv_ne.
-#[global] Existing Instance ws_bag_inv_persistent.
-#[global] Existing Instance ws_bag_model_timeless.
-#[global] Existing Instance ws_bag_owner_timeless.
 
 #[global] Instance ws_bag_inv_proper `{!heapGS Σ} {unboxed} (ws_bag : ws_bag Σ unboxed) t γ ι :
   Proper (pointwise_relation val (≡) ==> (≡)) (ws_bag.(ws_bag_inv) t γ ι).
@@ -137,9 +132,8 @@ Proof.
 Qed.
 
 Class WsBagOfWsDequeG Σ `{!heapGS Σ} := {
-  ws_bag_of_ws_deque_G_model_G : AuthExclG Σ (leibnizO (list val)) ;
+  #[local] ws_bag_of_ws_deque_G_model_G :: AuthExclG Σ (leibnizO (list val)) ;
 }.
-#[local] Existing Instance ws_bag_of_ws_deque_G_model_G.
 
 Definition ws_bag_of_ws_deque_Σ := #[
   auth_excl_Σ (leibnizO (list val))
@@ -395,9 +389,8 @@ Section ws_bag_of_ws_deque.
 End ws_bag_of_ws_deque.
 
 Class WsBagOfSpmcStackG Σ `{!heapGS Σ} := {
-  ws_bag_of_spmc_stack_G_model_G : AuthExclG Σ (leibnizO (list val)) ;
+  #[local] ws_bag_of_spmc_stack_G_model_G :: AuthExclG Σ (leibnizO (list val)) ;
 }.
-#[local] Existing Instance ws_bag_of_spmc_stack_G_model_G.
 
 Definition ws_bag_of_spmc_stack_Σ := #[
   auth_excl_Σ (leibnizO (list val))
@@ -653,11 +646,9 @@ Section ws_bag_of_spmc_stack.
 End ws_bag_of_spmc_stack.
 
 Class WsBagOfMpmcStackG Σ `{!heapGS Σ} := {
-  ws_bag_of_mpmc_stack_G_mpmc_stack_G : SpmcStackOfMpmcStackG Σ ;
-  ws_bag_of_mpmc_stack_G_spmc_stack_G : WsBagOfSpmcStackG Σ ;
+  #[local] ws_bag_of_mpmc_stack_G_mpmc_stack_G :: SpmcStackOfMpmcStackG Σ ;
+  #[local] ws_bag_of_mpmc_stack_G_spmc_stack_G :: WsBagOfSpmcStackG Σ ;
 }.
-#[local] Existing Instance ws_bag_of_mpmc_stack_G_mpmc_stack_G.
-#[local] Existing Instance ws_bag_of_mpmc_stack_G_spmc_stack_G.
 
 Definition ws_bag_of_mpmc_stack_Σ := #[
   spmc_stack_of_mpmc_stack_Σ ;
@@ -676,9 +667,8 @@ Definition ws_bag_of_mpmc_stack `{ws_bag_of_mpmc_stack_G : WsBagOfMpmcStackG Σ}
   ws_bag_of_spmc_stack (spmc_stack_of_mpmc_stack mpmc_stack).
 
 Class WsBagOfSpmcQueueG Σ `{!heapGS Σ} := {
-  ws_bag_of_spmc_queue_G_model_G : AuthExclG Σ (leibnizO (list val)) ;
+  #[local] ws_bag_of_spmc_queue_G_model_G :: AuthExclG Σ (leibnizO (list val)) ;
 }.
-#[local] Existing Instance ws_bag_of_spmc_queue_G_model_G.
 
 Definition ws_bag_of_spmc_queue_Σ := #[
   auth_excl_Σ (leibnizO (list val))
@@ -938,11 +928,9 @@ Section ws_bag_of_spmc_queue.
 End ws_bag_of_spmc_queue.
 
 Class WsBagOfMpmcQueueG Σ `{!heapGS Σ} := {
-  ws_bag_of_mpmc_queue_G_mpmc_queue_G : SpmcQueueOfMpmcQueueG Σ ;
-  ws_bag_of_mpmc_queue_G_spmc_queue_G : WsBagOfSpmcQueueG Σ ;
+  #[local] ws_bag_of_mpmc_queue_G_mpmc_queue_G :: SpmcQueueOfMpmcQueueG Σ ;
+  #[local] ws_bag_of_mpmc_queue_G_spmc_queue_G :: WsBagOfSpmcQueueG Σ ;
 }.
-#[local] Existing Instance ws_bag_of_mpmc_queue_G_mpmc_queue_G.
-#[local] Existing Instance ws_bag_of_mpmc_queue_G_spmc_queue_G.
 
 Definition ws_bag_of_mpmc_queue_Σ := #[
   spmc_queue_of_mpmc_queue_Σ ;

@@ -14,16 +14,14 @@ From caml5.concurrent Require Import
   mpmc_stack.
 
 Class BlockingStackGpre Σ `{!heapGS Σ} := {
-  blocking_stack_Gpre_model_G : AuthExclG Σ (leibnizO (list val)) ;
+  #[local] blocking_stack_Gpre_model_G :: AuthExclG Σ (leibnizO (list val)) ;
 }.
-#[local] Existing Instance blocking_stack_Gpre_model_G.
 
 Class BlockingStackG Σ `{!heapGS Σ} := {
-  blocking_stack_G_Gpre : BlockingStackGpre Σ ;
+  #[local] blocking_stack_G_Gpre :: BlockingStackGpre Σ ;
   blocking_stack_G_stack : stack Σ false ;
   blocking_stack_G_mutex : mutex Σ false ;
 }.
-#[local] Existing Instance blocking_stack_G_Gpre.
 
 Definition blocking_stack_Σ := #[
   auth_excl_Σ (leibnizO (list val))

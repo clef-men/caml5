@@ -14,16 +14,14 @@ From caml5.concurrent Require Import
   mpmc_queue.
 
 Class BlockingQueueGpre Σ `{!heapGS Σ} := {
-  blocking_queue_Gpre_model_G : AuthExclG Σ (leibnizO (list val)) ;
+  #[local] blocking_queue_Gpre_model_G :: AuthExclG Σ (leibnizO (list val)) ;
 }.
-#[local] Existing Instance blocking_queue_Gpre_model_G.
 
 Class BlockingQueueG Σ `{!heapGS Σ} := {
-  blocking_queue_G_Gpre : BlockingQueueGpre Σ ;
+  #[local] blocking_queue_G_Gpre :: BlockingQueueGpre Σ ;
   blocking_queue_G_queue : queue Σ false ;
   blocking_queue_G_mutex : mutex Σ false ;
 }.
-#[local] Existing Instance blocking_queue_G_Gpre.
 
 Definition blocking_queue_Σ := #[
   auth_excl_Σ (leibnizO (list val))

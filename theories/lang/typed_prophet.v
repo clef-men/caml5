@@ -21,7 +21,7 @@ Record typed_strong_prophet `{!heapGS Σ} := {
 
   typed_strong_prophet_model : proph_id → list typed_strong_prophet_type → iProp Σ ;
 
-  typed_strong_prophet_model_timeless p prophs :
+  #[global] typed_strong_prophet_model_timeless p prophs ::
     Timeless (typed_strong_prophet_model p prophs) ;
 
   typed_strong_prophet_model_exclusive p prophs1 prophs2 :
@@ -50,7 +50,6 @@ Record typed_strong_prophet `{!heapGS Σ} := {
 }.
 #[global] Arguments typed_strong_prophet _ {_} : assert.
 #[global] Arguments Build_typed_strong_prophet {_ _ _ _ _ _} _ _ _ : assert.
-#[global] Existing Instance typed_strong_prophet_model_timeless.
 #[global] Opaque typed_strong_prophet_model.
 
 Section make_typed_strong_prophet.
@@ -116,7 +115,7 @@ Record typed_prophet `{!heapGS Σ} := {
 
   typed_prophet_model : proph_id → list typed_prophet_type → iProp Σ ;
 
-  typed_prophet_model_timeless p prophs :
+  #[global] typed_prophet_model_timeless p prophs ::
     Timeless (typed_prophet_model p prophs) ;
 
   typed_prophet_model_exclusive p prophs1 prophs2 :
@@ -144,7 +143,6 @@ Record typed_prophet `{!heapGS Σ} := {
 }.
 #[global] Arguments typed_prophet _ {_} : assert.
 #[global] Arguments Build_typed_prophet {_ _ _ _ _ _} _ _ _ : assert.
-#[global] Existing Instance typed_prophet_model_timeless.
 #[global] Opaque typed_prophet_model.
 
 Section make_typed_prophet.
@@ -204,7 +202,7 @@ Record typed_prophet1_spec := {
   typed_prophet1_spec_of_val : val → option typed_prophet1_spec_type ;
   typed_prophet1_spec_to_val : typed_prophet1_spec_type → val ;
 
-  typed_prophet1_spec_type_inhabited :
+  #[global] typed_prophet1_spec_type_inhabited ::
     Inhabited typed_prophet1_spec_type ;
 
   typed_prophet1_spec_of_to_val proph v :
@@ -212,7 +210,6 @@ Record typed_prophet1_spec := {
     typed_prophet1_spec_of_val v = Some proph ;
 }.
 #[global] Arguments Build_typed_prophet1_spec {_ _ _ _} _ : assert.
-#[global] Existing Instance typed_prophet1_spec_type_inhabited.
 
 Program Coercion typed_prophet1_spec_of_prophet_spec spec := {|
   typed_prophet_spec_type :=
@@ -232,7 +229,7 @@ Record typed_prophet1 `{!heapGS Σ} := {
 
   typed_prophet1_model : proph_id → typed_prophet1_type → iProp Σ ;
 
-  typed_prophet1_model_timeless p proph :
+  #[global] typed_prophet1_model_timeless p proph ::
     Timeless (typed_prophet1_model p proph) ;
 
   typed_prophet1_model_exclusive p proph1 proph2 :
@@ -255,7 +252,6 @@ Record typed_prophet1 `{!heapGS Σ} := {
 }.
 #[global] Arguments typed_prophet1 _ {_} : assert.
 #[global] Arguments Build_typed_prophet1 {_ _ _ _ _ _} _ _ _ : assert.
-#[global] Existing Instance typed_prophet1_model_timeless.
 #[global] Opaque typed_prophet1_model.
 
 Section make_typed_prophet1.

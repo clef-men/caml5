@@ -14,15 +14,11 @@ From caml5.concurrent Require Export
   base.
 
 Class CounterG Σ `{!heapGS Σ} := {
-  counter_G_ub_G : AuthNatinfMaxG Σ ;
-  counter_G_lb_G : AuthNatMaxG Σ ;
-  counter_G_token_G : inG Σ (authR (gset_disjUR nat)) ;
-  counter_G_model_G : AuthExclG Σ natO ;
+  #[local] counter_G_ub_G :: AuthNatinfMaxG Σ ;
+  #[local] counter_G_lb_G :: AuthNatMaxG Σ ;
+  #[local] counter_G_token_G :: inG Σ (authR (gset_disjUR nat)) ;
+  #[local] counter_G_model_G :: AuthExclG Σ natO ;
 }.
-#[local] Existing Instance counter_G_ub_G.
-#[local] Existing Instance counter_G_lb_G.
-#[local] Existing Instance counter_G_token_G.
-#[local] Existing Instance counter_G_model_G.
 
 Definition counter_Σ := #[
   auth_natinf_max_Σ ;
