@@ -1,7 +1,8 @@
 From caml5 Require Import
   prelude.
 From caml5.common Require Import
-  tactics.
+  tactics
+  list.
 From caml5.lang Require Import
   notations
   proofmode.
@@ -167,10 +168,10 @@ Next Obligation.
   - iIntros "Hmodel !>". iFrame. iSplitL; auto with iFrame.
   - iIntros ([w |]).
     + iIntros "(%ws & %Heq & Hmodel) !>".
-      generalize dependent ls. refine (rev_ind _ _ _); [intros Heq | intros l ls _ Heq].
+      destruct (rev_elim ls) as [-> | (ls' & l & ->)].
       { rewrite fmap_nil in Heq. edestruct app_cons_not_nil. done. }
       rewrite fmap_app app_inj_tail_iff in Heq. destruct Heq as (<- & <-).
-      generalize dependent vs. apply rev_ind; [| intros v vs _].
+      destruct (rev_elim vs) as [-> | (vs' & v & ->)].
       { iDestruct (big_sepL2_nil_inv_r with "Hls") as %?.
         edestruct app_cons_not_nil. done.
       }

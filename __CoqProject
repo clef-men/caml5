@@ -10,6 +10,7 @@ theories/base.v
 theories/common/tactics.v
 theories/common/natinf.v
 theories/common/fin_maps.v
+theories/common/list.v
 
 theories/algebra/base.v
 theories/algebra/view.v

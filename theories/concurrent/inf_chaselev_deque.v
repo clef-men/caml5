@@ -7,7 +7,8 @@ From iris.algebra Require Import
 From caml5 Require Import
   prelude.
 From caml5.common Require Import
-  tactics.
+  tactics
+  list.
 From caml5.base_logic Require Import
   lib.excl
   lib.auth_excl
@@ -1622,7 +1623,7 @@ Section inf_chaselev_deque_G.
 
     (* branch 1.2: front2 + 1 < back; no conflict *)
     - (* there is stricly more than one model value *)
-      generalize dependent model. refine (rev_ind _ _ _); simpl; [lia | intros v model _ Hmodel].
+      rename model into _model. destruct (rev_elim _model) as [-> | (model & v & ->)]; first naive_solver lia.
       destruct model as [| w model]; rewrite app_length /= in Hmodel; first lia.
       (* update data model *)
       iEval (rewrite assoc) in "Harray_model".

@@ -7,7 +7,8 @@ From iris.algebra Require Import
 From caml5 Require Import
   prelude.
 From caml5.common Require Import
-  tactics.
+  tactics
+  list.
 From caml5.base_logic Require Import
   lib.auth_excl
   lib.mono_list.
@@ -552,7 +553,7 @@ Section inf_spsc_queue_G.
       iApply "HΦ". repeat iExists _. auto with iFrame.
 
     (* branch 2: non-empty queue *)
-    - revert dependent model. refine (rev_ind _ _ _); [intros Hback | intros v model _ Hback]; first naive_solver lia.
+    - rename model into _model. destruct (rev_elim _model) as [-> | (model & v & ->)]; first naive_solver.
       (* emit history fragment *)
       iDestruct (inf_spsc_queue_hist_mapsto_get (length hist) v with "Hhist_auth") as "#Hhist_mapsto".
       { rewrite lookup_app_r // Nat.sub_diag reverse_snoc //. }
