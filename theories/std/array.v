@@ -714,6 +714,35 @@ Section heapGS.
     iApply ("Hfn" with "[//]"). auto.
   Qed.
 
+  Lemma array_size_spec t sz :
+    {{{
+      array_inv t sz
+    }}}
+      array_size t
+    {{{
+      RET #sz; True
+    }}}.
+  Proof.
+    iIntros "%Φ (%l & -> & #Hsz) HΦ".
+    wp_rec. wp_pures. wp_load.
+    iApply ("HΦ" with "[//]").
+  Qed.
+  Lemma array_size_spec' t dq vs :
+    {{{
+      array_model t dq vs
+    }}}
+      array_size t
+    {{{
+      RET #(length vs);
+      array_model t dq vs
+    }}}.
+  Proof.
+    iIntros "%Φ Hmodel HΦ".
+    iDestruct (array_model_inv with "Hmodel") as "#Hinv".
+    wp_apply (array_size_spec with "Hinv"). iIntros "_".
+    iApply ("HΦ" with "Hmodel").
+  Qed.
+
   Lemma array_get_spec t (i : Z) dq vs v E :
     (0 ≤ i)%Z →
     vs !! Z.to_nat i = Some v →
@@ -751,35 +780,6 @@ Section heapGS.
     rewrite -loc_add_assoc.
     wp_apply (chunk_get_spec with "Hmodel"); [lia | done |]. iIntros "Hmodel".
     iApply "HΦ". iExists l. auto.
-  Qed.
-
-  Lemma array_size_spec t sz :
-    {{{
-      array_inv t sz
-    }}}
-      array_size t
-    {{{
-      RET #sz; True
-    }}}.
-  Proof.
-    iIntros "%Φ (%l & -> & #Hsz) HΦ".
-    wp_rec. wp_pures. wp_load.
-    iApply ("HΦ" with "[//]").
-  Qed.
-  Lemma array_size_spec' t dq vs :
-    {{{
-      array_model t dq vs
-    }}}
-      array_size t
-    {{{
-      RET #(length vs);
-      array_model t dq vs
-    }}}.
-  Proof.
-    iIntros "%Φ Hmodel HΦ".
-    iDestruct (array_model_inv with "Hmodel") as "#Hinv".
-    wp_apply (array_size_spec with "Hinv"). iIntros "_".
-    iApply ("HΦ" with "Hmodel").
   Qed.
 
   Lemma array_set_spec t (i : Z) vs v E :
