@@ -26,7 +26,7 @@ endif
 .PHONY : dist
 dist :
 	@ opam switch create . --deps-only --repos default,coq-released=https://coq.inria.fr/opam/released
-	@ $(MAKE) -f $(this_file)
+	@ eval $(opam env) && $(MAKE) -f $(this_file)
 
 .PHONY : clean
 clean ::
