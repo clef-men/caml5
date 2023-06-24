@@ -1,5 +1,3 @@
-this_file := $(lastword $(MAKEFILE_LIST))
-
 prebuild := depend setup
 prebuild_out := _CoqProject Makefile.coq Makefile.coq.conf
 
@@ -22,11 +20,6 @@ _CoqProject : __CoqProject
 ifeq (,$(filter $(prebuild),$(MAKECMDGOALS)))
 -include Makefile.coq
 endif
-
-.PHONY : dist
-dist :
-	@ opam switch create . --deps-only --repos default,coq-released=https://coq.inria.fr/opam/released
-	@ eval $(opam env) && $(MAKE) -f $(this_file)
 
 .PHONY : clean
 clean ::
