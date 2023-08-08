@@ -8,7 +8,6 @@ maintainer:
   "clement.allain@inria.fr"
 authors: [
   "Clément Allain"
-  "François Pottier"
 ]
 homepage:
   "https://github.com/clef-men/caml5"
